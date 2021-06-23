@@ -36,7 +36,7 @@ log = CBLogger.get_logger()
 
 @exception_handler
 def main() -> None:
-    args = docopt(
+    docopt(
         __doc__,
         version='CB (run) version ' + __version__,
         options_first=True

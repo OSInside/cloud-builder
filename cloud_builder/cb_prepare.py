@@ -40,6 +40,7 @@ from cloud_builder.version import __version__
 from cloud_builder.logger import CBLogger
 from cloud_builder.exceptions import exception_handler
 from kiwi.utils.sync import DataSync
+from typing import Dict
 
 log = CBLogger.get_logger()
 
@@ -56,7 +57,7 @@ def main() -> None:
     with open(config_file, 'r') as config:
         package_config = yaml.safe_load(config) or {}
 
-    target_root_dict = {
+    target_root_dict: Dict = {
         'target_roots': []
     }
     for target in package_config.get('dists') or []:
