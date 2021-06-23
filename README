@@ -1,0 +1,19 @@
+sudo kiwi-ng --profile TW system prepare --description . --root /tmp/mytest/xclock
+
+sudo cp -a ../xclock/ /tmp/mytest/xclock/root/
+
+sudo chroot /tmp/mytest/xclock bash
+
+    cd /root/xclock
+
+    mount -t proc proc /proc
+    mount -t devtmpfs devtmpfs /dev
+
+    build --no-init --root /
+
+
+we need a fetcher service that periodically updates the
+git contents
+
+
+we need a scheduler that triggers builds
