@@ -29,7 +29,8 @@ config = {
     'entry_points': {
         'console_scripts': [
             'cb-run=cloud_builder.cb_run:main',
-            'cb-prepare=cloud_builder.cb_prepare:main'
+            'cb-prepare=cloud_builder.cb_prepare:main',
+            'cb-fetch=cloud_builder.cb_fetch:main'
         ]
     },
     'include_package_data': True,

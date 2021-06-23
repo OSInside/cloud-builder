@@ -1,0 +1,16 @@
+## Path           : System/Management
+## Description    : Cloud Builder global settings
+## Type           : string
+## Default        : ""
+## ServiceRestart : cloud-builder
+#
+# Cloud Builder compatible github project with package sources
+#
+CB_PROJECT="https://github.com/OSInside/cloud-builder.git"
+
+## Type:        integer
+## Default:     30
+#
+# Cloud Builder update intervall for package sources
+#
+CB_UPDATE=30

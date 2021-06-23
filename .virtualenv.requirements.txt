@@ -8,5 +8,8 @@ docopt
 # YAML file parsing
 PyYAML
 
+# Daemon
+apscheduler
+
 # kiwi
 kiwi
