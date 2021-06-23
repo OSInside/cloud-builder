@@ -1,5 +1,5 @@
 # Copyright (c) 2021 Marcus Schäfer.  All rights reserved.
-# 
+#
 # This file is part of Cloud Builder.
 #
 # Cloud Builder is free software: you can redistribute it and/or modify

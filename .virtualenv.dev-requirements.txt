@@ -26,6 +26,7 @@ wheel
 # Python style guide checker
 flake8
 mypy
+types-PyYAML
 
 # for building documentation
 sphinx
