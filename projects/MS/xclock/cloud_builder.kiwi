@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<image schemaversion="7.4" name="xclock">
+    <description type="system">
+        <author>Packager Name</author>
+        <contact>packager@example.com</contact>
+        <specification>xclock build worker</specification>
+    </description>
+    <profiles>
+        <profile name="TW" description="For Tumbleweed"/>
+    </profiles>
+    <preferences>
+        <version>1.1.1</version>
+    </preferences>
+    <packages type="bootstrap">
+        <package name="build"/>
+        <package name="rpm-build"/>
+        <package name="rpm-devel"/>
+    </packages>
+    <preferences profiles="TW">
+        <packagemanager>zypper</packagemanager>
+        <rpm-excludedocs>true</rpm-excludedocs>
+        <type image="tbz"/>
+    </preferences>
+    <repository profiles="TW">
+        <source path="http://download.opensuse.org/tumbleweed/repo/oss"/>
+    </repository>
+    <packages type="bootstrap" profiles="TW">
+        <package name="pkg-config"/>
+        <package name="pkgconfig(x11)"/>
+        <package name="pkgconfig(xaw7)"/>
+        <package name="pkgconfig(xft)"/>
+        <package name="pkgconfig(xkbfile)"/>
+        <package name="pkgconfig(xmu)"/>
+        <package name="pkgconfig(xorg-macros)"/>
+        <package name="pkgconfig(xproto)"/>
+        <package name="pkgconfig(xrender)"/>
+        <package name="pkgconfig(xt)"/>
+    </packages>
+</image>
