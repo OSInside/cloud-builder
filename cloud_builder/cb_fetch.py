@@ -41,6 +41,9 @@ from cloud_builder.exceptions import exception_handler
 from cloud_builder.defaults import Defaults
 from kiwi.command import Command
 from apscheduler.schedulers.background import BlockingScheduler
+from typing import (
+    Dict, List
+)
 
 log = CBLogger.get_logger()
 
@@ -61,13 +64,35 @@ def main() -> None:
         project_scheduler = BlockingScheduler()
         project_scheduler.add_job(
             lambda: update_project(),
-            'interval', seconds=args['--update-interval'] or 30
+            'interval', seconds=int(args['--update-interval']) or 30
         )
         project_scheduler.start()
 
 
 def update_project() -> None:
-    git_update = Command.run(
+    Command.run(
+        ['git', '-C', Defaults.get_runner_project_dir(), 'fetch', '--all']
+    )
+    git_changes = Command.run(
+        [
+            'git', '-C', Defaults.get_runner_project_dir(),
+            'diff', '--name-only', 'origin/master'
+        ]
+    )
+    changed_files = []
+    changed_packages: Dict[str, List[str]] = {}
+    if git_changes.output:
+        changed_files = git_changes.output.strip().split(os.linesep)
+    for changed_file in changed_files:
+        if changed_file.startswith('projects'):
+            package_dir = os.path.dirname(changed_file)
+            if package_dir in changed_packages:
+                changed_packages[package_dir].append(
+                    os.path.basename(changed_file)
+                )
+            else:
+                changed_packages[package_dir] = []
+    Command.run(
         ['git', '-C', Defaults.get_runner_project_dir(), 'pull']
     )
-    log.info(git_update.output)
+    log.info(sorted(changed_packages.keys()))
