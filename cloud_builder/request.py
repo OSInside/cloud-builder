@@ -16,7 +16,6 @@
 # along with Cloud Builder.  If not, see <http://www.gnu.org/licenses/>
 #
 from typing import Dict
-from cloud_builder.version import __version__
 
 
 class CBRequest:
@@ -25,10 +24,11 @@ class CBRequest:
     """
     def __init__(self) -> None:
         self.request_dict: Dict = {}
+        self.request_schema_version = 0.1
 
     def set_package_source_change_request(self, package: str) -> None:
         self.request_dict = {
-            'version': __version__,
+            'version': self.request_schema_version,
             'package': package,
             'action': 'source_update'
         }
