@@ -1,4 +1,4 @@
-# Copyright (c) 2021 Marcus Schäfer.  All rights reserved.
+# Copyright (c) 2021 Marcus Schaefer.  All rights reserved.
 #
 # This file is part of Cloud Builder.
 #
@@ -38,7 +38,7 @@ from textwrap import dedent
 from cloud_builder.version import __version__
 from cloud_builder.logger import CBLogger
 from cloud_builder.exceptions import exception_handler
-from cloud_bulder.defaults import Defaults
+from cloud_builder.defaults import Defaults
 from kiwi.utils.sync import DataSync
 from kiwi.privileges import Privileges
 from typing import Dict
