@@ -57,9 +57,6 @@ class CBKafka:
 
                 host: kafka-example.com:12345
                 topic: cb-request
-                ssl_cafile: ca.pem
-                ssl_certfile: service.cert
-                ssl_keyfile: service.key
         """
         try:
             with open(config_file, 'r') as config:
@@ -68,9 +65,6 @@ class CBKafka:
             raise CBConfigFileNotFoundError(issue)
         self.kafka_host = self.kafka_config['host']
         self.kafka_topic = self.kafka_config['topic']
-        self.kafka_ca = self.kafka_config['ssl_cafile']
-        self.kafka_cert = self.kafka_config['ssl_certfile']
-        self.kafka_key = self.kafka_config['ssl_keyfile']
         self.schema_version = 0.1
 
     def send_request(self, request: CBRequest) -> None:
@@ -81,7 +75,7 @@ class CBKafka:
 
         :param CBRequest request: Instance of CBRequest
         """
-        message_broker = self.__create_ssl_broker()
+        message_broker = self.__create_broker()
         message_broker.send(
             self.kafka_topic, yaml.dump(request.get_data()).encode()
         )
@@ -138,7 +132,7 @@ class CBKafka:
         :rtype: Tuple
         """
         message_data = []
-        message_consumer = self.__create_ssl_consumer()
+        message_consumer = self.__create_consumer()
         # Call poll twice. First call will just assign partitions
         # for the consumer without content.
         for _ in range(2):
@@ -151,7 +145,7 @@ class CBKafka:
             message_list=message_data
         )
 
-    def __create_ssl_broker(self) -> KafkaProducer:
+    def __create_broker(self) -> KafkaProducer:
         """
         Create a KafkaProducer
 
@@ -166,7 +160,7 @@ class CBKafka:
                 f'Creating kafka producer failed with: {issue!r}'
             )
 
-    def __create_ssl_consumer(
+    def __create_consumer(
         self, client='cb-client', group='cb-group'
     ) -> KafkaConsumer:
         """
