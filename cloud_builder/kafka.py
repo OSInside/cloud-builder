@@ -65,7 +65,6 @@ class CBKafka:
             raise CBConfigFileNotFoundError(issue)
         self.kafka_host = self.kafka_config['host']
         self.kafka_topic = self.kafka_config['topic']
-        self.schema_version = 0.1
 
     def send_request(self, request: CBRequest) -> None:
         """
