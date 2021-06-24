@@ -16,8 +16,8 @@
 # along with Cloud Builder.  If not, see <http://www.gnu.org/licenses/>
 #
 """
-usage: cb_prepare -h | --help
-       cb_prepare --root=<root_path> --package=<package_path>
+usage: cb-prepare -h | --help
+       cb-prepare --root=<root_path> --package=<package_path>
            [--config=<file>]
 
 options:
@@ -36,6 +36,7 @@ import os
 import yaml
 import sys
 from docopt import docopt
+from textwrap import dedent
 from cloud_builder.version import __version__
 from cloud_builder.logger import CBLogger
 from cloud_builder.exceptions import exception_handler
@@ -88,6 +89,38 @@ def main() -> None:
         target_root_dict['target_roots'].append(
             target_root
         )
+        run_script = dedent('''
+            #!/bin/bash
+
+            set -e
+
+            function increment_release {{
+                local release=1
+                test -e release && release=$(( $(cat release) + 1 ))
+                echo "$release" > release
+                echo "$release"
+            }}
+
+            function finish {{
+                for path in /proc /dev;do
+                    mountpoint -q "$path" && umount "$path"
+                done
+            }}
+
+            trap finish EXIT
+
+            mount -t proc proc /proc
+            mount -t devtmpfs devtmpfs /dev
+
+            pushd {0}
+            build --no-init \\
+                --release $(increment_release) --root /
+        ''')
+        with open(f'{target_root}/run.sh', 'w') as script:
+            script.write(
+                run_script.format(package_config['name'])
+            )
+
     yaml.safe_dump(
         target_root_dict, sys.stdout, allow_unicode=True
     )

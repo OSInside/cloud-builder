@@ -19,6 +19,7 @@ import sys
 from functools import wraps
 from typing import Callable
 from cloud_builder.logger import CBLogger
+from kiwi.exceptions import KiwiError
 
 log = CBLogger.get_logger()
 
@@ -40,6 +41,10 @@ def exception_handler(func: Callable) -> Callable:
         try:
             return func(*args, **kwargs)
         except CBError as issue:
+            # known exception, log information and exit
+            log.error(f'{type(issue).__name__}: {issue}')
+            sys.exit(1)
+        except KiwiError as issue:
             # known exception, log information and exit
             log.error(f'{type(issue).__name__}: {issue}')
             sys.exit(1)

@@ -16,8 +16,8 @@
 # along with Cloud Builder.  If not, see <http://www.gnu.org/licenses/>
 #
 """
-usage: cb_fetch -h | --help
-       cb_fetch --project=<github_project>
+usage: cb-fetch -h | --help
+       cb-fetch --project=<github_project>
            [--update-interval=<time_sec>]
            [--single-shot]
 

@@ -41,8 +41,8 @@ class CBLogger:
         :rtype: Logger
         """
         log = logging.getLogger('CB')
+        log.setLevel(level)
         if not log.hasHandlers():
-            log.setLevel(level)
             channel = logging.StreamHandler(sys.stdout)
             channel.setLevel(level)
             log.addHandler(channel)

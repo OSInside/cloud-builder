@@ -19,3 +19,6 @@ kafka-python
 
 # Transport schema
 cerberus
+
+# Network access
+requests
