@@ -79,3 +79,23 @@ class CBError(Exception):
         :rtype: str
         """
         return format(self.message)
+
+
+class CBConfigFileNotFoundError(CBError):
+    """
+    Exception raised if a config file could not be found
+    """
+
+
+class CBKafkaProducerException(CBError):
+    """
+    Exception raised if an instance of KafkaProducer
+    returned an error
+    """
+
+
+class CBKafkaConsumerException(CBError):
+    """
+    Exception raised if an instance of KafkaConsumer
+    returned an error
+    """
