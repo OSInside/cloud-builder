@@ -40,6 +40,7 @@ from cloud_builder.version import __version__
 from cloud_builder.logger import CBLogger
 from cloud_builder.exceptions import exception_handler
 from kiwi.utils.sync import DataSync
+from kiwi.privileges import Privileges
 from typing import Dict
 
 log = CBLogger.get_logger()
@@ -52,6 +53,9 @@ def main() -> None:
         version='CB (prepare) version ' + __version__,
         options_first=True
     )
+
+    Privileges.check_for_root_permissions()
+
     config_file = \
         args['--config'] or os.path.join(args['--package'], 'cloud_builder.yml')
     with open(config_file, 'r') as config:
