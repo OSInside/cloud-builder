@@ -32,9 +32,10 @@ from cloud_builder.version import __version__
 from cloud_builder.logger import CBLogger
 from cloud_builder.exceptions import exception_handler
 from cloud_builder.defaults import Defaults
-from cloud_builder.kafka import CBKafka
+# from cloud_builder.kafka import CBKafka
 from kiwi.command import Command
 from kiwi.privileges import Privileges
+from kiwi.path import Path
 from apscheduler.schedulers.background import BlockingScheduler
 
 log = CBLogger.get_logger()
@@ -59,21 +60,21 @@ def main() -> None:
 
 
 def handle_requests() -> None:
-    kafka = CBKafka(
-        config_file=Defaults.get_kafka_config()
-    )
+    # kafka = CBKafka(
+    #     config_file=Defaults.get_kafka_config()
+    # )
     # FIXME: only for testing
-    # fake_request = [
-    #     {
-    #         'schema_version': 0.1,
-    #         'package': 'projects/MS/xclock',
-    #         'action': 'package_changed'
-    #     }
-    # ]
-    # for request in fake_request:
-    for request in kafka.read_request():
+    fake_request = [
+        {
+            'schema_version': 0.1,
+            'package': 'projects/MS/xclock',
+            'action': 'package_changed'
+        }
+    ]
+    # for request in kafka.read_request():
+    for request in fake_request:
         package_path = os.path.join(
-            Defaults.get_runner_project_dir(), request['package']
+            Defaults.get_runner_project_dir(), format(request['package'])
         )
         Command.run(
             ['git', '-C', Defaults.get_runner_project_dir(), 'pull']
@@ -81,16 +82,23 @@ def handle_requests() -> None:
         package_config = Defaults.get_package_config(
             package_path
         )
-        Command.run(
-            [
-                'cb-prepare', '--root', '/var/tmp',
-                '--package', package_path
-            ]
+        cb_prepare = [
+            Path.which(
+                'cb-prepare', alternative_lookup_paths=['/usr/local/bin']
+            ), '--root', '/var/tmp', '--package', package_path
+        ]
+        os.system(
+            ' '.join(cb_prepare)
         )
         for target in package_config.get('dists') or []:
             target_root = os.path.join(
                 '/var', 'tmp', f'{package_config["name"]}@{target}'
             )
-            Command.run(
-                ['cb-run', '--root', target_root]
+            cb_run = [
+                Path.which(
+                    'cb-run', alternative_lookup_paths=['/usr/local/bin']
+                ), '--root', target_root
+            ]
+            os.system(
+                ' '.join(cb_run)
             )

@@ -60,12 +60,13 @@ def main() -> None:
         ' '.join(build_run)
     )
     exit_code = return_value >> 8
-    build_log_file = os.path.join(args['--root'], '.build.log')
+    build_log_file = ''
     packages = []
 
     if exit_code != 0:
         log.error('Build Failed')
     else:
+        build_log_file = os.path.join(args['--root'], '.build.log')
         find_call = Command.run(
             [
                 'find', os.path.join(args['--root'], 'home', 'abuild'),

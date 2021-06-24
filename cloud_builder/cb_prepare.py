@@ -41,6 +41,7 @@ from cloud_builder.exceptions import exception_handler
 from cloud_builder.defaults import Defaults
 from kiwi.utils.sync import DataSync
 from kiwi.privileges import Privileges
+from kiwi.path import Path
 from typing import Dict
 
 log = CBLogger.get_logger()
@@ -69,7 +70,9 @@ def main() -> None:
             )
         )
         kiwi_run = [
-            'kiwi-ng', '--logfile', f'{target_root}.log', '--profile', target,
+            Path.which(
+                'kiwi-ng', alternative_lookup_paths=['/usr/local/bin']
+            ), '--logfile', f'{target_root}.log', '--profile', target,
             'system', 'prepare', '--description', args['--package'],
             '--allow-existing-root', '--root', target_root
         ]

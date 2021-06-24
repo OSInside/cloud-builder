@@ -25,7 +25,7 @@ class Defaults:
     Implements Cloud Builder project default values
     """
     @staticmethod
-    def get_runner_project_dir():
+    def get_runner_project_dir() -> str:
         return f'{os.environ.get("HOME")}/cloud_builder_sources'
 
     @staticmethod
