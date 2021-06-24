@@ -13,3 +13,9 @@ apscheduler
 
 # kiwi
 kiwi
+
+# Access to kafka
+kafka-python
+
+# Transport schema
+cerberus
