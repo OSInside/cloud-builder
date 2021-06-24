@@ -66,7 +66,7 @@ def main() -> None:
         project_scheduler = BlockingScheduler()
         project_scheduler.add_job(
             lambda: update_project(),
-            'interval', seconds=int(args['--update-interval']) or 30
+            'interval', seconds=int(args['--update-interval'] or 30)
         )
         project_scheduler.start()
 
