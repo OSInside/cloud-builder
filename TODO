@@ -1,0 +1,20 @@
+* Write a scheduler cb-scheduler
+  The scheduler reads from the cb_request topic and handles
+  requests as they come in. The scheduler has to call cb-prepare/cb-run
+  and report results in the cb_results topic. On rebuild of the same
+  package it's required to lock the build from conflicting calls
+
+* Write a dependency checker cb-solve based on satsolver. On a regular schedule
+  resolve dependencies in parallell and trigger a rebuild by sending a request
+  to the cb_request topic such that the scheduler rebuilds
+
+* Write a client program cb-client which allows to e.g send a manual
+  rebuild to the cb_request topic
+
+* Create runner and fetcher/solver images for the cloud (Amazon)
+  There must be at least one runner(cb-scheduler/cb-prepare/cb-run)
+  and one fetcher/solver(cb-fetch/cb-solve) for the system to work.
+  Also required is a running and accessible kafka broker.
+  ==> The system should scale with more runner
+  ==> Maybe fetcher and solver needs to be separated into extra
+      images such that more solver increases performance
