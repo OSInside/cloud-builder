@@ -1,4 +1,4 @@
-# Copyright (c) 2021 Marcus Schäfer.  All rights reserved.
+# Copyright (c) 2021 Marcus Schaefer.  All rights reserved.
 #
 # This file is part of Cloud Builder.
 #
@@ -34,6 +34,7 @@ from cloud_builder.exceptions import exception_handler
 from cloud_builder.defaults import Defaults
 from cloud_builder.kafka import CBKafka
 from kiwi.command import Command
+from kiwi.privileges import Privileges
 from apscheduler.schedulers.background import BlockingScheduler
 
 log = CBLogger.get_logger()
@@ -46,6 +47,9 @@ def main() -> None:
         version='CB (scheduler) version ' + __version__,
         options_first=True
     )
+
+    Privileges.check_for_root_permissions()
+
     project_scheduler = BlockingScheduler()
     project_scheduler.add_job(
         lambda: handle_requests(),
@@ -58,6 +62,15 @@ def handle_requests() -> None:
     kafka = CBKafka(
         config_file=Defaults.get_kafka_config()
     )
+    # FIXME: only for testing
+    # fake_request = [
+    #     {
+    #         'schema_version': 0.1,
+    #         'package': 'projects/MS/xclock',
+    #         'action': 'package_changed'
+    #     }
+    # ]
+    # for request in fake_request:
     for request in kafka.read_request():
         package_path = os.path.join(
             Defaults.get_runner_project_dir(), request['package']

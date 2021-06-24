@@ -1,4 +1,4 @@
-# Copyright (c) 2021 Marcus Schäfer.  All rights reserved.
+# Copyright (c) 2021 Marcus Schaefer.  All rights reserved.
 #
 # This file is part of Cloud Builder.
 #

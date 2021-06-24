@@ -7,7 +7,7 @@ from setuptools import setup
 from cloud_builder.version import __version__
 
 here = path.abspath(path.dirname(__file__))
-with open(path.join(here, 'README.rst'), encoding='utf-8') as readme:
+with open(path.join(here, 'README.rst')) as readme:
     long_description = readme.read()
 
 

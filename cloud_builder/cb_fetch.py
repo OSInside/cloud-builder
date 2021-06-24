@@ -1,4 +1,4 @@
-# Copyright (c) 2021 Marcus Schäfer.  All rights reserved.
+# Copyright (c) 2021 Marcus Schaefer.  All rights reserved.
 #
 # This file is part of Cloud Builder.
 #
@@ -43,6 +43,7 @@ from cloud_builder.request import CBRequest
 from cloud_builder.kafka import CBKafka
 from kiwi.command import Command
 from apscheduler.schedulers.background import BlockingScheduler
+from kiwi.privileges import Privileges
 from typing import (
     Dict, List
 )
@@ -57,6 +58,9 @@ def main() -> None:
         version='CB (fetch) version ' + __version__,
         options_first=True
     )
+
+    Privileges.check_for_root_permissions()
+
     project_dir = Defaults.get_runner_project_dir()
     if not os.path.isdir(project_dir):
         Command.run(
