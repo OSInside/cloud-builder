@@ -159,11 +159,7 @@ class CBKafka:
         """
         try:
             return KafkaProducer(
-                security_protocol='SSL',
-                bootstrap_servers=self.kafka_host,
-                ssl_cafile=self.kafka_ca,
-                ssl_certfile=self.kafka_cert,
-                ssl_keyfile=self.kafka_key
+                bootstrap_servers=self.kafka_host
             )
         except Exception as issue:
             raise CBKafkaProducerException(
@@ -184,11 +180,7 @@ class CBKafka:
                 auto_offset_reset='earliest',
                 bootstrap_servers=self.kafka_host,
                 client_id=client,
-                group_id=group,
-                security_protocol='SSL',
-                ssl_cafile=self.kafka_ca,
-                ssl_certfile=self.kafka_cert,
-                ssl_keyfile=self.kafka_key
+                group_id=group
             )
         except Exception as issue:
             raise CBKafkaConsumerException(
