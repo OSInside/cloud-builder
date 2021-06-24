@@ -16,7 +16,7 @@
 # along with Cloud Builder.  If not, see <http://www.gnu.org/licenses/>
 #
 request_schema = {
-    'version': {
+    'schema_version': {
         'required': True,
         'type': 'number',
         'nullable': False
