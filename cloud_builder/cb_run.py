@@ -30,6 +30,7 @@ from docopt import docopt
 from cloud_builder.version import __version__
 from cloud_builder.logger import CBLogger
 from cloud_builder.exceptions import exception_handler
+from kiwi.privileges import Privileges
 
 log = CBLogger.get_logger()
 
@@ -41,3 +42,5 @@ def main() -> None:
         version='CB (run) version ' + __version__,
         options_first=True
     )
+
+    Privileges.check_for_root_permissions()
