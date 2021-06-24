@@ -19,6 +19,7 @@
 usage: cb_fetch -h | --help
        cb_fetch --project=<github_project>
            [--update-interval=<time_sec>]
+           [--single-shot]
 
 options:
     --project=<github_project>
@@ -28,6 +29,9 @@ options:
     --update-interval=<time_sec>
         Optional update interval for the project
         Default is 30sec
+
+    --single-shot
+        Optional single shot run. Only clone the repo
 """
 import os
 from docopt import docopt
@@ -53,12 +57,13 @@ def main() -> None:
         Command.run(
             ['git', 'clone', args['--project'], project_dir]
         )
-    project_scheduler = BlockingScheduler()
-    project_scheduler.add_job(
-        lambda: update_project(),
-        'interval', seconds=args['--update-interval'] or 30
-    )
-    project_scheduler.start()
+    if not args['--single-shot']:
+        project_scheduler = BlockingScheduler()
+        project_scheduler.add_job(
+            lambda: update_project(),
+            'interval', seconds=args['--update-interval'] or 30
+        )
+        project_scheduler.start()
 
 
 def update_project() -> None:
