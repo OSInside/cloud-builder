@@ -25,3 +25,27 @@ class Defaults:
     @staticmethod
     def get_runner_project_dir():
         return f'{os.environ.get("HOME")}/cloud_builder_sources'
+
+    @staticmethod
+    def get_kafka_config() -> str:
+        """
+        Location of kafka access credentials
+
+        :return: A file path
+
+        :rtype: str
+        """
+        return os.path.join(Defaults.__conf_path(), 'kafka.yml')
+
+    @staticmethod
+    def __conf_path() -> str:
+        """
+        Base directory of config files for Cloud Builder
+
+        :return: A directory path
+
+        :rtype: str
+        """
+        return os.path.join(
+            os.environ.get('HOME') or '', '.config/cb'
+        )
