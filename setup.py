@@ -30,7 +30,8 @@ config = {
         'console_scripts': [
             'cb-run=cloud_builder.cb_run:main',
             'cb-prepare=cloud_builder.cb_prepare:main',
-            'cb-fetch=cloud_builder.cb_fetch:main'
+            'cb-fetch=cloud_builder.cb_fetch:main',
+            'cb-scheduler=cloud_builder.cb_scheduler:main'
         ]
     },
     'include_package_data': True,

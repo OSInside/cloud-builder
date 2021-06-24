@@ -75,6 +75,8 @@ def main() -> None:
         if find_call.output:
             packages = find_call.output.strip().split(os.linesep)
 
+    # TODO:
+    # send this information to kafka
     log.info(external_ip)
     log.info(build_log_file)
     log.info(packages)

@@ -33,13 +33,12 @@ options:
         cloud_builder.yml from the package directory is used
 """
 import os
-import yaml
-import sys
 from docopt import docopt
 from textwrap import dedent
 from cloud_builder.version import __version__
 from cloud_builder.logger import CBLogger
 from cloud_builder.exceptions import exception_handler
+from cloud_bulder.defaults import Defaults
 from kiwi.utils.sync import DataSync
 from kiwi.privileges import Privileges
 from typing import Dict
@@ -57,11 +56,9 @@ def main() -> None:
 
     Privileges.check_for_root_permissions()
 
-    config_file = \
-        args['--config'] or os.path.join(args['--package'], 'cloud_builder.yml')
-    with open(config_file, 'r') as config:
-        package_config = yaml.safe_load(config) or {}
-
+    package_config = Defaults.get_package_config(
+        args['--package'], args['--config']
+    )
     target_root_dict: Dict = {
         'target_roots': []
     }
@@ -72,13 +69,19 @@ def main() -> None:
             )
         )
         kiwi_run = [
-            'kiwi-ng', '--profile', target,
+            'kiwi-ng', '--logfile', f'{target_root}.log', '--profile', target,
             'system', 'prepare', '--description', args['--package'],
             '--allow-existing-root', '--root', target_root
         ]
-        os.system(
+        return_value = os.system(
             ' '.join(kiwi_run)
         )
+        exit_code = return_value >> 8
+        if exit_code != 0:
+            log.error(f'Preparation of {target_root} failed')
+            # TODO: send this information to kafka
+            continue
+
         data = DataSync(
             f'{args["--package"]}/',
             f'{target_root}/{package_config["name"]}/'
@@ -120,7 +123,3 @@ def main() -> None:
             script.write(
                 run_script.format(package_config['name'])
             )
-
-    yaml.safe_dump(
-        target_root_dict, sys.stdout, allow_unicode=True
-    )

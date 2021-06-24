@@ -16,6 +16,8 @@
 # along with Cloud Builder.  If not, see <http://www.gnu.org/licenses/>
 #
 import os
+import yaml
+from typing import Dict
 
 
 class Defaults:
@@ -25,6 +27,14 @@ class Defaults:
     @staticmethod
     def get_runner_project_dir():
         return f'{os.environ.get("HOME")}/cloud_builder_sources'
+
+    @staticmethod
+    def get_package_config(package_path: str, filename: str = None) -> Dict:
+        config_file = filename or os.path.join(
+            package_path, 'cloud_builder.yml'
+        )
+        with open(config_file, 'r') as config:
+            return yaml.safe_load(config) or {}
 
     @staticmethod
     def get_kafka_config() -> str:
