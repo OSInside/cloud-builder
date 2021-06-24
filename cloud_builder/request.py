@@ -28,7 +28,7 @@ class CBRequest:
 
     def set_package_source_change_request(self, package: str) -> None:
         self.request_dict = {
-            'version': self.request_schema_version,
+            'schema_version': self.request_schema_version,
             'package': package,
             'action': 'source_update'
         }
