@@ -19,7 +19,6 @@
 usage: cb-fetch -h | --help
        cb-fetch --project=<github_project>
            [--update-interval=<time_sec>]
-           [--request-break=<number>]
            [--single-shot]
 
 options:
@@ -31,17 +30,10 @@ options:
         Optional update interval for the project
         Default is 30sec
 
-    --request-break=<number>
-        Optional break after the given number of requests.
-        For ballancing the requests between the runners
-        a pause is needed to avoid sending all requests
-        to one runner. Default is 10
-
     --single-shot
         Optional single shot run. Only clone the repo
 """
 import os
-import time
 from docopt import docopt
 from cloud_builder.version import __version__
 from cloud_builder.logger import CBLogger
@@ -77,13 +69,13 @@ def main() -> None:
     if not args['--single-shot']:
         project_scheduler = BlockingScheduler()
         project_scheduler.add_job(
-            lambda: update_project(int(args['--request-break'] or 10)),
+            lambda: update_project(),
             'interval', seconds=int(args['--update-interval'] or 30)
         )
         project_scheduler.start()
 
 
-def update_project(request_break: int) -> None:
+def update_project() -> None:
     Command.run(
         ['git', '-C', Defaults.get_runner_project_dir(), 'fetch', '--all']
     )
@@ -112,15 +104,8 @@ def update_project(request_break: int) -> None:
     kafka = CBKafka(
         config_file=Defaults.get_kafka_config()
     )
-    request_count = 1
     for package in sorted(changed_packages.keys()):
         log.info(f'Sending update request for package: {package!r}')
         request = CBRequest()
         request.set_package_source_change_request(package)
         kafka.send_request(request)
-        if request_count == request_break:
-            # on high load of requests, pause for 2 seconds to
-            # ballance better between multiple kafka consumers
-            time.sleep(2)
-            request_count = 0
-        request_count += 1
