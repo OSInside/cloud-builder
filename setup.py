@@ -23,7 +23,12 @@ config = {
     'license' : 'GPLv3+',
     'install_requires': [
         'docopt>=0.6.2',
-        'PyYAML'
+        'PyYAML',
+        'apscheduler',
+        'kiwi>=9.21.21',
+        'kafka-python',
+        'cerberus',
+        'requests'
     ],
     'packages': ['cloud_builder'],
     'entry_points': {
