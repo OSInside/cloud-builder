@@ -72,7 +72,7 @@ def main() -> None:
         kiwi_run = [
             Path.which(
                 'kiwi-ng', alternative_lookup_paths=['/usr/local/bin']
-            ), '--logfile', f'{target_root}.log', '--profile', target,
+            ), '--logfile', f'{target_root}.prepare.log', '--profile', target,
             'system', 'prepare', '--description', args['--package'],
             '--allow-existing-root', '--root', target_root
         ]
@@ -82,7 +82,7 @@ def main() -> None:
         exit_code = return_value >> 8
         if exit_code != 0:
             log.error(f'Preparation of {target_root} failed')
-            # TODO: send this information to kafka
+            # TODO: send this information to kafka(cb-response)
             continue
 
         data = DataSync(

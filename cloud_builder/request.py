@@ -16,6 +16,7 @@
 # along with Cloud Builder.  If not, see <http://www.gnu.org/licenses/>
 #
 from typing import Dict
+from cloud_builder.defaults import Defaults
 
 
 class CBRequest:
@@ -30,7 +31,7 @@ class CBRequest:
         self.request_dict = {
             'schema_version': self.request_schema_version,
             'package': package,
-            'action': 'source_update'
+            'action': Defaults.get_status_flags().package_changed
         }
 
     def get_data(self) -> Dict:

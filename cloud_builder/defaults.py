@@ -17,13 +17,27 @@
 #
 import os
 import yaml
-from typing import Dict
+from typing import (
+    Dict, NamedTuple
+)
+
+status_flags = NamedTuple(
+    'status_flags', [
+        ('package_changed', str)
+    ]
+)
 
 
 class Defaults:
     """
     Implements Cloud Builder project default values
     """
+    @staticmethod
+    def get_status_flags() -> status_flags:
+        return status_flags(
+            package_changed='package source changed'
+        )
+
     @staticmethod
     def get_runner_project_dir() -> str:
         return f'{os.environ.get("HOME")}/cloud_builder_sources'

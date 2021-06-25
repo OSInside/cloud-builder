@@ -81,7 +81,7 @@ class CBKafka:
         # We want this message to go out now
         message_broker.flush()
 
-    def read_request(self, timeout_ms=1000) -> List:
+    def read_request(self, timeout_ms=1000) -> kafka_read_type:
         """
         Read messages from kafka. The message has to be valid
         YAML and has to follow the request_schema in order to
@@ -115,10 +115,19 @@ class CBKafka:
                 log.error(
                     f'YAML load for {message!r} failed with: {issue!r}'
                 )
-        # Acknowledge message so we don't get it again for
-        # this client/group
-        kafka.consumer.commit()
-        return request_list
+        return kafka_read_type(
+            consumer=kafka.consumer,
+            message_list=request_list
+        )
+
+    def acknowledge(self, consumer: KafkaConsumer) -> None:
+        """
+        Acknowledge message so we don't get it again for
+        this client/group
+
+        :param KafkaConsumer consumer: Kafka Consumer object
+        """
+        consumer.commit()
 
     def read(self, timeout_ms=1000) -> kafka_read_type:
         """
