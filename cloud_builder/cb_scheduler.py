@@ -31,6 +31,8 @@ options:
         at the same time. Default is 10
 """
 import os
+import psutil
+import signal
 from docopt import docopt
 from textwrap import dedent
 from cloud_builder.version import __version__
@@ -121,9 +123,21 @@ def handle_requests() -> None:
         )
         package_run_script = f'{package_root}.sh'
 
-        # TODO: check if package is currently building,
-        # if yes, delete and restart
-        # package_run_pid = f'{package_root}.pid'
+        package_run_pid = f'{package_root}.pid'
+        if os.path.isfile(package_run_pid):
+            with open(package_run_pid) as pid_fd:
+                build_pid = int(pid_fd.read().strip())
+            log.info(
+                'Checking state of former build with PID:{0}'.format(build_pid)
+            )
+            if psutil.pid_exists(build_pid):
+                # TODO: send this information to kafka(cb-response)
+                log.info(
+                    'Killing jobs associated with PID:{0} for rebuild'.format(
+                        build_pid
+                    )
+                )
+                os.kill(build_pid, signal.SIGTERM)
 
         if request['action'] == status_flags.package_changed:
             Command.run(

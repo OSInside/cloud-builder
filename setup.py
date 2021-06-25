@@ -28,7 +28,8 @@ config = {
         'kiwi>=9.21.21',
         'kafka-python',
         'cerberus',
-        'requests'
+        'requests',
+        'psutil'
     ],
     'packages': ['cloud_builder'],
     'entry_points': {

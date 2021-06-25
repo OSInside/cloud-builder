@@ -9,7 +9,7 @@
 * There are 3 topics in Kafka so far
   cb-request
   cb-response
-  cp-info
+  cb-info
   They need to be created with the instructions from here
   https://docs.aws.amazon.com/msk/latest/developerguide/create-topic.html
   NOTE: In Amazon access to Kafka is by default only possible within the VPC
@@ -17,6 +17,9 @@
 * Write a dependency checker cb-solve based on satsolver. On a regular schedule
   resolve dependencies in parallell and trigger a rebuild by sending a request
   to the cb_request topic such that the scheduler rebuilds
+
+* Write a cb_info tool to check for conditions e.g state of a build,
+  log file, etc etc via the cb-info topic
 
 * Write a client program cb-client which allows to e.g send a manual
   rebuild to the cb_request topic
