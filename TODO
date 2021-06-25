@@ -14,12 +14,6 @@
   https://docs.aws.amazon.com/msk/latest/developerguide/create-topic.html
   NOTE: In Amazon access to Kafka is by default only possible within the VPC
 
-* Write a scheduler cb-scheduler
-  The scheduler reads from the cb_request topic and handles
-  requests as they come in. The scheduler has to call cb-prepare/cb-run
-  and report results in the cb_results topic. On rebuild of the same
-  package it's required to lock the build from conflicting calls
-
 * Write a dependency checker cb-solve based on satsolver. On a regular schedule
   resolve dependencies in parallell and trigger a rebuild by sending a request
   to the cb_request topic such that the scheduler rebuilds
