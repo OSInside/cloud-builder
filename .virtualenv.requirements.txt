@@ -22,3 +22,6 @@ cerberus
 
 # Network access
 requests
+
+# Process Management
+psutil
