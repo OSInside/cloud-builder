@@ -1,3 +1,6 @@
+* Scale consumers
+  https://stackoverflow.com/questions/40326600/balancing-kafka-consumers/40327547
+
 * Issue: release number across runners.
   If a package is build on one runner the release starts at 1 and
   increases. If the package is picked up by another runner it will
