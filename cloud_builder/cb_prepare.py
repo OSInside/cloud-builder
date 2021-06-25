@@ -100,13 +100,6 @@ def main() -> None:
 
             set -e
 
-            function increment_release {{
-                local release=1
-                test -e release && release=$(( $(cat release) + 1 ))
-                echo "$release" > release
-                echo "$release"
-            }}
-
             function finish {{
                 for path in /proc /dev;do
                     mountpoint -q "$path" && umount "$path"
@@ -119,8 +112,7 @@ def main() -> None:
             mount -t devtmpfs devtmpfs /dev
 
             pushd {0}
-            build --no-init \\
-                --release $(increment_release) --root /
+            build --no-init --root /
         ''')
         with open(f'{target_root}/run.sh', 'w') as script:
             script.write(
