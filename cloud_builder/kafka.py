@@ -81,7 +81,7 @@ class CBKafka:
         # We want this message to go out now
         message_broker.flush()
 
-    def read_request(self, timeout_ms=1000) -> kafka_read_type:
+    def read_request(self, timeout_ms=10) -> kafka_read_type:
         """
         Read messages from kafka. The message has to be valid
         YAML and has to follow the request_schema in order to
@@ -129,7 +129,15 @@ class CBKafka:
         """
         consumer.commit()
 
-    def read(self, timeout_ms=1000) -> kafka_read_type:
+    def close(self, consumer: KafkaConsumer) -> None:
+        """
+        Close consumer for this client/group
+
+        :param KafkaConsumer consumer: Kafka Consumer object
+        """
+        consumer.close()
+
+    def read(self, timeout_ms=10) -> kafka_read_type:
         """
         Read messages from kafka.
 

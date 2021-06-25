@@ -100,6 +100,7 @@ def handle_requests() -> None:
 
     if running_builds <= running_limit:
         # kafka.acknowledge(kafka_request_topic.consumer)
+        # kafka.close(kafka_request_topic.consumer)
         pass
     else:
         # Do not acknowledge if running_limit is exceeded.
@@ -107,6 +108,8 @@ def handle_requests() -> None:
         # handled by another runner or this one if the
         # limit is no longer exceeded
         # TODO: send this information to kafka(cb-response)
+
+        # kafka.close(kafka_request_topic.consumer)
         return
 
     for request in kafka_request_topic.message_list:
