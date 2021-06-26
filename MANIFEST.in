@@ -4,7 +4,7 @@ graft systemd
 graft sysconfig
 graft package
 
-#include Makefile
+include Makefile
 include README.rst
 include LICENSE
 include tox.ini
