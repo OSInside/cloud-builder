@@ -33,17 +33,54 @@ class Defaults:
     Implements Cloud Builder project default values
     """
     @staticmethod
+    def get_runner_package_root() -> str:
+        """
+        Return root path name to construct package build roots
+        for building the packages on the runner
+
+        :return: directory path name
+
+        :rtype: str
+        """
+        return '/var/tmp/CB'
+
+    @staticmethod
     def get_status_flags() -> status_flags:
+        """
+        Return named tuple to represent status information
+
+        :return: A static tuple directory
+
+        :rtype: NamedTuple
+        """
         return status_flags(
             package_changed='package source changed'
         )
 
     @staticmethod
     def get_runner_project_dir() -> str:
+        """
+        Checkout path for github project on the runner
+
+        :return: directory path name
+
+        :rtype: str
+        """
         return f'{os.environ.get("HOME")}/cloud_builder_sources'
 
     @staticmethod
     def get_package_config(package_path: str, filename: str = None) -> Dict:
+        """
+        Read cloud builder meta data file for the given package
+
+        :param str package_path: path to package sources
+        :param str filename:
+            alternative meta data file name, default is cloud_builder.yml
+
+        :return: yaml dictionary data
+
+        :rtype: Dict
+        """
         config_file = filename or os.path.join(
             package_path, 'cloud_builder.yml'
         )

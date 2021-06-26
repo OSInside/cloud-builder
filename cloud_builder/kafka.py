@@ -15,11 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with Cloud Builder.  If not, see <http://www.gnu.org/licenses/>
 #
-from cerberus import Validator
-from typing import (
-    List, NamedTuple
-)
 import yaml
+from cerberus import Validator
+from typing import List
 from kafka import KafkaConsumer
 from kafka import KafkaProducer
 from cloud_builder.request import CBRequest
@@ -29,13 +27,6 @@ from cloud_builder.exceptions import (
     CBConfigFileNotFoundError,
     CBKafkaProducerException,
     CBKafkaConsumerException
-)
-
-kafka_read_type = NamedTuple(
-    'kafka_read_type', [
-        ('consumer', KafkaConsumer),
-        ('message_list', List)
-    ]
 )
 
 
@@ -65,6 +56,8 @@ class CBKafka:
             raise CBConfigFileNotFoundError(issue)
         self.kafka_host = self.kafka_config['host']
         self.kafka_topic = self.kafka_config['topic']
+        self.consumer: KafkaConsumer = None
+        self.producer: KafkaProducer = None
 
     def send_request(self, request: CBRequest) -> None:
         """
@@ -74,14 +67,14 @@ class CBKafka:
 
         :param CBRequest request: Instance of CBRequest
         """
-        message_broker = self.__create_broker()
-        message_broker.send(
+        self.__create_producer()
+        self.producer.send(
             self.kafka_topic, yaml.dump(request.get_data()).encode()
         )
         # We want this message to go out now
-        message_broker.flush()
+        self.producer.flush()
 
-    def read_request(self, timeout_ms=1000) -> kafka_read_type:
+    def read_request(self, timeout_ms=1000) -> List:
         """
         Read messages from kafka. The message has to be valid
         YAML and has to follow the request_schema in order to
@@ -95,8 +88,7 @@ class CBKafka:
         """
         request_list = []
         log = CBLogger.get_logger()
-        kafka = self.read(timeout_ms)
-        for message in kafka.message_list:
+        for message in self.read(timeout_ms):
             try:
                 message_as_yaml = yaml.safe_load(message.value)
                 validator = Validator(request_schema)
@@ -115,60 +107,52 @@ class CBKafka:
                 log.error(
                     f'YAML load for {message!r} failed with: {issue!r}'
                 )
-        return kafka_read_type(
-            consumer=kafka.consumer,
-            message_list=request_list
-        )
+        return request_list
 
-    def acknowledge(self, consumer: KafkaConsumer) -> None:
+    def acknowledge(self) -> None:
         """
         Acknowledge message so we don't get it again for
         this client/group
-
-        :param KafkaConsumer consumer: Kafka Consumer object
         """
-        consumer.commit()
+        if self.consumer:
+            self.consumer.commit()
 
-    def close(self, consumer: KafkaConsumer) -> None:
+    def close(self) -> None:
         """
         Close consumer for this client/group
-
-        :param KafkaConsumer consumer: Kafka Consumer object
         """
-        consumer.close()
+        if self.consumer:
+            self.consumer.close()
 
-    def read(self, timeout_ms=1000) -> kafka_read_type:
+    def read(self, timeout_ms=1000) -> List:
         """
         Read messages from kafka.
 
         :param int timeout_ms: read timeout in ms
 
-        :return: kafka_read_type
+        :return: list of Kafka poll results
 
-        :rtype: Tuple
+        :rtype: List
         """
         message_data = []
-        message_consumer = self.__create_consumer()
+        self.__create_consumer()
         # Call poll twice. First call will just assign partitions
         # for the consumer without content.
         for _ in range(2):
-            raw_messages = message_consumer.poll(timeout_ms=timeout_ms)
+            raw_messages = self.consumer.poll(timeout_ms=timeout_ms)
             for topic_partition, message_list in raw_messages.items():
                 for message in message_list:
                     message_data.append(message)
-        return kafka_read_type(
-            consumer=message_consumer,
-            message_list=message_data
-        )
+        return message_data
 
-    def __create_broker(self) -> KafkaProducer:
+    def __create_producer(self) -> KafkaProducer:
         """
         Create a KafkaProducer
 
         :rtype: KafkaProducer
         """
         try:
-            return KafkaProducer(
+            self.producer = KafkaProducer(
                 bootstrap_servers=self.kafka_host
             )
         except Exception as issue:
@@ -185,7 +169,7 @@ class CBKafka:
         :rtype: KafkaConsumer
         """
         try:
-            return KafkaConsumer(
+            self.consumer = KafkaConsumer(
                 self.kafka_topic,
                 auto_offset_reset='earliest',
                 bootstrap_servers=self.kafka_host,
