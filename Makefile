@@ -6,7 +6,7 @@ docdir = /usr/share/doc/packages
 
 version := $(shell \
 	$(python) -c \
-	'from cloud-builder.version import __version__; print(__version__)'\
+	'from cloud_builder.version import __version__; print(__version__)'\
 )
 
 tox:
@@ -16,9 +16,9 @@ install:
 	# install license/readme
 	# NOTE: this file is not handled through pip because on system level
 	install -m 644 LICENSE \
-		${buildroot}${docdir}/python-cloud-builder/LICENSE
+		${buildroot}${docdir}/python-cloud_builder/LICENSE
 	install -m 644 README.rst \
-		${buildroot}${docdir}/python-cloud-builder/README
+		${buildroot}${docdir}/python-cloud_builder/README
 
 build: clean tox
 	# create setup.py variant for rpm build.
@@ -31,21 +31,21 @@ build: clean tox
 	# restore original setup.py backed up from sed
 	mv setup.pye setup.py
 	# provide rpm source tarball
-	mv dist/cloud-builder-${version}.tar.gz \
-		dist/python-cloud-builder.tar.gz
+	mv dist/cloud_builder-${version}.tar.gz \
+		dist/python-cloud_builder.tar.gz
 	# update rpm changelog using reference file
 	helper/update_changelog.py \
-		--since package/python-cloud-builder.changes \
-	> dist/python-cloud-builder.changes
+		--since package/python-cloud_builder.changes \
+	> dist/python-cloud_builder.changes
 	helper/update_changelog.py \
-		--file package/python-cloud-builder.changes \
-	>> dist/python-cloud-builder.changes
+		--file package/python-cloud_builder.changes \
+	>> dist/python-cloud_builder.changes
 	# update package version in spec file
-	cat package/python-cloud-builder-spec-template |\
+	cat package/python-cloud_builder-spec-template |\
 		sed -e s'@%%VERSION@${version}@' \
-	> dist/python-cloud-builder.spec
+	> dist/python-cloud_builder.spec
 	# provide rpm rpmlintrc
-	cp package/python-cloud-builder-rpmlintrc dist
+	cp package/python-cloud_builder-rpmlintrc dist
 
 pypi: clean tox
 	$(python) setup.py sdist upload
