@@ -14,3 +14,11 @@ CB_PROJECT="https://github.com/OSInside/cloud-builder.git"
 # Cloud Builder update intervall for package sources
 #
 CB_UPDATE=30
+
+## Type:        integer
+## Default:     10
+#
+# Cloud Builder package limit
+# Build up to CB_PACKAGE_LIMIT packages at the same time
+#
+CB_PACKAGE_LIMIT=10

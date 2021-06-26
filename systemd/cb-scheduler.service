@@ -1,5 +1,5 @@
 [Unit]
-Description=CB Project Fetch Service
+Description=CB Scheduler Service
 After=syslog.target
 Requires=network-online.target
 
@@ -7,7 +7,7 @@ Requires=network-online.target
 EnvironmentFile=/etc/sysconfig/cloud_builder
 Type=simple
 Restart=on-failure
-ExecStart=/usr/bin/cb-fetch --project $CB_PROJECT --update-interval $CB_UPDATE
+ExecStart=/usr/bin/cb-scheduler --package-limit $CB_PACKAGE_LIMIT --update-interval $CB_UPDATE
 
 [Install]
 WantedBy=multi-user.target

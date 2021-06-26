@@ -39,7 +39,7 @@ from cloud_builder.version import __version__
 from cloud_builder.logger import CBLogger
 from cloud_builder.exceptions import exception_handler
 from cloud_builder.defaults import Defaults
-# from cloud_builder.kafka import CBKafka
+from cloud_builder.kafka import CBKafka
 from kiwi.command import Command
 from kiwi.privileges import Privileges
 from kiwi.path import Path
@@ -65,6 +65,8 @@ def main() -> None:
         global running_limit
         running_limit = int(args['--package-limit'])
 
+    handle_requests()
+
     project_scheduler = BlockingScheduler()
     project_scheduler.add_job(
         lambda: handle_requests(),
@@ -74,52 +76,35 @@ def main() -> None:
 
 
 def handle_requests() -> None:
-    # kafka = CBKafka(
-    #     config_file=Defaults.get_kafka_config()
-    # )
-    status_flags = Defaults.get_status_flags()
-
-    # FIXME: only for testing
-    from cloud_builder.kafka import kafka_read_type
-    kafka_request_topic = kafka_read_type(
-        consumer=None,
-        message_list=[
-            {
-                'schema_version': 0.1,
-                'package': 'projects/MS/xclock',
-                'action': status_flags.package_changed
-            }
-        ]
-    )
-
-    # kafka_request_topic = kafka.read_request()
-
     global running_builds
     global running_limit
+
+    status_flags = Defaults.get_status_flags()
+    kafka = CBKafka(config_file=Defaults.get_kafka_config())
+    kafka_request_list = kafka.read_request()
+
     # TODO: lookup current running limit
 
     if running_builds <= running_limit:
-        # kafka.acknowledge(kafka_request_topic.consumer)
-        # kafka.close(kafka_request_topic.consumer)
-        pass
+        kafka.acknowledge()
+        kafka.close()
     else:
         # Do not acknowledge if running_limit is exceeded.
         # The request will stay in the queue and gets
         # handled by another runner or this one if the
         # limit is no longer exceeded
         # TODO: send this information to kafka(cb-response)
-
-        # kafka.close(kafka_request_topic.consumer)
+        kafka.close()
         return
 
-    for request in kafka_request_topic.message_list:
+    for request in kafka_request_list:
         package_path = os.path.join(
             Defaults.get_runner_project_dir(), format(request['package'])
         )
         package_config = Defaults.get_package_config(
             package_path
         )
-        cb_root = '/var/tmp/CB'
+        cb_root = Defaults.get_runner_package_root()
         Path.create(cb_root)
         package_root = os.path.join(
             cb_root, f'{package_config["name"]}'

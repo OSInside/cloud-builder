@@ -67,6 +67,8 @@ def main() -> None:
             ['git', 'clone', args['--project'], project_dir]
         )
     if not args['--single-shot']:
+        update_project()
+
         project_scheduler = BlockingScheduler()
         project_scheduler.add_job(
             lambda: update_project(),
