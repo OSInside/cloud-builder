@@ -15,6 +15,7 @@ tox:
 install:
 	# install license/readme
 	# NOTE: this file is not handled through pip because on system level
+	install -d -m 755 ${buildroot}${docdir}/python-cloud_builder
 	install -m 644 LICENSE \
 		${buildroot}${docdir}/python-cloud_builder/LICENSE
 	install -m 644 README.rst \

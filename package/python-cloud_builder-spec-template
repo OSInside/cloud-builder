@@ -1,5 +1,5 @@
 #
-# spec file for package python-cloud-builder
+# spec file for package python-cloud_builder
 #
 # Copyright (c) 2021 SUSE Software Solutions Germany GmbH, Nuernberg, Germany.
 #
@@ -42,7 +42,7 @@
 %global develsuffix devel
 %endif
 
-Name:           python-cloud-builder
+Name:           python-cloud_builder
 Version:        %%VERSION
 Release:        0
 Url:            https://github.com/OSInside/cloud-builder
@@ -58,6 +58,7 @@ Source1:        %{name}-rpmlintrc
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 BuildRequires:  python%{python3_pkgversion}-%{develsuffix}
 BuildRequires:  python%{python3_pkgversion}-setuptools
+BuildRequires:  systemd-rpm-macros
 BuildRequires:  fdupes
 BuildArch:      noarch
 
@@ -65,8 +66,8 @@ BuildArch:      noarch
 Cloud Builder provides services to stand up a package building
 cluster in cloud(VM) or container clusters.
 
-# python3-cloud-builder
-%package -n python%{python3_pkgversion}-cloud-builder
+# python3-cloud_builder
+%package -n python%{python3_pkgversion}-cloud_builder
 Summary:        CB - Cloud Builder
 Group:          Development/Languages/Python
 Requires:       python%{python3_pkgversion}-docopt
@@ -78,12 +79,14 @@ Requires:       python%{python3_pkgversion}-kafka-python
 Requires:       python%{python3_pkgversion}-cerberus
 Requires:       python%{python3_pkgversion}-psutil
 Requires:       python%{python3_pkgversion}-setuptools
-%description -n python%{python3_pkgversion}-cloud-builder
+Requires(preun):  systemd
+Requires(postun): systemd
+%description -n python%{python3_pkgversion}-cloud_builder
 Cloud Builder provides services to stand up a package building
 cluster in cloud(VM) or container clusters.
 
 %prep
-%setup -q -n cloud-builder-%{version}
+%setup -q -n cloud_builder-%{version}
 
 %build
 # Build Python 3 version
@@ -92,6 +95,9 @@ python3 setup.py build
 %install
 # Install Python 3 version
 python3 setup.py install --prefix=%{_prefix} --root=%{buildroot} %{?is_deb:--install-layout=deb}
+
+# Install license/docs
+make buildroot=%{buildroot}/ docdir=%{_defaultdocdir}/ install
 
 # Install systemd services
 install -D -m 644 systemd/cb-fetch.service \
@@ -107,14 +113,11 @@ install -D -m 644 systemd/cb-scheduler.service \
 install -D -m 644 sysconfig/cloud_builder \
     %{buildroot}%{_sysconfdir}/cloud_builder
 
-# Install man pages and package documentation
-# make buildroot=%{buildroot}/ docdir=%{_defaultdocdir}/ install
-
-%files -n python%{python3_pkgversion}-cloud-builder
-%dir %{_defaultdocdir}/python-cloud-builder
-%{python3_sitelib}/cloud-builder*
-%{_defaultdocdir}/python-cloud-builder/LICENSE
-%{_defaultdocdir}/python-cloud-builder/README
+%files -n python%{python3_pkgversion}-cloud_builder
+%dir %{_defaultdocdir}/python-cloud_builder
+%{python3_sitelib}/cloud_builder*
+%{_defaultdocdir}/python-cloud_builder/LICENSE
+%{_defaultdocdir}/python-cloud_builder/README
 %{_unitdir}/cb-fetch.service
 %{_unitdir}/cb-fetch-once.service
 %{_unitdir}/cb-scheduler.service
@@ -123,6 +126,5 @@ install -D -m 644 sysconfig/cloud_builder \
 %{_bindir}/cb-prepare
 %{_bindir}/cb-run
 %{_bindir}/cb-scheduler
-# %doc %{_mandir}/man8/*
 
 %changelog
