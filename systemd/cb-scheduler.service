@@ -4,7 +4,7 @@ After=syslog.target
 Requires=network-online.target
 
 [Service]
-EnvironmentFile=/etc/sysconfig/cloud_builder
+EnvironmentFile=/etc/cloud_builder
 Type=simple
 Restart=on-failure
 ExecStart=/usr/bin/cb-scheduler --package-limit $CB_PACKAGE_LIMIT --update-interval $CB_UPDATE
