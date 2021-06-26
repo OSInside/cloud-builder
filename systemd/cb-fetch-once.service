@@ -4,7 +4,7 @@ After=syslog.target
 Requires=network-online.target
 
 [Service]
-EnvironmentFile=/etc/sysconfig/cloud_builder
+EnvironmentFile=/etc/cloud_builder
 Type=oneshot
 ExecStart=/usr/bin/cb-fetch --project $CB_PROJECT --single-shot
 

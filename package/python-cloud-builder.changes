@@ -1,0 +1,7 @@
+commit 3e73f71c03fd07b62bf6064160f6815b7d0ceaf1
+Author:     Marcus Schäfer <marcus.schaefer@gmail.com>
+AuthorDate: Thu Jun 24 08:01:53 2021 +0200
+Commit:     Marcus Schäfer <marcus.schaefer@gmail.com>
+CommitDate: Thu Jun 24 08:01:53 2021 +0200
+
+    Fetcher knows about package changes now

@@ -1,7 +1,8 @@
 # Manifest describing source package contents
 
-graft cloud_builder
-#graft package
+graft systemd
+graft sysconfig
+graft package
 
 #include Makefile
 include README.rst
