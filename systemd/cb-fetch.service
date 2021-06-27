@@ -4,10 +4,11 @@ After=syslog.target
 Requires=network-online.target
 
 [Service]
-EnvironmentFile=/etc/cloud_builder
+Environment=HOME=/root
+EnvironmentFile=-/etc/cloud_builder
 Type=simple
 Restart=on-failure
-ExecStart=/usr/bin/cb-fetch --project $CB_PROJECT --update-interval $CB_UPDATE
+ExecStart=/usr/bin/cb-fetch --project ${CB_PROJECT} --update-interval ${CB_UPDATE}
 
 [Install]
 WantedBy=multi-user.target
