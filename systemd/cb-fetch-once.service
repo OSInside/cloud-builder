@@ -4,10 +4,9 @@ After=syslog.target
 Requires=network-online.target
 
 [Service]
-Environment=HOME=/root
 EnvironmentFile=-/etc/cloud_builder
 Type=oneshot
-ExecStart=/usr/bin/cb-fetch --project ${CB_PROJECT} --single-shot
+ExecStart=/bin/bash -c 'sudo cb-fetch --project ${CB_PROJECT} --single-shot'
 
 [Install]
 WantedBy=multi-user.target
