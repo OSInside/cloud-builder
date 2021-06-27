@@ -101,6 +101,7 @@ def handle_requests() -> None:
         package_path = os.path.join(
             Defaults.get_runner_project_dir(), format(request['package'])
         )
+        # TODO: check package location and send error to kafka(cb-response)
         package_config = Defaults.get_package_config(
             package_path
         )
