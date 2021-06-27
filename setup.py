@@ -26,7 +26,9 @@ config = {
         'PyYAML',
         'apscheduler',
         'kiwi>=9.21.21',
-        'kafka-python',
+        # kafka is required but causes nothing provides
+        # python3.9dist(kafka-python) on fedora33
+        # 'kafka-python',
         'cerberus',
         'requests',
         'psutil'
