@@ -74,7 +74,7 @@ Requires:       python%{python3_pkgversion}-docopt
 Requires:       python%{python3_pkgversion}-kiwi >= 9.21.21
 Requires:       python%{python3_pkgversion}-requests
 Requires:       python%{python3_pkgversion}-PyYAML
-Requires:       python%{python3_pkgversion}-apscheduler
+Requires:       python%{python3_pkgversion}-APScheduler
 Requires:       python%{python3_pkgversion}-kafka-python
 Requires:       python%{python3_pkgversion}-cerberus
 Requires:       python%{python3_pkgversion}-psutil
