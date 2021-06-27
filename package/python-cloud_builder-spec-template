@@ -76,7 +76,7 @@ Requires:       python%{python3_pkgversion}-requests
 Requires:       python%{python3_pkgversion}-PyYAML
 Requires:       python%{python3_pkgversion}-APScheduler
 Requires:       python%{python3_pkgversion}-kafka-python
-Requires:       python%{python3_pkgversion}-cerberus
+Requires:       python%{python3_pkgversion}-Cerberus
 Requires:       python%{python3_pkgversion}-psutil
 Requires:       python%{python3_pkgversion}-setuptools
 Requires(preun):  systemd
