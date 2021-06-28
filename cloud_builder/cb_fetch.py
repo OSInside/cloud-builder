@@ -39,7 +39,7 @@ from cloud_builder.version import __version__
 from cloud_builder.logger import CBLogger
 from cloud_builder.exceptions import exception_handler
 from cloud_builder.defaults import Defaults
-from cloud_builder.request import CBRequest
+from cloud_builder.package_request import CBPackageRequest
 from cloud_builder.kafka import CBKafka
 from kiwi.command import Command
 from apscheduler.schedulers.background import BlockingScheduler
@@ -108,6 +108,6 @@ def update_project() -> None:
     )
     for package in sorted(changed_packages.keys()):
         log.info(f'Sending update request for package: {package!r}')
-        request = CBRequest()
-        request.set_package_source_change_request(package)
-        kafka.send_request(request)
+        package_request = CBPackageRequest()
+        package_request.set_package_source_change_request(package)
+        kafka.send_request(package_request)
