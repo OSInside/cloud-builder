@@ -90,22 +90,23 @@ def handle_build_requests() -> None:
     kafka = CBKafka(config_file=Defaults.get_kafka_config())
     kafka_request_list = kafka.read_request()
 
-    # TODO: lookup current running limit
+    if kafka_request_list:
+        # TODO: lookup current running limit
 
-    if running_builds <= running_limit:
-        kafka.acknowledge()
-        kafka.close()
-    else:
-        # Do not acknowledge if running_limit is exceeded.
-        # The request will stay in the queue and gets
-        # handled by another runner or this one if the
-        # limit is no longer exceeded
-        # TODO: send this information to kafka(cb-response)
-        kafka.close()
-        return
+        if running_builds <= running_limit:
+            kafka.acknowledge()
+            kafka.close()
+        else:
+            # Do not acknowledge if running_limit is exceeded.
+            # The request will stay in the queue and gets
+            # handled by another runner or this one if the
+            # limit is no longer exceeded
+            # TODO: send this information to kafka(cb-response)
+            kafka.close()
+            return
 
-    for request in kafka_request_list:
-        build_package(request)
+        for request in kafka_request_list:
+            build_package(request)
 
 
 def build_package(request: Dict) -> None:
