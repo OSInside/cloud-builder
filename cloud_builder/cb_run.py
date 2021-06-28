@@ -39,7 +39,7 @@ log = CBLogger.get_logger(
     logfile=Defaults.get_cb_logfile()
 )
 
-ID = CBIdentity.get_id('CBKafka')
+ID = CBIdentity.get_id('CBRun')
 
 
 @exception_handler
