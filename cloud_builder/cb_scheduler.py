@@ -44,6 +44,7 @@ from kiwi.command import Command
 from kiwi.privileges import Privileges
 from kiwi.path import Path
 from apscheduler.schedulers.background import BlockingScheduler
+from typing import Dict
 
 log = CBLogger.get_logger()
 
@@ -65,21 +66,20 @@ def main() -> None:
         global running_limit
         running_limit = int(args['--package-limit'])
 
-    handle_requests()
+    handle_build_requests()
 
     project_scheduler = BlockingScheduler()
     project_scheduler.add_job(
-        lambda: handle_requests(),
+        lambda: handle_build_requests(),
         'interval', seconds=int(args['--update-interval'] or 30)
     )
     project_scheduler.start()
 
 
-def handle_requests() -> None:
+def handle_build_requests() -> None:
     global running_builds
     global running_limit
 
-    status_flags = Defaults.get_status_flags()
     kafka = CBKafka(config_file=Defaults.get_kafka_config())
     kafka_request_list = kafka.read_request()
 
@@ -98,76 +98,81 @@ def handle_requests() -> None:
         return
 
     for request in kafka_request_list:
-        package_path = os.path.join(
-            Defaults.get_runner_project_dir(), format(request['package'])
-        )
-        # TODO: check package location and send error to kafka(cb-response)
-        package_config = Defaults.get_package_config(
-            package_path
-        )
-        cb_root = Defaults.get_runner_package_root()
-        Path.create(cb_root)
-        package_root = os.path.join(
-            cb_root, f'{package_config["name"]}'
-        )
-        package_run_script = f'{package_root}.sh'
+        build_package(request)
 
-        package_run_pid = f'{package_root}.pid'
-        if os.path.isfile(package_run_pid):
-            with open(package_run_pid) as pid_fd:
-                build_pid = int(pid_fd.read().strip())
+
+def build_package(request: Dict) -> None:
+    status_flags = Defaults.get_status_flags()
+    package_path = os.path.join(
+        Defaults.get_runner_project_dir(), format(request['package'])
+    )
+    # TODO: check package location and send error to kafka(cb-response)
+    package_config = Defaults.get_package_config(
+        package_path
+    )
+    cb_root = Defaults.get_runner_package_root()
+    Path.create(cb_root)
+    package_root = os.path.join(
+        cb_root, f'{package_config["name"]}'
+    )
+    package_run_script = f'{package_root}.sh'
+
+    package_run_pid = f'{package_root}.pid'
+    if os.path.isfile(package_run_pid):
+        with open(package_run_pid) as pid_fd:
+            build_pid = int(pid_fd.read().strip())
+        log.info(
+            'Checking state of former build with PID:{0}'.format(build_pid)
+        )
+        if psutil.pid_exists(build_pid):
+            # TODO: send this information to kafka(cb-response)
             log.info(
-                'Checking state of former build with PID:{0}'.format(build_pid)
-            )
-            if psutil.pid_exists(build_pid):
-                # TODO: send this information to kafka(cb-response)
-                log.info(
-                    'Killing jobs associated with PID:{0} for rebuild'.format(
-                        build_pid
-                    )
-                )
-                os.kill(build_pid, signal.SIGTERM)
-
-        if request['action'] == status_flags.package_changed:
-            Command.run(
-                ['git', '-C', Defaults.get_runner_project_dir(), 'pull']
-            )
-        run_script = dedent('''
-            #!/bin/bash
-
-            set -e
-
-            function finish {{
-                kill $(jobs -p) &>/dev/null
-            }}
-
-            {{
-            trap finish EXIT
-            cb-prepare --root {cb_root} --package {package_path}
-        ''')
-        for target in package_config.get('dists') or []:
-            target_root = os.path.join(
-                f'{package_root}@{target}'
-            )
-            run_script += dedent('''
-                cb-run --root {target_root} &> {target_root}.log
-            ''')
-        run_script += dedent('''
-            }} &>{package_root}.log &
-
-            echo $! > {package_root}.pid
-        ''')
-
-        with open(package_run_script, 'w') as script:
-            script.write(
-                run_script.format(
-                    cb_root=cb_root,
-                    package_path=package_path,
-                    target_root=target_root,
-                    package_root=package_root
+                'Killing jobs associated with PID:{0} for rebuild'.format(
+                    build_pid
                 )
             )
+            os.kill(build_pid, signal.SIGTERM)
 
+    if request['action'] == status_flags.package_changed:
         Command.run(
-            ['bash', package_run_script]
+            ['git', '-C', Defaults.get_runner_project_dir(), 'pull']
         )
+    run_script = dedent('''
+        #!/bin/bash
+
+        set -e
+
+        function finish {{
+            kill $(jobs -p) &>/dev/null
+        }}
+
+        {{
+        trap finish EXIT
+        cb-prepare --root {cb_root} --package {package_path}
+    ''')
+    for target in package_config.get('dists') or []:
+        target_root = os.path.join(
+            f'{package_root}@{target}'
+        )
+        run_script += dedent('''
+            cb-run --root {target_root} &> {target_root}.log
+        ''')
+    run_script += dedent('''
+        }} &>{package_root}.log &
+
+        echo $! > {package_root}.pid
+    ''')
+
+    with open(package_run_script, 'w') as script:
+        script.write(
+            run_script.format(
+                cb_root=cb_root,
+                package_path=package_path,
+                target_root=target_root,
+                package_root=package_root
+            )
+        )
+
+    Command.run(
+        ['bash', package_run_script]
+    )

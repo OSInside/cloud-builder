@@ -33,6 +33,10 @@ class Defaults:
     Implements Cloud Builder project default values
     """
     @staticmethod
+    def get_cb_logfile() -> str:
+        return '/var/log/cloud_builder.log'
+
+    @staticmethod
     def get_runner_package_root() -> str:
         """
         Return root path name to construct package build roots

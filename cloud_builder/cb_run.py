@@ -26,10 +26,10 @@ options:
         to work
 """
 import os
-import urllib.request
 from docopt import docopt
 from cloud_builder.version import __version__
 from cloud_builder.exceptions import exception_handler
+from cloud_builder.identity import CBIdentity
 from kiwi.privileges import Privileges
 from kiwi.command import Command
 from cloud_builder.logger import CBLogger
@@ -46,12 +46,6 @@ def main() -> None:
     )
 
     Privileges.check_for_root_permissions()
-
-    # There might be other opportunities to get the IP
-    # when running in the cloud
-    external_ip = urllib.request.urlopen(
-        'https://api.ipify.org'
-    ).read().decode()
 
     build_run = [
         'chroot', args['--root'], 'bash', '/run.sh'
@@ -77,7 +71,7 @@ def main() -> None:
             packages = find_call.output.strip().split(os.linesep)
 
     # TODO: send this information to kafka(cb-response)
-    log.info(external_ip)
+    log.info(CBIdentity.get_external_ip())
     log.info(build_log_file)
     log.info(packages)
     log.info(exit_code)

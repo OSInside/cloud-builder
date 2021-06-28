@@ -21,12 +21,20 @@ from typing import List
 from kafka import KafkaConsumer
 from kafka import KafkaProducer
 from cloud_builder.request import CBRequest
-from cloud_builder.request_schema import request_schema
+from cloud_builder.package_request_schema import package_request_schema
 from cloud_builder.logger import CBLogger
+from cloud_builder.identity import CBIdentity
+from cloud_builder.defaults import Defaults
 from cloud_builder.exceptions import (
     CBConfigFileNotFoundError,
     CBKafkaProducerException,
     CBKafkaConsumerException
+)
+
+log = CBLogger.get_logger()
+
+CBLogger.set_logfile(
+    Defaults.get_cb_logfile()
 )
 
 
@@ -47,53 +55,62 @@ class CBKafka:
             .. code:: yaml
 
                 host: kafka-example.com:12345
-                topic: cb-request
         """
+        self.id = CBIdentity.get_id()
         try:
             with open(config_file, 'r') as config:
                 self.kafka_config = yaml.safe_load(config)
         except Exception as issue:
             raise CBConfigFileNotFoundError(issue)
         self.kafka_host = self.kafka_config['host']
-        self.kafka_topic = self.kafka_config['topic']
         self.consumer: KafkaConsumer = None
         self.producer: KafkaProducer = None
 
     def send_request(self, request: CBRequest) -> None:
         """
-        Send a message conforming to the request_schema to kafka
+        Send a message conforming to the package_request_schema to kafka
         The information for the message is taken from an instance
         of CBRequest
 
         :param CBRequest request: Instance of CBRequest
         """
-        self.__create_producer()
+        self._create_producer()
+        message = yaml.dump(request.get_data()).encode()
         self.producer.send(
-            self.kafka_topic, yaml.dump(request.get_data()).encode()
-        )
+            'cb-request', message
+        ).add_callback(self._on_send_success).add_errback(self._on_send_error)
         # We want this message to go out now
         self.producer.flush()
+        log.info(
+            f'{self.id}: Send request: {message}'
+        )
 
-    def read_request(self, timeout_ms=1000) -> List:
+    def read_request(
+        self, client: str = 'cb-client', group: str = 'cb-group',
+        timeout_ms: int = 1000
+    ) -> List:
         """
         Read messages from kafka. The message has to be valid
-        YAML and has to follow the request_schema in order to
+        YAML and has to follow the package_request_schema in order to
         be processed in the context of the Cloud Builder project
 
+        :param str client: kafka consumer client name
+        :param str group: kafka consumer group name
         :param int timeout_ms: read timeout in ms
 
         :return: list of dicts from yaml.safe_load
 
+        :return: list of yaml dicts validated against package_request_schema
+
         :rtype: list
         """
         request_list = []
-        log = CBLogger.get_logger()
-        for message in self.read(timeout_ms):
+        for message in self.read('cb-request', client, group, timeout_ms):
             try:
                 message_as_yaml = yaml.safe_load(message.value)
-                validator = Validator(request_schema)
+                validator = Validator(package_request_schema)
                 validator.validate(
-                    message_as_yaml, request_schema
+                    message_as_yaml, package_request_schema
                 )
                 if validator.errors:
                     log.error(
@@ -107,6 +124,9 @@ class CBKafka:
                 log.error(
                     f'YAML load for {message!r} failed with: {issue!r}'
                 )
+        log.info(
+            f'{self.id}: Read request response: {request_list}'
+        )
         return request_list
 
     def acknowledge(self) -> None:
@@ -116,6 +136,9 @@ class CBKafka:
         """
         if self.consumer:
             self.consumer.commit()
+            log.info(
+                f'{self.id}: Message acknowledged'
+            )
 
     def close(self) -> None:
         """
@@ -123,11 +146,19 @@ class CBKafka:
         """
         if self.consumer:
             self.consumer.close()
+            log.info(
+                f'{self.id}: Consumer closed'
+            )
 
-    def read(self, timeout_ms=1000) -> List:
+    def read(
+        self, topic: str, client: str, group: str, timeout_ms: int
+    ) -> List:
         """
         Read messages from kafka.
 
+        :param str topic: kafka topic
+        :param str client: kafka consumer client name
+        :param str group: kafka consumer group name
         :param int timeout_ms: read timeout in ms
 
         :return: list of Kafka poll results
@@ -135,7 +166,7 @@ class CBKafka:
         :rtype: List
         """
         message_data = []
-        self.__create_consumer()
+        self._create_consumer(topic, client, group)
         # Call poll twice. First call will just assign partitions
         # for the consumer without content.
         for _ in range(2):
@@ -145,7 +176,17 @@ class CBKafka:
                     message_data.append(message)
         return message_data
 
-    def __create_producer(self) -> KafkaProducer:
+    def _on_send_success(self, record_metadata):
+        log.info(
+            f'Message sent to {record_metadata.topic}'
+        )
+
+    def _on_send_error(self, exception):
+        log.error(
+            f'Message failed with {exception}'
+        )
+
+    def _create_producer(self) -> KafkaProducer:
         """
         Create a KafkaProducer
 
@@ -160,17 +201,21 @@ class CBKafka:
                 f'Creating kafka producer failed with: {issue!r}'
             )
 
-    def __create_consumer(
-        self, client='cb-client', group='cb-group'
+    def _create_consumer(
+        self, topic: str, client: str, group: str
     ) -> KafkaConsumer:
         """
         Create a KafkaConsumer
+
+        :param str topic: kafka topic
+        :param str client: kafka consumer client name
+        :param str group: kafka consumer group name
 
         :rtype: KafkaConsumer
         """
         try:
             self.consumer = KafkaConsumer(
-                self.kafka_topic,
+                topic,
                 auto_offset_reset='earliest',
                 bootstrap_servers=self.kafka_host,
                 client_id=client,

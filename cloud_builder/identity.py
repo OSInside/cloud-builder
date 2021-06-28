@@ -15,20 +15,20 @@
 # You should have received a copy of the GNU General Public License
 # along with Cloud Builder.  If not, see <http://www.gnu.org/licenses/>
 #
-request_schema = {
-    'schema_version': {
-        'required': True,
-        'type': 'number',
-        'nullable': False
-    },
-    'package': {
-        'required': True,
-        'type': 'string',
-        'nullable': False
-    },
-    'action': {
-        'required': True,
-        'type': 'string',
-        'nullable': False
-    }
-}
+import os
+import urllib.request
+
+
+class CBIdentity:
+    """
+    Implements ID schema
+    """
+    @staticmethod
+    def get_id():
+        return f'{CBIdentity.get_external_ip()}:{os.getpid()}'
+
+    @staticmethod
+    def get_external_ip():
+        return urllib.request.urlopen(
+            'https://api.ipify.org'
+        ).read().decode()
