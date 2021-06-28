@@ -74,6 +74,12 @@ def main() -> None:
                 [args["--root"], f'{package_config["name"]}@{target}']
             )
         )
+        prepare_log_file = f'{target_root}.prepare.log'
+        log.info(
+            '{0}: Creating buildroot {1}. For details see: {2}'.format(
+                ID, target_root, prepare_log_file
+            )
+        )
         kiwi_run = [
             Path.which(
                 'kiwi-ng', alternative_lookup_paths=['/usr/local/bin']

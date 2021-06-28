@@ -67,6 +67,10 @@ def main() -> None:
 
     Privileges.check_for_root_permissions()
 
+    Path.create(
+        Defaults.get_runner_package_root()
+    )
+
     if args['--package-limit']:
         global running_limit
         running_limit = int(args['--package-limit'])
@@ -109,17 +113,20 @@ def handle_build_requests() -> None:
 
 def build_package(request: Dict) -> None:
     status_flags = Defaults.get_status_flags()
-    package_path = os.path.join(
+    package_source_path = os.path.join(
         Defaults.get_runner_project_dir(), format(request['package'])
     )
-    # TODO: check package location and send error to kafka(cb-response)
+    if not os.path.isdir(package_source_path):
+        log.error(
+            f'{ID}: Package does not exist: {package_source_path}'
+        )
+        # TODO: send this information to kafka(cb-response)
+        return
     package_config = Defaults.get_package_config(
-        package_path
+        package_source_path
     )
-    cb_root = Defaults.get_runner_package_root()
-    Path.create(cb_root)
     package_root = os.path.join(
-        cb_root, f'{package_config["name"]}'
+        Defaults.get_runner_package_root(), package_config["name"]
     )
     package_run_script = f'{package_root}.sh'
 
@@ -142,6 +149,7 @@ def build_package(request: Dict) -> None:
             os.kill(build_pid, signal.SIGTERM)
 
     if request['action'] == status_flags.package_changed:
+        log.info(f'{ID}: Update project git prior build')
         Command.run(
             ['git', '-C', Defaults.get_runner_project_dir(), 'pull']
         )
@@ -156,7 +164,7 @@ def build_package(request: Dict) -> None:
 
         {{
         trap finish EXIT
-        cb-prepare --root {cb_root} --package {package_path}
+        cb-prepare --root {runner_root} --package {package_source_path}
     ''')
     for target in package_config.get('dists') or []:
         target_root = os.path.join(
@@ -174,13 +182,14 @@ def build_package(request: Dict) -> None:
     with open(package_run_script, 'w') as script:
         script.write(
             run_script.format(
-                cb_root=cb_root,
-                package_path=package_path,
+                runner_root=Defaults.get_runner_package_root(),
+                package_source_path=package_source_path,
                 target_root=target_root,
                 package_root=package_root
             )
         )
 
+    log.info(f'{ID}: Starting build process')
     Command.run(
         ['bash', package_run_script]
     )
