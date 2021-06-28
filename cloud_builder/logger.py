@@ -46,11 +46,12 @@ class CBLogger:
             channel = logging.StreamHandler(sys.stdout)
             channel.setLevel(level)
             log.addHandler(channel)
-            if logfile and not CBLogger.hasFileHandler():
-                logfile_handler = logging.FileHandler(
-                    filename=logfile, encoding='utf-8'
-                )
-                log.addHandler(logfile_handler)
+
+        if logfile and not CBLogger.hasFileHandler():
+            logfile_handler = logging.FileHandler(
+                filename=logfile, encoding='utf-8'
+            )
+            log.addHandler(logfile_handler)
         return log
 
     @staticmethod
