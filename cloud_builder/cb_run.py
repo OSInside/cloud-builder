@@ -52,7 +52,12 @@ def main() -> None:
 
     Privileges.check_for_root_permissions()
 
-    log.info(f'{ID}: Starting package build...')
+    build_log_file = os.path.join(
+        args['--root'], '.build.log'
+    )
+    log.info(
+        f'{ID}: Starting package build. For details see: {build_log_file}'
+    )
     build_run = [
         'chroot', args['--root'], 'bash', '/run.sh'
     ]
@@ -60,14 +65,11 @@ def main() -> None:
         ' '.join(build_run)
     )
     exit_code = return_value >> 8
-    build_log_file = ''
     packages = []
 
     if exit_code != 0:
         log.error(f'{ID}: Build Failed')
     else:
-        log.info(f'{ID}: Starting package build...')
-        build_log_file = os.path.join(args['--root'], '.build.log')
         find_call = Command.run(
             [
                 'find', os.path.join(args['--root'], 'home', 'abuild'),
