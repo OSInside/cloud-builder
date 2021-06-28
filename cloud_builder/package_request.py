@@ -19,7 +19,7 @@ from typing import Dict
 from cloud_builder.defaults import Defaults
 
 
-class CBPackgeRequest:
+class CBPackageRequest:
     """
     Implement creation of request schema valid data dict
     """

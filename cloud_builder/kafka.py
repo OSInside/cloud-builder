@@ -20,7 +20,7 @@ from cerberus import Validator
 from typing import List
 from kafka import KafkaConsumer
 from kafka import KafkaProducer
-from cloud_builder.request import CBRequest
+from cloud_builder.package_request import CBPackageRequest
 from cloud_builder.package_request_schema import package_request_schema
 from cloud_builder.logger import CBLogger
 from cloud_builder.identity import CBIdentity
@@ -66,13 +66,13 @@ class CBKafka:
         self.consumer: KafkaConsumer = None
         self.producer: KafkaProducer = None
 
-    def send_request(self, request: CBRequest) -> None:
+    def send_request(self, request: CBPackageRequest) -> None:
         """
         Send a message conforming to the package_request_schema to kafka
         The information for the message is taken from an instance
-        of CBRequest
+        of CBPackageRequest
 
-        :param CBRequest request: Instance of CBRequest
+        :param CBPackageRequest request: Instance of CBPackageRequest
         """
         self._create_producer()
         message = yaml.dump(request.get_data()).encode()
