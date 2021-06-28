@@ -24,11 +24,11 @@ class CBIdentity:
     Implements ID schema
     """
     @staticmethod
-    def get_id():
-        return f'{CBIdentity.get_external_ip()}:{os.getpid()}'
+    def get_id(name: str) -> str:
+        return f'{name}:{CBIdentity.get_external_ip()}:{os.getpid()}'
 
     @staticmethod
-    def get_external_ip():
+    def get_external_ip() -> str:
         return urllib.request.urlopen(
             'https://api.ipify.org'
         ).read().decode()

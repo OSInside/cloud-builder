@@ -56,7 +56,7 @@ class CBKafka:
 
                 host: kafka-example.com:12345
         """
-        self.id = CBIdentity.get_id()
+        self.id = CBIdentity.get_id('Kafka')
         try:
             with open(config_file, 'r') as config:
                 self.kafka_config = yaml.safe_load(config)
@@ -114,15 +114,17 @@ class CBKafka:
                 )
                 if validator.errors:
                     log.error(
-                        'Validation for "{0}" failed with: {1}'.format(
-                            message_as_yaml, validator.errors
+                        '{0}: Validation for "{1}" failed with: {2}'.format(
+                            self.id, message_as_yaml, validator.errors
                         )
                     )
                 else:
                     request_list.append(message_as_yaml)
             except yaml.YAMLError as issue:
                 log.error(
-                    f'YAML load for {message!r} failed with: {issue!r}'
+                    '{0}: YAML load for "{1}" failed with: "{2}"'.format(
+                        self.id, message, issue
+                    )
                 )
         log.info(
             f'{self.id}: Read request response: {request_list}'
@@ -178,12 +180,12 @@ class CBKafka:
 
     def _on_send_success(self, record_metadata):
         log.info(
-            f'Message sent to {record_metadata.topic}'
+            f'{self.id}: Message sent to {record_metadata.topic}'
         )
 
     def _on_send_error(self, exception):
         log.error(
-            f'Message failed with {exception}'
+            f'{self.id}: Message failed with {exception}'
         )
 
     def _create_producer(self) -> KafkaProducer:
