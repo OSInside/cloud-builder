@@ -52,6 +52,7 @@ def main() -> None:
 
     Privileges.check_for_root_permissions()
 
+    log.info(f'{ID}: Starting package build...')
     build_run = [
         'chroot', args['--root'], 'bash', '/run.sh'
     ]
@@ -63,8 +64,9 @@ def main() -> None:
     packages = []
 
     if exit_code != 0:
-        log.error('{ID}: Build Failed')
+        log.error(f'{ID}: Build Failed')
     else:
+        log.info(f'{ID}: Starting package build...')
         build_log_file = os.path.join(args['--root'], '.build.log')
         find_call = Command.run(
             [
@@ -76,6 +78,6 @@ def main() -> None:
             packages = find_call.output.strip().split(os.linesep)
 
     # TODO: send this information to kafka(cb-response)
-    log.info(f'{ID}: {build_log_file}')
-    log.info(f'{ID}: {packages}')
-    log.info(f'{ID}: {exit_code}')
+    log.info(f'{ID}: Build Log: {build_log_file}')
+    log.info(f'{ID}: Packages: {packages}')
+    log.info(f'{ID}: Exit: {exit_code}')
