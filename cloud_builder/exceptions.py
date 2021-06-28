@@ -19,9 +19,12 @@ import sys
 from functools import wraps
 from typing import Callable
 from cloud_builder.logger import CBLogger
+from cloud_builder.defaults import Defaults
 from kiwi.exceptions import KiwiError
 
-log = CBLogger.get_logger()
+log = CBLogger.get_logger(
+    logfile=Defaults.get_cb_logfile()
+)
 
 
 def exception_handler(func: Callable) -> Callable:
