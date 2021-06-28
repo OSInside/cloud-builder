@@ -46,7 +46,7 @@ class CBLogger:
             channel = logging.StreamHandler(sys.stdout)
             channel.setLevel(level)
             log.addHandler(channel)
-            if logfile:
+            if logfile and not CBLogger.hasFileHandler():
                 logfile_handler = logging.FileHandler(
                     filename=logfile, encoding='utf-8'
                 )
@@ -54,12 +54,9 @@ class CBLogger:
         return log
 
     @staticmethod
-    def activate_global_info_logging() -> None:
-        """
-        Configure applicaton global log level
-
-        Sets the global log level to logging.INFO. This causes
-        all modules, also outside of the CB scope, to show
-        their info logs
-        """
-        logging.basicConfig(level=logging.INFO)
+    def hasFileHandler() -> bool:
+        log = logging.getLogger('CB')
+        for handler in log.handlers:
+            if isinstance(handler, logging.FileHandler):
+                return True
+        return False
