@@ -39,12 +39,17 @@ from cloud_builder.version import __version__
 from cloud_builder.logger import CBLogger
 from cloud_builder.exceptions import exception_handler
 from cloud_builder.defaults import Defaults
+from cloud_builder.identity import CBIdentity
 from kiwi.utils.sync import DataSync
 from kiwi.privileges import Privileges
 from kiwi.path import Path
 from typing import Dict
 
-log = CBLogger.get_logger()
+log = CBLogger.get_logger(
+    logfile=Defaults.get_cb_logfile()
+)
+
+ID = CBIdentity.get_id('CBPrepare')
 
 
 @exception_handler
@@ -81,7 +86,7 @@ def main() -> None:
         )
         exit_code = return_value >> 8
         if exit_code != 0:
-            log.error(f'Preparation of {target_root} failed')
+            log.error(f'{ID}: Preparation of {target_root} failed')
             # TODO: send this information to kafka(cb-response)
             continue
 

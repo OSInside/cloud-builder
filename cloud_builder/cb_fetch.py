@@ -37,6 +37,7 @@ import os
 from docopt import docopt
 from cloud_builder.version import __version__
 from cloud_builder.logger import CBLogger
+from cloud_builder.identity import CBIdentity
 from cloud_builder.exceptions import exception_handler
 from cloud_builder.defaults import Defaults
 from cloud_builder.package_request import CBPackageRequest
@@ -48,7 +49,11 @@ from typing import (
     Dict, List
 )
 
-log = CBLogger.get_logger()
+log = CBLogger.get_logger(
+    logfile=Defaults.get_cb_logfile()
+)
+
+ID = CBIdentity.get_id('CBFetch')
 
 
 @exception_handler
@@ -107,7 +112,7 @@ def update_project() -> None:
         config_file=Defaults.get_kafka_config()
     )
     for package in sorted(changed_packages.keys()):
-        log.info(f'Sending update request for package: {package!r}')
+        log.info(f'{ID}: Sending update request for package: {package!r}')
         package_request = CBPackageRequest()
         package_request.set_package_source_change_request(package)
         kafka.send_request(package_request)

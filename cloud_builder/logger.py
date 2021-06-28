@@ -25,7 +25,7 @@ class CBLogger:
     Implements the "CB" logger
     """
     @staticmethod
-    def get_logger(level: int = logging.INFO) -> Logger:
+    def get_logger(logfile: str = None, level: int = logging.INFO) -> Logger:
         """
         Configure "CB" logger
 
@@ -46,15 +46,12 @@ class CBLogger:
             channel = logging.StreamHandler(sys.stdout)
             channel.setLevel(level)
             log.addHandler(channel)
+            if logfile:
+                logfile_handler = logging.FileHandler(
+                    filename=logfile, encoding='utf-8'
+                )
+                log.addHandler(logfile_handler)
         return log
-
-    @staticmethod
-    def set_logfile(filename: str) -> None:
-        logfile = logging.FileHandler(
-            filename=filename, encoding='utf-8'
-        )
-        log = CBLogger.get_logger()
-        log.addHandler(logfile)
 
     @staticmethod
     def activate_global_info_logging() -> None:

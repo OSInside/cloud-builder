@@ -30,11 +30,16 @@ from docopt import docopt
 from cloud_builder.version import __version__
 from cloud_builder.exceptions import exception_handler
 from cloud_builder.identity import CBIdentity
+from cloud_builder.defaults import Defaults
 from kiwi.privileges import Privileges
 from kiwi.command import Command
 from cloud_builder.logger import CBLogger
 
-log = CBLogger.get_logger()
+log = CBLogger.get_logger(
+    logfile=Defaults.get_cb_logfile()
+)
+
+ID = CBIdentity.get_id('CBKafka')
 
 
 @exception_handler
@@ -58,7 +63,7 @@ def main() -> None:
     packages = []
 
     if exit_code != 0:
-        log.error('Build Failed')
+        log.error('{ID}: Build Failed')
     else:
         build_log_file = os.path.join(args['--root'], '.build.log')
         find_call = Command.run(
@@ -71,7 +76,6 @@ def main() -> None:
             packages = find_call.output.strip().split(os.linesep)
 
     # TODO: send this information to kafka(cb-response)
-    log.info(CBIdentity.get_external_ip())
-    log.info(build_log_file)
-    log.info(packages)
-    log.info(exit_code)
+    log.info(f'{ID}: {build_log_file}')
+    log.info(f'{ID}: {packages}')
+    log.info(f'{ID}: {exit_code}')

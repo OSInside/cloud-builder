@@ -47,10 +47,8 @@ from kiwi.path import Path
 from apscheduler.schedulers.background import BlockingScheduler
 from typing import Dict
 
-log = CBLogger.get_logger()
-
-CBLogger.set_logfile(
-    Defaults.get_cb_logfile()
+log = CBLogger.get_logger(
+    logfile=Defaults.get_cb_logfile()
 )
 
 ID = CBIdentity.get_id('CBScheduler')

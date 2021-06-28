@@ -31,11 +31,11 @@ from cloud_builder.exceptions import (
     CBKafkaConsumerException
 )
 
-log = CBLogger.get_logger()
-
-CBLogger.set_logfile(
-    Defaults.get_cb_logfile()
+log = CBLogger.get_logger(
+    logfile=Defaults.get_cb_logfile()
 )
+
+ID = CBIdentity.get_id('CBKafka')
 
 
 class CBKafka:
@@ -56,7 +56,6 @@ class CBKafka:
 
                 host: kafka-example.com:12345
         """
-        self.id = CBIdentity.get_id('Kafka')
         try:
             with open(config_file, 'r') as config:
                 self.kafka_config = yaml.safe_load(config)
@@ -82,7 +81,7 @@ class CBKafka:
         # We want this message to go out now
         self.producer.flush()
         log.info(
-            f'{self.id}: Send request: {message}'
+            f'{ID}: Send request: {message}'
         )
 
     def read_request(
@@ -115,7 +114,7 @@ class CBKafka:
                 if validator.errors:
                     log.error(
                         '{0}: Validation for "{1}" failed with: {2}'.format(
-                            self.id, message_as_yaml, validator.errors
+                            ID, message_as_yaml, validator.errors
                         )
                     )
                 else:
@@ -123,11 +122,11 @@ class CBKafka:
             except yaml.YAMLError as issue:
                 log.error(
                     '{0}: YAML load for "{1}" failed with: "{2}"'.format(
-                        self.id, message, issue
+                        ID, message, issue
                     )
                 )
         log.info(
-            f'{self.id}: Read request response: {request_list}'
+            f'{ID}: Read request response: {request_list}'
         )
         return request_list
 
@@ -139,7 +138,7 @@ class CBKafka:
         if self.consumer:
             self.consumer.commit()
             log.info(
-                f'{self.id}: Message acknowledged'
+                f'{ID}: Message acknowledged'
             )
 
     def close(self) -> None:
@@ -149,7 +148,7 @@ class CBKafka:
         if self.consumer:
             self.consumer.close()
             log.info(
-                f'{self.id}: Consumer closed'
+                f'{ID}: Consumer closed'
             )
 
     def read(
@@ -180,12 +179,12 @@ class CBKafka:
 
     def _on_send_success(self, record_metadata):
         log.info(
-            f'{self.id}: Message sent to {record_metadata.topic}'
+            f'{ID}: Message sent to {record_metadata.topic}'
         )
 
     def _on_send_error(self, exception):
         log.error(
-            f'{self.id}: Message failed with {exception}'
+            f'{ID}: Message failed with {exception}'
         )
 
     def _create_producer(self) -> KafkaProducer:
