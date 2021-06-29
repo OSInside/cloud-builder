@@ -1,3 +1,7 @@
+* add tests
+
+* add documentation
+
 * Scale consumers
   https://stackoverflow.com/questions/40326600/balancing-kafka-consumers/40327547
 
