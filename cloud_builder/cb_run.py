@@ -29,17 +29,10 @@ import os
 from docopt import docopt
 from cloud_builder.version import __version__
 from cloud_builder.exceptions import exception_handler
-from cloud_builder.identity import CBIdentity
 from cloud_builder.defaults import Defaults
 from kiwi.privileges import Privileges
 from kiwi.command import Command
-from cloud_builder.logger import CBLogger
-
-log = CBLogger.get_logger(
-    logfile=Defaults.get_cb_logfile()
-)
-
-ID = CBIdentity.get_id('CBRun')
+from cloud_builder.cloud_logger import CBCloudLogger
 
 
 @exception_handler
@@ -52,11 +45,17 @@ def main() -> None:
 
     Privileges.check_for_root_permissions()
 
+    package_name = args.get('--root').replace(
+        Defaults.get_runner_package_root(), ''
+    ).split('@')[0]
+
+    log = CBCloudLogger('CBRun', package_name)
+
     build_log_file = os.path.join(
         args['--root'], '.build.log'
     )
     log.info(
-        f'{ID}: Starting package build. For details see: {build_log_file}'
+        f'Starting package build. For details see: {build_log_file}'
     )
     build_run = [
         'chroot', args['--root'], 'bash', '/run.sh'
@@ -65,11 +64,13 @@ def main() -> None:
         ' '.join(build_run)
     )
     exit_code = return_value >> 8
+    status_flags = Defaults.get_status_flags()
     packages = []
 
     if exit_code != 0:
-        log.error(f'{ID}: Build Failed')
+        status = status_flags.package_build_failed
     else:
+        status = status_flags.package_build_succeeded
         find_call = Command.run(
             [
                 'find', os.path.join(args['--root'], 'home', 'abuild'),
@@ -79,7 +80,14 @@ def main() -> None:
         if find_call.output:
             packages = find_call.output.strip().split(os.linesep)
 
-    # TODO: send this information to kafka(cb-response)
-    log.info(f'{ID}: Build Log: {build_log_file}')
-    log.info(f'{ID}: Packages: {packages}')
-    log.info(f'{ID}: Exit: {exit_code}')
+    log.response(
+        {
+            'identity': log.get_id(),
+            'message': 'Package build finished',
+            'status': status,
+            'package': package_name,
+            'buildlog': build_log_file,
+            'results': packages,
+            'exitcode': exit_code
+        }
+    )

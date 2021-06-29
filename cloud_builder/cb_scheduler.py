@@ -36,22 +36,15 @@ import signal
 from docopt import docopt
 from textwrap import dedent
 from cloud_builder.version import __version__
-from cloud_builder.logger import CBLogger
+from cloud_builder.cloud_logger import CBCloudLogger
 from cloud_builder.exceptions import exception_handler
 from cloud_builder.defaults import Defaults
 from cloud_builder.kafka import CBKafka
-from cloud_builder.identity import CBIdentity
 from kiwi.command import Command
 from kiwi.privileges import Privileges
 from kiwi.path import Path
 from apscheduler.schedulers.background import BlockingScheduler
 from typing import Dict
-
-log = CBLogger.get_logger(
-    logfile=Defaults.get_cb_logfile()
-)
-
-ID = CBIdentity.get_id('CBScheduler')
 
 running_builds = 0
 running_limit = 10
@@ -92,6 +85,8 @@ def handle_build_requests() -> None:
     kafka = CBKafka(config_file=Defaults.get_kafka_config())
     kafka_request_list = kafka.read_request()
 
+    log = CBCloudLogger('CBScheduler', '(system)')
+
     if kafka_request_list:
         # TODO: lookup current running limit
 
@@ -103,7 +98,11 @@ def handle_build_requests() -> None:
             # The request will stay in the queue and gets
             # handled by another runner or this one if the
             # limit is no longer exceeded
-            # TODO: send this information to kafka(cb-response)
+            log.response(
+                {
+                    'message': 'Max running builds limit reached'
+                }
+            )
             kafka.close()
             return
 
@@ -112,15 +111,25 @@ def handle_build_requests() -> None:
 
 
 def build_package(request: Dict) -> None:
+    log = CBCloudLogger(
+        'CBScheduler', os.path.basename(request['package'])
+    )
+    log.response(
+        {
+            'message': 'Got package build request',
+            **request
+        }
+    )
     status_flags = Defaults.get_status_flags()
     package_source_path = os.path.join(
         Defaults.get_runner_project_dir(), format(request['package'])
     )
     if not os.path.isdir(package_source_path):
-        log.error(
-            f'{ID}: Package does not exist: {package_source_path}'
+        log.response(
+            {
+                'message': f'Package does not exist: {package_source_path}'
+            }
         )
-        # TODO: send this information to kafka(cb-response)
         return
     package_config = Defaults.get_package_config(
         package_source_path
@@ -135,24 +144,27 @@ def build_package(request: Dict) -> None:
         with open(package_run_pid) as pid_fd:
             build_pid = int(pid_fd.read().strip())
         log.info(
-            '{0}: Checking state of former build with PID:{1}'.format(
-                ID, build_pid
+            'Checking state of former build with PID:{0}'.format(
+                build_pid
             )
         )
         if psutil.pid_exists(build_pid):
-            # TODO: send this information to kafka(cb-response)
-            log.info(
-                '{0}: Killing jobs associated with PID:{1} for rebuild'.format(
-                    ID, build_pid
-                )
+            log.response(
+                {
+                    'message':
+                        'Stop jobs associated with PID:{0} for rebuild'.format(
+                            build_pid
+                        )
+                }
             )
             os.kill(build_pid, signal.SIGTERM)
 
     if request['action'] == status_flags.package_changed:
-        log.info(f'{ID}: Update project git prior build')
+        log.info('Update project git source repo prior build')
         Command.run(
             ['git', '-C', Defaults.get_runner_project_dir(), 'pull']
         )
+
     run_script = dedent('''
         #!/bin/bash
 
@@ -189,7 +201,7 @@ def build_package(request: Dict) -> None:
             )
         )
 
-    log.info(f'{ID}: Starting build process')
+    log.info('Starting build process')
     Command.run(
         ['bash', package_run_script]
     )

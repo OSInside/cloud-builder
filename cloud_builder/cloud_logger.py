@@ -15,20 +15,30 @@
 # You should have received a copy of the GNU General Public License
 # along with Cloud Builder.  If not, see <http://www.gnu.org/licenses/>
 #
-import os
-import urllib.request
+import yaml
+from cloud_builder.logger import CBLogger
+from cloud_builder.defaults import Defaults
+from cloud_builder.identity import CBIdentity
+from typing import Dict
+
+log = CBLogger.get_logger(
+    logfile=Defaults.get_cb_logfile()
+)
 
 
-class CBIdentity:
-    """
-    Implements ID schema
-    """
-    @staticmethod
-    def get_id(service: str, name: str) -> str:
-        return f'{service}:{CBIdentity.get_external_ip()}:{os.getpid()}:{name}'
+class CBCloudLogger:
+    def __init__(self, service: str, name: str) -> None:
+        self.id = CBIdentity.get_id(service, name)
 
-    @staticmethod
-    def get_external_ip() -> str:
-        return urllib.request.urlopen(
-            'https://api.ipify.org'
-        ).read().decode()
+    def get_id(self) -> str:
+        return self.id
+
+    def info(self, message: str) -> None:
+        log.info(f'{self.id}: {message}')
+
+    def error(self, message: str) -> None:
+        log.error(f'{self.id}: {message}')
+
+    def response(self, message: Dict) -> None:
+        log.info(yaml.dump(message))
+        # TODO: send this information to kafka(cb-response)
