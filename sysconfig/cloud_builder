@@ -6,7 +6,7 @@
 #
 # Cloud Builder compatible github project with package sources
 #
-CB_PROJECT="https://github.com/OSInside/cloud-builder.git"
+CB_PROJECT="https://github.com/OSInside/cloud-builder-packages.git"
 
 ## Type:        integer
 ## Default:     30
