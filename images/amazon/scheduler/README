@@ -1,6 +1,0 @@
-scheduler image
-
-- trigger new builds on source change
-- trigger new builds on dependency change
-
-one instance
