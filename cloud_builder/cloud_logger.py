@@ -40,5 +40,7 @@ class CBCloudLogger:
         log.error(f'{self.id}: {message}')
 
     def response(self, message: Dict) -> None:
-        log.info(yaml.dump(message))
+        log.info(
+            '{0}: {1}'.format(self.id, yaml.dump(message).encode())
+        )
         # TODO: send this information to kafka(cb-response)
