@@ -21,26 +21,25 @@ from cloud_builder.defaults import Defaults
 from cloud_builder.identity import CBIdentity
 from typing import Dict
 
-log = CBLogger.get_logger(
-    logfile=Defaults.get_cb_logfile()
-)
-
 
 class CBCloudLogger:
     def __init__(self, service: str, name: str) -> None:
+        self.log = CBLogger.get_logger(
+            logfile=Defaults.get_cb_logfile()
+        )
         self.id = CBIdentity.get_id(service, name)
 
     def get_id(self) -> str:
         return self.id
 
     def info(self, message: str) -> None:
-        log.info(f'{self.id}: {message}')
+        self.log.info(f'{self.id}: {message}')
 
     def error(self, message: str) -> None:
-        log.error(f'{self.id}: {message}')
+        self.log.error(f'{self.id}: {message}')
 
     def response(self, message: Dict) -> None:
-        log.info(
+        self.log.info(
             '{0}: {1}'.format(self.id, yaml.dump(message).encode())
         )
         # TODO: send this information to kafka(cb-response)
