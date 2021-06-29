@@ -22,10 +22,6 @@ from cloud_builder.logger import CBLogger
 from cloud_builder.defaults import Defaults
 from kiwi.exceptions import KiwiError
 
-log = CBLogger.get_logger(
-    logfile=Defaults.get_cb_logfile()
-)
-
 
 def exception_handler(func: Callable) -> Callable:
     """
@@ -41,6 +37,9 @@ def exception_handler(func: Callable) -> Callable:
     """
     @wraps(func)
     def wrapper(*args, **kwargs):
+        log = CBLogger.get_logger(
+            logfile=Defaults.get_cb_logfile()
+        )
         try:
             return func(*args, **kwargs)
         except CBError as issue:
