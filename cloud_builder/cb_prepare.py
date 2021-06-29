@@ -36,20 +36,13 @@ import os
 from docopt import docopt
 from textwrap import dedent
 from cloud_builder.version import __version__
-from cloud_builder.logger import CBLogger
+from cloud_builder.cloud_logger import CBCloudLogger
 from cloud_builder.exceptions import exception_handler
 from cloud_builder.defaults import Defaults
-from cloud_builder.identity import CBIdentity
 from kiwi.utils.sync import DataSync
 from kiwi.privileges import Privileges
 from kiwi.path import Path
 from typing import Dict
-
-log = CBLogger.get_logger(
-    logfile=Defaults.get_cb_logfile()
-)
-
-ID = CBIdentity.get_id('CBPrepare')
 
 
 @exception_handler
@@ -61,6 +54,10 @@ def main() -> None:
     )
 
     Privileges.check_for_root_permissions()
+
+    log = CBCloudLogger('CBPrepare', os.path.basename(args['--package']))
+
+    status_flags = Defaults.get_status_flags()
 
     package_config = Defaults.get_package_config(
         args['--package'], args['--config']
@@ -76,14 +73,14 @@ def main() -> None:
         )
         prepare_log_file = f'{target_root}.prepare.log'
         log.info(
-            '{0}: Creating buildroot {1}. For details see: {2}'.format(
-                ID, target_root, prepare_log_file
+            'Creating buildroot {0}. For details see: {1}'.format(
+                target_root, prepare_log_file
             )
         )
         kiwi_run = [
             Path.which(
                 'kiwi-ng', alternative_lookup_paths=['/usr/local/bin']
-            ), '--logfile', f'{target_root}.prepare.log', '--profile', target,
+            ), '--logfile', prepare_log_file, '--profile', target,
             'system', 'prepare', '--description', args['--package'],
             '--allow-existing-root', '--root', target_root
         ]
@@ -92,40 +89,53 @@ def main() -> None:
         )
         exit_code = return_value >> 8
         if exit_code != 0:
-            log.error(f'{ID}: Preparation of {target_root} failed')
-            # TODO: send this information to kafka(cb-response)
-            continue
+            status = status_flags.buildroot_setup_failed
+            message = 'Failed in kiwi stage, see logfile for details'
+        else:
+            try:
+                data = DataSync(
+                    f'{args["--package"]}/',
+                    f'{target_root}/{package_config["name"]}/'
+                )
+                data.sync_data(
+                    options=['-a', '-x']
+                )
+                target_root_dict['target_roots'].append(
+                    target_root
+                )
+                run_script = dedent('''
+                    #!/bin/bash
 
-        data = DataSync(
-            f'{args["--package"]}/',
-            f'{target_root}/{package_config["name"]}/'
+                    set -e
+
+                    function finish {{
+                        for path in /proc /dev;do
+                            mountpoint -q "$path" && umount "$path"
+                        done
+                    }}
+
+                    trap finish EXIT
+
+                    mount -t proc proc /proc
+                    mount -t devtmpfs devtmpfs /dev
+
+                    pushd {0}
+                    build --no-init --root /
+                ''')
+                with open(f'{target_root}/run.sh', 'w') as script:
+                    script.write(
+                        run_script.format(package_config['name'])
+                    )
+                status = status_flags.buildroot_setup_succeeded
+                message = 'Buildroot ready for package build'
+            except Exception as issue:
+                status = status_flags.buildroot_setup_failed
+                message = format(issue)
+        log.response(
+            {
+                'identity': log.get_id(),
+                'message': message,
+                'status': status,
+                'preparelog': prepare_log_file
+            }
         )
-        data.sync_data(
-            options=['-a', '-x']
-        )
-        target_root_dict['target_roots'].append(
-            target_root
-        )
-        run_script = dedent('''
-            #!/bin/bash
-
-            set -e
-
-            function finish {{
-                for path in /proc /dev;do
-                    mountpoint -q "$path" && umount "$path"
-                done
-            }}
-
-            trap finish EXIT
-
-            mount -t proc proc /proc
-            mount -t devtmpfs devtmpfs /dev
-
-            pushd {0}
-            build --no-init --root /
-        ''')
-        with open(f'{target_root}/run.sh', 'w') as script:
-            script.write(
-                run_script.format(package_config['name'])
-            )

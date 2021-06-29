@@ -23,7 +23,11 @@ from typing import (
 
 status_flags = NamedTuple(
     'status_flags', [
-        ('package_changed', str)
+        ('package_changed', str),
+        ('package_build_failed', str),
+        ('package_build_succeeded', str),
+        ('buildroot_setup_failed', str),
+        ('buildroot_setup_succeeded', str)
     ]
 )
 
@@ -58,7 +62,11 @@ class Defaults:
         :rtype: NamedTuple
         """
         return status_flags(
-            package_changed='package source changed'
+            package_changed='package source changed',
+            package_build_failed='package build failed',
+            package_build_succeeded='package build succeeded',
+            buildroot_setup_failed='build root setup failed',
+            buildroot_setup_succeeded='build root setup succeeded'
         )
 
     @staticmethod

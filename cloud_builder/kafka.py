@@ -22,20 +22,12 @@ from kafka import KafkaConsumer
 from kafka import KafkaProducer
 from cloud_builder.package_request import CBPackageRequest
 from cloud_builder.package_request_schema import package_request_schema
-from cloud_builder.logger import CBLogger
-from cloud_builder.identity import CBIdentity
-from cloud_builder.defaults import Defaults
+from cloud_builder.cloud_logger import CBCloudLogger
 from cloud_builder.exceptions import (
     CBConfigFileNotFoundError,
     CBKafkaProducerException,
     CBKafkaConsumerException
 )
-
-log = CBLogger.get_logger(
-    logfile=Defaults.get_cb_logfile()
-)
-
-ID = CBIdentity.get_id('CBKafka')
 
 
 class CBKafka:
@@ -61,6 +53,7 @@ class CBKafka:
                 self.kafka_config = yaml.safe_load(config)
         except Exception as issue:
             raise CBConfigFileNotFoundError(issue)
+        self.log = CBCloudLogger('CBKafka', '(system)')
         self.kafka_host = self.kafka_config['host']
         self.consumer: KafkaConsumer = None
         self.producer: KafkaProducer = None
@@ -80,9 +73,6 @@ class CBKafka:
         ).add_callback(self._on_send_success).add_errback(self._on_send_error)
         # We want this message to go out now
         self.producer.flush()
-        log.info(
-            f'{ID}: Send request: {message}'
-        )
 
     def read_request(
         self, client: str = 'cb-client', group: str = 'cb-group',
@@ -112,22 +102,19 @@ class CBKafka:
                     message_as_yaml, package_request_schema
                 )
                 if validator.errors:
-                    log.error(
-                        '{0}: Validation for "{1}" failed with: {2}'.format(
-                            ID, message_as_yaml, validator.errors
+                    self.log.error(
+                        'Validation for "{0}" failed with: {1}'.format(
+                            message_as_yaml, validator.errors
                         )
                     )
                 else:
                     request_list.append(message_as_yaml)
             except yaml.YAMLError as issue:
-                log.error(
-                    '{0}: YAML load for "{1}" failed with: "{2}"'.format(
-                        ID, message, issue
+                self.log.error(
+                    'YAML load for "{0}" failed with: "{1}"'.format(
+                        message, issue
                     )
                 )
-        log.info(
-            f'{ID}: Read request response: {request_list}'
-        )
         return request_list
 
     def acknowledge(self) -> None:
@@ -137,9 +124,6 @@ class CBKafka:
         """
         if self.consumer:
             self.consumer.commit()
-            log.info(
-                f'{ID}: Message acknowledged'
-            )
 
     def close(self) -> None:
         """
@@ -147,9 +131,6 @@ class CBKafka:
         """
         if self.consumer:
             self.consumer.close()
-            log.info(
-                f'{ID}: Consumer closed'
-            )
 
     def read(
         self, topic: str, client: str, group: str, timeout_ms: int
@@ -178,13 +159,13 @@ class CBKafka:
         return message_data
 
     def _on_send_success(self, record_metadata):
-        log.info(
-            f'{ID}: Message sent to {record_metadata.topic}'
+        self.log.info(
+            f'Message successfully sent to: {record_metadata.topic}'
         )
 
     def _on_send_error(self, exception):
-        log.error(
-            f'{ID}: Message failed with {exception}'
+        self.log.error(
+            f'Message failed with: {exception}'
         )
 
     def _create_producer(self) -> KafkaProducer:
