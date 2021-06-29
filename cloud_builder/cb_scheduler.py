@@ -88,7 +88,7 @@ def handle_build_requests() -> None:
     log = CBCloudLogger('CBScheduler', '(system)')
 
     if kafka_request_list:
-        # TODO: lookup current running limit
+        running_builds = get_running_builds()
 
         if running_builds <= running_limit:
             kafka.acknowledge()
@@ -120,25 +120,38 @@ def build_package(request: Dict) -> None:
             **request
         }
     )
-    status_flags = Defaults.get_status_flags()
     package_source_path = os.path.join(
         Defaults.get_runner_project_dir(), format(request['package'])
     )
-    if not os.path.isdir(package_source_path):
-        log.response(
-            {
-                'message': f'Package does not exist: {package_source_path}'
-            }
+    if check_package_sources(package_source_path, log):
+        package_config = Defaults.get_package_config(
+            package_source_path
         )
-        return
-    package_config = Defaults.get_package_config(
-        package_source_path
-    )
-    package_root = os.path.join(
-        Defaults.get_runner_package_root(), package_config["name"]
-    )
-    package_run_script = f'{package_root}.sh'
+        reset_build_if_running(package_config, log)
 
+        status_flags = Defaults.get_status_flags()
+        if request['action'] == status_flags.package_changed:
+            log.info('Update project git source repo prior build')
+            Command.run(
+                ['git', '-C', Defaults.get_runner_project_dir(), 'pull']
+            )
+
+        log.info('Starting build process')
+        Command.run(
+            [
+                'bash', create_run_script(
+                    package_config, package_source_path
+                )
+            ]
+        )
+
+
+def reset_build_if_running(
+    package_config: Dict, log: CBCloudLogger
+) -> None:
+    package_root = os.path.join(
+        Defaults.get_runner_package_root(), package_config['name']
+    )
     package_run_pid = f'{package_root}.pid'
     if os.path.isfile(package_run_pid):
         with open(package_run_pid) as pid_fd:
@@ -159,12 +172,33 @@ def build_package(request: Dict) -> None:
             )
             os.kill(build_pid, signal.SIGTERM)
 
-    if request['action'] == status_flags.package_changed:
-        log.info('Update project git source repo prior build')
-        Command.run(
-            ['git', '-C', Defaults.get_runner_project_dir(), 'pull']
-        )
 
+def get_running_builds() -> int:
+    # TODO: lookup current running limit
+    return 0
+
+
+def check_package_sources(
+    package_source_path: str, log: CBCloudLogger
+) -> bool:
+    if not os.path.isdir(package_source_path):
+        log.response(
+            {
+                'message': f'Package does not exist: {package_source_path}'
+            }
+        )
+        return False
+
+    # TODO: Also check for meta data files (.kiwi and cloud_builder.yml)
+    return True
+
+
+def create_run_script(
+    package_config: Dict, package_source_path: str
+) -> str:
+    package_root = os.path.join(
+        Defaults.get_runner_package_root(), package_config['name']
+    )
     run_script = dedent('''
         #!/bin/bash
 
@@ -177,31 +211,24 @@ def build_package(request: Dict) -> None:
         {{
         trap finish EXIT
         cb-prepare --root {runner_root} --package {package_source_path}
-    ''')
+    ''').format(
+        runner_root=Defaults.get_runner_package_root(),
+        package_source_path=package_source_path
+    )
     for target in package_config.get('dists') or []:
-        target_root = os.path.join(
-            f'{package_root}@{target}'
-        )
         run_script += dedent('''
             cb-run --root {target_root} &> {target_root}.log
-        ''')
+        ''').format(
+            target_root=os.path.join(f'{package_root}@{target}')
+        )
     run_script += dedent('''
         }} &>{package_root}.log &
 
         echo $! > {package_root}.pid
-    ''')
-
-    with open(package_run_script, 'w') as script:
-        script.write(
-            run_script.format(
-                runner_root=Defaults.get_runner_package_root(),
-                package_source_path=package_source_path,
-                target_root=target_root,
-                package_root=package_root
-            )
-        )
-
-    log.info('Starting build process')
-    Command.run(
-        ['bash', package_run_script]
+    ''').format(
+        package_root=package_root
     )
+    package_run_script = f'{package_root}.sh'
+    with open(package_run_script, 'w') as script:
+        script.write(run_script)
+    return package_run_script
