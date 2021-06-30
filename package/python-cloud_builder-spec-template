@@ -73,7 +73,6 @@ Group:          Development/Languages/Python
 Requires:       python%{python3_pkgversion}-docopt
 Requires:       python%{python3_pkgversion}-kiwi >= 9.21.21
 Requires:       python%{python3_pkgversion}-requests
-Requires:       python%{python3_pkgversion}-urllib3
 Requires:       python%{python3_pkgversion}-PyYAML
 Requires:       python%{python3_pkgversion}-APScheduler
 Requires:       python%{python3_pkgversion}-kafka-python
