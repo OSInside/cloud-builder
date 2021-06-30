@@ -17,8 +17,8 @@
 #
 import os
 import uuid
-import urllib.request
-from urllib.exceptions import HTTPError
+import urllib3.request
+from urllib3.exceptions import HTTPError
 
 
 class CBIdentity:
