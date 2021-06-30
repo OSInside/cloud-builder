@@ -17,7 +17,9 @@
 #
 import yaml
 from cerberus import Validator
-from typing import List
+from typing import (
+    Dict, List
+)
 from kafka import KafkaConsumer
 from kafka import KafkaProducer
 from cloud_builder.package_request import CBPackageRequest
@@ -73,48 +75,41 @@ class CBKafka:
         ).add_callback(self._on_send_success).add_errback(self._on_send_error)
         self.producer.flush()
 
-    def read_request(
-        self, client: str = 'cb-client', group: str = 'cb-group',
-        timeout_ms: int = 10000
-    ) -> List:
+    def validate_request(self, message: str) -> Dict:
         """
-        Read messages from kafka. The message has to be valid
-        YAML and has to follow the package_request_schema in order to
-        be processed in the context of the Cloud Builder project
+        validate message against transport schema
 
-        :param str client: kafka consumer client name
-        :param str group: kafka consumer group name
-        :param int timeout_ms: read timeout in ms
+        invalid messages will be auto committed such that they
+        don't appear again
 
-        :return: list of dicts from yaml.safe_load
+        :param str message: value from consumer poll
 
-        :return: list of yaml dicts validated against package_request_schema
+        :return: yaml formatted dict
 
-        :rtype: list
+        :rtype: str
         """
-        request_list = []
-        for message in self.read('cb-request', client, group, timeout_ms):
-            try:
-                message_as_yaml = yaml.safe_load(message.value)
-                validator = Validator(package_request_schema)
-                validator.validate(
-                    message_as_yaml, package_request_schema
-                )
-                if validator.errors:
-                    self.log.error(
-                        'Validation for "{0}" failed with: {1}'.format(
-                            message_as_yaml, validator.errors
-                        )
-                    )
-                else:
-                    request_list.append(message_as_yaml)
-            except yaml.YAMLError as issue:
+        message_as_yaml = {}
+        try:
+            message_as_yaml = yaml.safe_load(message)
+            validator = Validator(package_request_schema)
+            validator.validate(
+                message_as_yaml, package_request_schema
+            )
+            if validator.errors:
                 self.log.error(
-                    'YAML load for "{0}" failed with: "{1}"'.format(
-                        message, issue
+                    'Validation for "{0}" failed with: {1}'.format(
+                        message_as_yaml, validator.errors
                     )
                 )
-        return request_list
+                self.acknowledge()
+        except yaml.YAMLError as issue:
+            self.log.error(
+                'YAML load for "{0}" failed with: "{1}"'.format(
+                    message, issue
+                )
+            )
+            self.acknowledge()
+        return message_as_yaml
 
     def acknowledge(self) -> None:
         """
@@ -132,7 +127,8 @@ class CBKafka:
             self.consumer.close()
 
     def read(
-        self, topic: str, client: str, group: str, timeout_ms: int
+        self, topic: str, client: str = 'cb-client',
+        group: str = 'cb-group', timeout_ms: int = 1000
     ) -> List:
         """
         Read messages from kafka.
@@ -152,13 +148,6 @@ class CBKafka:
         for topic_partition, message_list in raw_messages.items():
             for message in message_list:
                 message_data.append(message)
-
-        # max_poll_records is set to 1, we expect this list to
-        # contain one or no entry. Please be aware that this is
-        # done to allow services to acknowledge the topic message
-        # per request. If a group of requests is handled at once
-        # it can lead to loss of requests if the service cannot
-        # handle all of them.
         return message_data
 
     def _on_send_success(self, record_metadata):
@@ -203,7 +192,6 @@ class CBKafka:
                 topic,
                 auto_offset_reset='earliest',
                 enable_auto_commit=False,
-                max_poll_records=1,
                 bootstrap_servers=self.kafka_host,
                 client_id=client,
                 group_id=group

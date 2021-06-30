@@ -114,7 +114,8 @@ def handle_build_requests(request_timeout) -> None:
     if get_running_builds() < running_limit:
         kafka = CBKafka(config_file=Defaults.get_kafka_config())
         try:
-            for request in kafka.read_request(timeout_ms=request_timeout):
+            for message in kafka.read('cb-request', timeout_ms=request_timeout):
+                request = kafka.validate_request(message.value)
                 if request['arch'] == platform.machine():
                     log.response(
                         {'message': 'Accept package build request', **request}
