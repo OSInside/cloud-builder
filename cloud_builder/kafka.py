@@ -199,6 +199,7 @@ class CBKafka:
             self.consumer = KafkaConsumer(
                 topic,
                 auto_offset_reset='earliest',
+                max_poll_records=1,
                 bootstrap_servers=self.kafka_host,
                 client_id=client,
                 group_id=group
