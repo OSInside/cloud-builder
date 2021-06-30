@@ -91,17 +91,21 @@ def main() -> None:
         global running_limit
         running_limit = int(args['--package-limit'])
 
-    handle_build_requests()
+    repeat_timeout = int(args['--update-interval'] or 30)
+
+    handle_build_requests(
+        request_timeout=repeat_timeout - 1
+    )
 
     project_scheduler = BlockingScheduler()
     project_scheduler.add_job(
-        lambda: handle_build_requests(),
-        'interval', seconds=int(args['--update-interval'] or 30)
+        lambda: handle_build_requests(request_timeout=repeat_timeout - 1),
+        'interval', seconds=repeat_timeout
     )
     project_scheduler.start()
 
 
-def handle_build_requests() -> None:
+def handle_build_requests(request_timeout) -> None:
     global running_builds
     global running_limit
 
@@ -109,24 +113,29 @@ def handle_build_requests() -> None:
 
     if get_running_builds() < running_limit:
         kafka = CBKafka(config_file=Defaults.get_kafka_config())
-        for request in kafka.read_request():
-            if request['arch'] == platform.machine():
-                log.response(
-                    {'message': 'Accept package build request', **request}
-                )
-                kafka.acknowledge()
-                kafka.close()
-                build_package(request)
-            else:
-                # do not acknowledge/build if the host architecture
-                # does not match the package. The request stays in
-                # the topic to be presented for other schedulers
-                log.warning(
-                    'Cannot build package: "{0}" for "{1}" on "{2}"'.format(
-                        request['package'], request['arch'], platform.machine()
+        try:
+            for request in kafka.read_request(timeout_ms=request_timeout):
+                if request['arch'] == platform.machine():
+                    log.response(
+                        {'message': 'Accept package build request', **request}
                     )
-                )
-                kafka.close()
+                    kafka.acknowledge()
+                    kafka.close()
+                    build_package(request)
+                else:
+                    # do not acknowledge/build if the host architecture
+                    # does not match the package. The request stays in
+                    # the topic to be presented for other schedulers
+                    log.warning(
+                        'Cannot build package: "{0}" for "{1}" on "{2}"'.format(
+                            request['package'],
+                            request['arch'],
+                            platform.machine()
+                        )
+                    )
+        finally:
+            log.info('Closing kafka connection')
+            kafka.close()
     else:
         # runner is busy
         log.response(

@@ -71,7 +71,6 @@ class CBKafka:
         self.producer.send(
             'cb-request', message
         ).add_callback(self._on_send_success).add_errback(self._on_send_error)
-        # We want this message to go out now
         self.producer.flush()
 
     def read_request(
@@ -203,6 +202,7 @@ class CBKafka:
             self.consumer = KafkaConsumer(
                 topic,
                 auto_offset_reset='earliest',
+                enable_auto_commit=False,
                 max_poll_records=1,
                 bootstrap_servers=self.kafka_host,
                 client_id=client,
