@@ -93,28 +93,37 @@ def main() -> None:
 
     repeat_timeout = int(args['--update-interval'] or 30)
 
-    handle_build_requests(
-        request_timeout=repeat_timeout - 1
-    )
+    handle_build_requests()
 
     project_scheduler = BlockingScheduler()
     project_scheduler.add_job(
-        lambda: handle_build_requests(request_timeout=repeat_timeout - 1),
+        lambda: handle_build_requests(),
         'interval', seconds=repeat_timeout
     )
     project_scheduler.start()
 
 
-def handle_build_requests(request_timeout) -> None:
+def handle_build_requests() -> None:
     global running_builds
     global running_limit
 
     log = CBCloudLogger('CBScheduler', '(system)')
 
-    if get_running_builds() < running_limit:
-        kafka = CBKafka(config_file=Defaults.get_kafka_config())
-        try:
-            for message in kafka.read('cb-request', timeout_ms=request_timeout):
+    if get_running_builds() >= running_limit:
+        # runner is busy...
+        log.response(
+            {
+                'message': 'Max running builds limit reached'
+            }
+        )
+        return
+
+    kafka = CBKafka(
+        config_file=Defaults.get_kafka_config()
+    )
+    try:
+        while(True):
+            for message in kafka.read('cb-request', timeout_ms=10000):
                 request = kafka.validate_request(message.value)
                 if request['arch'] == platform.machine():
                     log.response(
@@ -133,16 +142,9 @@ def handle_build_requests(request_timeout) -> None:
                             platform.machine()
                         )
                     )
-        finally:
-            log.info('Closing kafka connection')
-            kafka.close()
-    else:
-        # runner is busy
-        log.response(
-            {
-                'message': 'Max running builds limit reached'
-            }
-        )
+    finally:
+        log.info('Closing kafka connection')
+        kafka.close()
 
 
 def build_package(request: Dict) -> None:
