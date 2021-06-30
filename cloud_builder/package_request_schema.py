@@ -21,6 +21,11 @@ package_request_schema = {
         'type': 'number',
         'nullable': False
     },
+    'request_id': {
+        'required': True,
+        'type': 'string',
+        'nullable': False
+    },
     'package': {
         'required': True,
         'type': 'string',

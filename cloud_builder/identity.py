@@ -16,6 +16,7 @@
 # along with Cloud Builder.  If not, see <http://www.gnu.org/licenses/>
 #
 import os
+import uuid
 import urllib.request
 from urllib.exceptions import HTTPError
 
@@ -27,6 +28,10 @@ class CBIdentity:
     @staticmethod
     def get_id(service: str, name: str) -> str:
         return f'{service}:{CBIdentity.get_external_ip()}:{os.getpid()}:{name}'
+
+    @staticmethod
+    def get_request_id() -> str:
+        return format(uuid.uuid1())
 
     @staticmethod
     def get_external_ip() -> str:
