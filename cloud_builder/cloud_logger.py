@@ -35,6 +35,9 @@ class CBCloudLogger:
     def info(self, message: str) -> None:
         self.log.info(f'{self.id}: {message}')
 
+    def warning(self, message: str) -> None:
+        self.log.info(f'{self.id}: {message}')
+
     def error(self, message: str) -> None:
         self.log.error(f'{self.id}: {message}')
 

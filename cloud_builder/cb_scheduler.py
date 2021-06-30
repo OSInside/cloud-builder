@@ -111,6 +111,9 @@ def handle_build_requests() -> None:
         kafka = CBKafka(config_file=Defaults.get_kafka_config())
         for request in kafka.read_request():
             if request['arch'] == platform.machine():
+                log.response(
+                    {'message': 'Got package build request', **request}
+                )
                 kafka.acknowledge()
                 kafka.close()
                 build_package(request)
@@ -118,6 +121,9 @@ def handle_build_requests() -> None:
                 # do not acknowledge/build if the host architecture
                 # does not match the package. The request stays in
                 # the topic to be presented for other schedulers
+                log.warning(
+                    'Cannot build for {request["arch"]} on {platform.machine()}'
+                )
                 kafka.close()
     else:
         # runner is busy
@@ -131,12 +137,6 @@ def handle_build_requests() -> None:
 def build_package(request: Dict) -> None:
     log = CBCloudLogger(
         'CBScheduler', os.path.basename(request['package'])
-    )
-    log.response(
-        {
-            'message': 'Got package build request',
-            **request
-        }
     )
     package_source_path = os.path.join(
         Defaults.get_runner_project_dir(), format(request['package'])
