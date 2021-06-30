@@ -76,7 +76,7 @@ class CBKafka:
 
     def read_request(
         self, client: str = 'cb-client', group: str = 'cb-group',
-        timeout_ms: int = 1000
+        timeout_ms: int = 10000
     ) -> List:
         """
         Read messages from kafka. The message has to be valid
@@ -149,13 +149,17 @@ class CBKafka:
         """
         message_data = []
         self._create_consumer(topic, client, group)
-        # Call poll twice. First call will just assign partitions
-        # for the consumer without content.
-        for _ in range(2):
-            raw_messages = self.consumer.poll(timeout_ms=timeout_ms)
-            for topic_partition, message_list in raw_messages.items():
-                for message in message_list:
-                    message_data.append(message)
+        raw_messages = self.consumer.poll(timeout_ms=timeout_ms)
+        for topic_partition, message_list in raw_messages.items():
+            for message in message_list:
+                message_data.append(message)
+
+        # max_poll_records is set to 1, we expect this list to
+        # contain one or no entry. Please be aware that this is
+        # done to allow services to acknowledge the topic message
+        # per request. If a group of requests is handled at once
+        # it can lead to loss of requests if the service cannot
+        # handle all of them.
         return message_data
 
     def _on_send_success(self, record_metadata):
