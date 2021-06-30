@@ -93,11 +93,14 @@ class Defaults:
 
         :rtype: Dict
         """
+        config_data: Dict[str, str] = {}
         config_file = filename or os.path.join(
             package_path, 'cloud_builder.yml'
         )
-        with open(config_file, 'r') as config:
-            return yaml.safe_load(config) or {}
+        if os.path.isfile(config_file):
+            with open(config_file, 'r') as config:
+                config_data = yaml.safe_load(config) or {}
+        return config_data
 
     @staticmethod
     def get_kafka_config() -> str:

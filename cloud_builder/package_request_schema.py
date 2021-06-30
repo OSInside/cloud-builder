@@ -31,6 +31,11 @@ package_request_schema = {
         'type': 'string',
         'nullable': False
     },
+    'arch': {
+        'required': True,
+        'type': 'string',
+        'nullable': False
+    },
     'action': {
         'required': True,
         'type': 'string',

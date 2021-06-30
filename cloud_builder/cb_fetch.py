@@ -51,6 +51,27 @@ from typing import (
 
 @exception_handler
 def main() -> None:
+    """
+    cb-fetch - fetches a git repository and manages content
+    changes on a configurable schedule. In case of a change
+    a rebuild request is send to the kafka cb-request topic
+
+    The tree structure in the git repository has to follow
+    the predefined layout as follows:
+
+    projects
+    ├── ...
+    ├── PROJECT_A
+    │   └── SUB_PROJECT
+    │       └── ...
+    └── PROJECT_B
+        └── package
+            ├── cloud_builder.kiwi
+            ├── cloud_builder.yml
+            ├── package.changes
+            ├── package.spec
+            └── package.tar.xz
+    """
     args = docopt(
         __doc__,
         version='CB (fetch) version ' + __version__,
@@ -76,6 +97,9 @@ def main() -> None:
 
 
 def update_project() -> None:
+    """
+    Callback method registered with the BlockingScheduler
+    """
     Command.run(
         ['git', '-C', Defaults.get_runner_project_dir(), 'fetch', '--all']
     )
@@ -104,13 +128,22 @@ def update_project() -> None:
     kafka = CBKafka(
         config_file=Defaults.get_kafka_config()
     )
-    for package in sorted(changed_packages.keys()):
-        log = CBCloudLogger('CBFetch', os.path.basename(package))
-        log.response(
-            {
-                'message': f'Sending update request for package: {package!r}'
-            }
+    for package_source_path in sorted(changed_packages.keys()):
+        log = CBCloudLogger('CBFetch', os.path.basename(package_source_path))
+        package_config = Defaults.get_package_config(
+            package_source_path
         )
-        package_request = CBPackageRequest()
-        package_request.set_package_source_change_request(package)
-        kafka.send_request(package_request)
+        if package_config:
+            for target in package_config.get('distributions') or []:
+                package_request = CBPackageRequest()
+                package_request.set_package_source_change_request(
+                    package_source_path, target['arch']
+                )
+                kafka.send_request(package_request)
+                log.response(
+                    {
+                        'message': 'Sent update request',
+                        'package': package_source_path,
+                        'arch': target['arch']
+                    }
+                )
