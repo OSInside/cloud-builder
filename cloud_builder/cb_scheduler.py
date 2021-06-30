@@ -112,7 +112,7 @@ def handle_build_requests() -> None:
         for request in kafka.read_request():
             if request['arch'] == platform.machine():
                 log.response(
-                    {'message': 'Got package build request', **request}
+                    {'message': 'Accept package build request', **request}
                 )
                 kafka.acknowledge()
                 kafka.close()
@@ -122,7 +122,9 @@ def handle_build_requests() -> None:
                 # does not match the package. The request stays in
                 # the topic to be presented for other schedulers
                 log.warning(
-                    'Cannot build for {request["arch"]} on {platform.machine()}'
+                    'Cannot build package: "{0}" for "{1}" on "{2}"'.format(
+                        request['package'], request['arch'], platform.machine()
+                    )
                 )
                 kafka.close()
     else:
