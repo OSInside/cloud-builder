@@ -171,7 +171,7 @@ class CBKafka:
             f'Message failed with: {exception}'
         )
 
-    def _create_producer(self) -> KafkaProducer:
+    def _create_producer(self) -> None:
         """
         Create a KafkaProducer
 
@@ -188,7 +188,7 @@ class CBKafka:
 
     def _create_consumer(
         self, topic: str, client: str, group: str
-    ) -> KafkaConsumer:
+    ) -> None:
         """
         Create a KafkaConsumer
 

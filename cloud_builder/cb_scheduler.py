@@ -120,7 +120,6 @@ def handle_build_requests(request_timeout) -> None:
                         {'message': 'Accept package build request', **request}
                     )
                     kafka.acknowledge()
-                    kafka.close()
                     build_package(request)
                 else:
                     # do not acknowledge/build if the host architecture
