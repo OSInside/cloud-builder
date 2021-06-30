@@ -166,14 +166,15 @@ class CBKafka:
 
         :rtype: KafkaProducer
         """
-        try:
-            self.producer = KafkaProducer(
-                bootstrap_servers=self.kafka_host
-            )
-        except Exception as issue:
-            raise CBKafkaProducerException(
-                f'Creating kafka producer failed with: {issue!r}'
-            )
+        if not self.producer:
+            try:
+                self.producer = KafkaProducer(
+                    bootstrap_servers=self.kafka_host
+                )
+            except Exception as issue:
+                raise CBKafkaProducerException(
+                    f'Creating kafka producer failed with: {issue!r}'
+                )
 
     def _create_consumer(
         self, topic: str, client: str, group: str
@@ -187,16 +188,17 @@ class CBKafka:
 
         :rtype: KafkaConsumer
         """
-        try:
-            self.consumer = KafkaConsumer(
-                topic,
-                auto_offset_reset='earliest',
-                enable_auto_commit=False,
-                bootstrap_servers=self.kafka_host,
-                client_id=client,
-                group_id=group
-            )
-        except Exception as issue:
-            raise CBKafkaConsumerException(
-                f'Creating kafka consumer failed with: {issue!r}'
-            )
+        if not self.consumer:
+            try:
+                self.consumer = KafkaConsumer(
+                    topic,
+                    auto_offset_reset='earliest',
+                    enable_auto_commit=False,
+                    bootstrap_servers=self.kafka_host,
+                    client_id=client,
+                    group_id=group
+                )
+            except Exception as issue:
+                raise CBKafkaConsumerException(
+                    f'Creating kafka consumer failed with: {issue!r}'
+                )
