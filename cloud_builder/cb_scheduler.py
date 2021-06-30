@@ -231,6 +231,7 @@ def create_run_script(
     ''')
     for target in package_config.get('distributions') or []:
         if target['arch'] == platform.machine():
+            dist_profile = f'{target["profile"]}.{target["arch"]}'
             run_script += dedent('''
                 cb-prepare --root {runner_root} \\
                     --package {package_source_path} --profile {dist_profile}
@@ -238,8 +239,8 @@ def create_run_script(
             ''').format(
                 runner_root=Defaults.get_runner_package_root(),
                 package_source_path=package_source_path,
-                dist_profile=f'{target["profile"]}.{target["arch"]}',
-                target_root=os.path.join(f'{package_root}@{target}')
+                dist_profile=dist_profile,
+                target_root=os.path.join(f'{package_root}@{dist_profile}')
             )
     run_script += dedent('''
         }} &>{package_root}.log &
