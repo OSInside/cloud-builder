@@ -29,8 +29,7 @@ config = {
         'kafka-python',
         'cerberus',
         'requests',
-        'psutil',
-        'urllib3'
+        'psutil'
     ],
     'packages': ['cloud_builder'],
     'entry_points': {

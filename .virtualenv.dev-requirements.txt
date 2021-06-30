@@ -27,6 +27,7 @@ wheel
 flake8
 mypy
 types-PyYAML
+types-requests
 
 # for building documentation
 sphinx
