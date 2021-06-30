@@ -222,11 +222,11 @@ def create_run_script(
 
         set -e
 
-        function finish {{
+        function finish {
             kill $(jobs -p) &>/dev/null
-        }}
+        }
 
-        {{
+        {
         trap finish EXIT
     ''')
     for target in package_config.get('distributions') or []:
