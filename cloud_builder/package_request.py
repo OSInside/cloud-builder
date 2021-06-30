@@ -17,7 +17,7 @@
 #
 from typing import Dict
 from cloud_builder.defaults import Defaults
-from cloud_builder.identifier import CBIdentifier
+from cloud_builder.identity import CBIdentity
 
 
 class CBPackageRequest:
@@ -33,7 +33,7 @@ class CBPackageRequest:
     ) -> None:
         self.package_request_dict = {
             'schema_version': self.package_request_schema_version,
-            'request_id': CBIdentifier.get_request_id(),
+            'request_id': CBIdentity.get_request_id(),
             'package': package,
             'arch': arch,
             'action': Defaults.get_status_flags().package_changed

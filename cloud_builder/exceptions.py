@@ -37,9 +37,7 @@ def exception_handler(func: Callable) -> Callable:
     """
     @wraps(func)
     def wrapper(*args, **kwargs):
-        log = CBLogger.get_logger(
-            logfile=Defaults.get_cb_logfile()
-        )
+        log = CBLogger.get_logger()
         try:
             return func(*args, **kwargs)
         except CBError as issue:
