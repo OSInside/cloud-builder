@@ -19,7 +19,6 @@ import sys
 from functools import wraps
 from typing import Callable
 from cloud_builder.logger import CBLogger
-from cloud_builder.defaults import Defaults
 from kiwi.exceptions import KiwiError
 
 

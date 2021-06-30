@@ -17,7 +17,7 @@
 #
 import os
 import uuid
-import urllib3.request
+from urllib3.request import urlopen
 from urllib3.exceptions import HTTPError
 
 
@@ -36,9 +36,7 @@ class CBIdentity:
     @staticmethod
     def get_external_ip() -> str:
         try:
-            return urllib.request.urlopen(
-                'https://api.ipify.org'
-            ).read().decode()
+            return urlopen('https://api.ipify.org').read().decode()
         except HTTPError:
             # if external service IP retrieval failed for some
             # reason continue with an unknown state
