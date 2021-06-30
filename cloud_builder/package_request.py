@@ -28,11 +28,14 @@ class CBPackageRequest:
         self.package_request_dict: Dict = {}
         self.package_request_schema_version = 0.1
 
-    def set_package_source_change_request(self, package: str) -> None:
+    def set_package_source_change_request(
+        self, package: str, arch: str
+    ) -> None:
         self.package_request_dict = {
             'schema_version': self.package_request_schema_version,
             'request_id': CBIdentifier.get_request_id(),
             'package': package,
+            'arch': arch,
             'action': Defaults.get_status_flags().package_changed
         }
 

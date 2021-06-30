@@ -31,6 +31,7 @@ options:
         at the same time. Default is 10
 """
 import os
+import platform
 import psutil
 import signal
 from docopt import docopt
@@ -52,6 +53,28 @@ running_limit = 10
 
 @exception_handler
 def main() -> None:
+    # TODO: docstring incomplete
+    """
+    Each distribution target for the package needs to get
+    configured as a profile in the cloud_builder.kiwi such that
+    the package can be build for different distributions and
+    architectures. The profiles which actually references the
+    distribution becomes effective when listed in the
+
+        cloud_builder.yml
+
+    metadata file under the distributions tag. This file is
+    used to configure general build parameters for the package
+    and typically looks like the following example:
+
+    .. code:: yaml
+        name: xclock
+
+        distributions:
+          -
+            profile: TW
+            arch: x86_64
+    """
     args = docopt(
         __doc__,
         version='CB (scheduler) version ' + __version__,
@@ -82,32 +105,27 @@ def handle_build_requests() -> None:
     global running_builds
     global running_limit
 
-    kafka = CBKafka(config_file=Defaults.get_kafka_config())
-    kafka_request_list = kafka.read_request()
-
     log = CBCloudLogger('CBScheduler', '(system)')
 
-    if kafka_request_list:
-        running_builds = get_running_builds()
-
-        if running_builds <= running_limit:
-            kafka.acknowledge()
-            kafka.close()
-        else:
-            # Do not acknowledge if running_limit is exceeded.
-            # The request will stay in the queue and gets
-            # handled by another runner or this one if the
-            # limit is no longer exceeded
-            log.response(
-                {
-                    'message': 'Max running builds limit reached'
-                }
-            )
-            kafka.close()
-            return
-
-        for request in kafka_request_list:
-            build_package(request)
+    if get_running_builds() < running_limit:
+        kafka = CBKafka(config_file=Defaults.get_kafka_config())
+        for request in kafka.read_request():
+            if request['arch'] == platform.machine():
+                kafka.acknowledge()
+                kafka.close()
+                build_package(request)
+            else:
+                # do not acknowledge/build if the host architecture
+                # does not match the package. The request stays in
+                # the topic to be presented for other schedulers
+                kafka.close()
+    else:
+        # runner is busy
+        log.response(
+            {
+                'message': 'Max running builds limit reached'
+            }
+        )
 
 
 def build_package(request: Dict) -> None:
@@ -210,17 +228,19 @@ def create_run_script(
 
         {{
         trap finish EXIT
-        cb-prepare --root {runner_root} --package {package_source_path}
-    ''').format(
-        runner_root=Defaults.get_runner_package_root(),
-        package_source_path=package_source_path
-    )
-    for target in package_config.get('dists') or []:
-        run_script += dedent('''
-            cb-run --root {target_root} &> {target_root}.log
-        ''').format(
-            target_root=os.path.join(f'{package_root}@{target}')
-        )
+    ''')
+    for target in package_config.get('distributions') or []:
+        if target['arch'] == platform.machine():
+            run_script += dedent('''
+                cb-prepare --root {runner_root} \\
+                    --package {package_source_path} --profile {dist_profile}
+                cb-run --root {target_root} &> {target_root}.log
+            ''').format(
+                runner_root=Defaults.get_runner_package_root(),
+                package_source_path=package_source_path,
+                dist_profile=f'{target["profile"]}.{target["arch"]}',
+                target_root=os.path.join(f'{package_root}@{target}')
+            )
     run_script += dedent('''
         }} &>{package_root}.log &
 

@@ -37,6 +37,9 @@ from cloud_builder.cloud_logger import CBCloudLogger
 
 @exception_handler
 def main() -> None:
+    """
+    cb-run - ...
+    """
     args = docopt(
         __doc__,
         version='CB (run) version ' + __version__,

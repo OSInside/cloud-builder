@@ -17,8 +17,7 @@
 #
 """
 usage: cb-prepare -h | --help
-       cb-prepare --root=<root_path> --package=<package_path>
-           [--config=<file>]
+       cb-prepare --root=<root_path> --package=<package_path> --profile=<dist>
 
 options:
     --root=<root_path>
@@ -27,10 +26,8 @@ options:
     --package=<package_path>
         Path to the package
 
-    --config=<file>
-        Package config file. Contains specifications how to
-        build the package and for which targets. By default
-        cloud_builder.yml from the package directory is used
+    --profile=<dist>
+        Distribution profile name as used in cloud_builder.kiwi
 """
 import os
 from docopt import docopt
@@ -42,11 +39,26 @@ from cloud_builder.defaults import Defaults
 from kiwi.utils.sync import DataSync
 from kiwi.privileges import Privileges
 from kiwi.path import Path
-from typing import Dict
 
 
 @exception_handler
 def main() -> None:
+    """
+    cb-prepare - creates a chroot tree suitable to build a
+    package inside of it, also known as buildroot. The KIWI
+    appliance builder is used to create the buildroot
+    according to a metadata definition file named:
+
+        cloud_builder.kiwi
+
+    which needs to be present as part of the package sources.
+
+    The build utility from the open build service is used
+    in a simple run.sh shell script which is created inside
+    of the buildroot after KIWI has successfully created it.
+    After this point, the buildroot is completely prepared
+    and can be used to run the actual package build.
+    """
     args = docopt(
         __doc__,
         version='CB (prepare) version ' + __version__,
@@ -59,83 +71,80 @@ def main() -> None:
 
     status_flags = Defaults.get_status_flags()
 
-    package_config = Defaults.get_package_config(
-        args['--package'], args['--config']
+    dist_profile = args['--profile']
+    package_name = os.path.basename(args['--package'])
+
+    target_root = os.path.normpath(
+        os.sep.join(
+            [args["--root"], f'{package_name}@{dist_profile}']
+        )
     )
-    target_root_dict: Dict = {
-        'target_roots': []
-    }
-    for target in package_config.get('dists') or []:
-        target_root = os.path.normpath(
-            os.sep.join(
-                [args["--root"], f'{package_config["name"]}@{target}']
+    prepare_log_file = f'{target_root}.prepare.log'
+    log.info(
+        'Creating buildroot {0}. For details see: {1}'.format(
+            target_root, prepare_log_file
+        )
+    )
+    kiwi_run = [
+        Path.which(
+            'kiwi-ng', alternative_lookup_paths=['/usr/local/bin']
+        ),
+        '--logfile', prepare_log_file,
+        '--profile', dist_profile,
+        'system', 'prepare',
+        '--description', args['--package'],
+        '--allow-existing-root',
+        '--root', target_root
+    ]
+    return_value = os.system(
+        ' '.join(kiwi_run)
+    )
+    exit_code = return_value >> 8
+    if exit_code != 0:
+        status = status_flags.buildroot_setup_failed
+        message = 'Failed in kiwi stage, see logfile for details'
+    else:
+        try:
+            data = DataSync(
+                f'{args["--package"]}/',
+                f'{target_root}/{package_name}/'
             )
-        )
-        prepare_log_file = f'{target_root}.prepare.log'
-        log.info(
-            'Creating buildroot {0}. For details see: {1}'.format(
-                target_root, prepare_log_file
+            data.sync_data(
+                options=['-a', '-x']
             )
-        )
-        kiwi_run = [
-            Path.which(
-                'kiwi-ng', alternative_lookup_paths=['/usr/local/bin']
-            ), '--logfile', prepare_log_file, '--profile', target,
-            'system', 'prepare', '--description', args['--package'],
-            '--allow-existing-root', '--root', target_root
-        ]
-        return_value = os.system(
-            ' '.join(kiwi_run)
-        )
-        exit_code = return_value >> 8
-        if exit_code != 0:
+            run_script = dedent('''
+                #!/bin/bash
+
+                set -e
+
+                function finish {{
+                    for path in /proc /dev;do
+                        mountpoint -q "$path" && umount "$path"
+                    done
+                }}
+
+                trap finish EXIT
+
+                mount -t proc proc /proc
+                mount -t devtmpfs devtmpfs /dev
+
+                pushd {0}
+                build --no-init --root /
+            ''')
+            with open(f'{target_root}/run.sh', 'w') as script:
+                script.write(
+                    run_script.format(package_name)
+                )
+            status = status_flags.buildroot_setup_succeeded
+            message = 'Buildroot ready for package build'
+        except Exception as issue:
             status = status_flags.buildroot_setup_failed
-            message = 'Failed in kiwi stage, see logfile for details'
-        else:
-            try:
-                data = DataSync(
-                    f'{args["--package"]}/',
-                    f'{target_root}/{package_config["name"]}/'
-                )
-                data.sync_data(
-                    options=['-a', '-x']
-                )
-                target_root_dict['target_roots'].append(
-                    target_root
-                )
-                run_script = dedent('''
-                    #!/bin/bash
-
-                    set -e
-
-                    function finish {{
-                        for path in /proc /dev;do
-                            mountpoint -q "$path" && umount "$path"
-                        done
-                    }}
-
-                    trap finish EXIT
-
-                    mount -t proc proc /proc
-                    mount -t devtmpfs devtmpfs /dev
-
-                    pushd {0}
-                    build --no-init --root /
-                ''')
-                with open(f'{target_root}/run.sh', 'w') as script:
-                    script.write(
-                        run_script.format(package_config['name'])
-                    )
-                status = status_flags.buildroot_setup_succeeded
-                message = 'Buildroot ready for package build'
-            except Exception as issue:
-                status = status_flags.buildroot_setup_failed
-                message = format(issue)
-        log.response(
-            {
-                'identity': log.get_id(),
-                'message': message,
-                'status': status,
-                'preparelog': prepare_log_file
-            }
-        )
+            message = format(issue)
+    log.response(
+        {
+            'identity': log.get_id(),
+            'message': message,
+            'status': status,
+            'preparelog': prepare_log_file
+        }
+    )
