@@ -132,7 +132,7 @@ def handle_build_requests(poll_timeout: int, running_limit: int) -> None:
                 )
                 break
             for message in broker.read('cb-request', timeout_ms=poll_timeout):
-                request = broker.validate_request(message.value)
+                request = broker.validate_package_request(message.value)
                 if request['arch'] == platform.machine():
                     log.response(
                         {'message': 'Accept package build request', **request}
