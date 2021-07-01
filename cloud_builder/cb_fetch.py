@@ -40,7 +40,7 @@ from cloud_builder.cloud_logger import CBCloudLogger
 from cloud_builder.exceptions import exception_handler
 from cloud_builder.defaults import Defaults
 from cloud_builder.package_request import CBPackageRequest
-from cloud_builder.kafka import CBKafka
+from cloud_builder.message_broker import CBMessageBroker
 from kiwi.command import Command
 from apscheduler.schedulers.background import BlockingScheduler
 from kiwi.privileges import Privileges
@@ -54,7 +54,7 @@ def main() -> None:
     """
     cb-fetch - fetches a git repository and manages content
     changes on a configurable schedule. In case of a change
-    a rebuild request is send to the kafka cb-request topic
+    a rebuild request is send to the message broker
 
     The tree structure in the git repository has to follow
     the predefined layout as follows:
@@ -125,8 +125,8 @@ def update_project() -> None:
     Command.run(
         ['git', '-C', Defaults.get_runner_project_dir(), 'pull']
     )
-    kafka = CBKafka(
-        config_file=Defaults.get_kafka_config()
+    broker = CBMessageBroker.new(
+        'kafka', config_file=Defaults.get_kafka_config()
     )
     for package_source_path in sorted(changed_packages.keys()):
         log = CBCloudLogger('CBFetch', os.path.basename(package_source_path))
@@ -139,7 +139,7 @@ def update_project() -> None:
                 package_request.set_package_source_change_request(
                     package_source_path, target['arch']
                 )
-                kafka.send_request(package_request)
+                broker.send_package_request(package_request)
                 log.response(
                     {
                         'message': 'Sent update request',
