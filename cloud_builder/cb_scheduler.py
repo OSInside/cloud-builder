@@ -24,12 +24,12 @@ usage: cb-scheduler -h | --help
 
 options:
     --update-interval=<time_sec>
-        Optional update interval to reconnect to kafka
+        Optional update interval to reconnect to message broker
         and the lookup for new requests in the cb-request
         topic. Default is 10sec
 
     --poll-timeout=<time_msec>
-        Optional kafka poll timeout to return if no
+        Optional message broker poll timeout to return if no
         requests are available. Default: 5000msec
 
     --package-limit=<number>
@@ -46,7 +46,7 @@ from cloud_builder.version import __version__
 from cloud_builder.cloud_logger import CBCloudLogger
 from cloud_builder.exceptions import exception_handler
 from cloud_builder.defaults import Defaults
-from cloud_builder.kafka import CBKafka
+from cloud_builder.message_broker import CBMessageBroker
 from kiwi.command import Command
 from kiwi.privileges import Privileges
 from kiwi.path import Path
@@ -120,8 +120,8 @@ def handle_build_requests(poll_timeout: int, running_limit: int) -> None:
         )
         return
 
-    kafka = CBKafka(
-        config_file=Defaults.get_kafka_config()
+    broker = CBMessageBroker.new(
+        'kafka', config_file=Defaults.get_kafka_config()
     )
     try:
         while(True):
@@ -131,13 +131,13 @@ def handle_build_requests(poll_timeout: int, running_limit: int) -> None:
                     {'message': 'Max running builds limit reached'}
                 )
                 break
-            for message in kafka.read('cb-request', timeout_ms=poll_timeout):
-                request = kafka.validate_request(message.value)
+            for message in broker.read('cb-request', timeout_ms=poll_timeout):
+                request = broker.validate_request(message.value)
                 if request['arch'] == platform.machine():
                     log.response(
                         {'message': 'Accept package build request', **request}
                     )
-                    kafka.acknowledge()
+                    broker.acknowledge()
                     build_package(request)
                 else:
                     # do not acknowledge/build if the host architecture
@@ -151,8 +151,8 @@ def handle_build_requests(poll_timeout: int, running_limit: int) -> None:
                         )
                     )
     finally:
-        log.info('Closing kafka connection')
-        kafka.close()
+        log.info('Closing message broker connection')
+        broker.close()
 
 
 def build_package(request: Dict) -> None:

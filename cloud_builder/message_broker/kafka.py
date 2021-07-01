@@ -16,55 +16,45 @@
 # along with Cloud Builder.  If not, see <http://www.gnu.org/licenses/>
 #
 import yaml
-from cerberus import Validator
-from typing import (
-    Dict, List
-)
+from typing import List
 from kafka import KafkaConsumer
 from kafka import KafkaProducer
+
 from cloud_builder.package_request import CBPackageRequest
-from cloud_builder.package_request_schema import package_request_schema
 from cloud_builder.cloud_logger import CBCloudLogger
+from cloud_builder.message_broker.base import CBMessageBrokerBase
+
 from cloud_builder.exceptions import (
-    CBConfigFileNotFoundError,
     CBKafkaProducerException,
     CBKafkaConsumerException
 )
 
 
-class CBKafka:
+class CBMessageBrokerKafka(CBMessageBrokerBase):
     """
-    Implements Kafka message handling in the context of Cloud Builder
-
-    Messages send by an instance of CBKafka uses
-    transport schemas which has to be valid against the
-    data read from Kafka
+    Interface for kafka message handling in the context of Cloud Builder
     """
-    def __init__(self, config_file: str) -> None:
+    def post_init(self) -> None:
         """
-        Create a new instance of CBKafka
+        Create a new instance of CBMessageBrokerKafka
 
         :param str config_file: Kafka credentials file
 
-            .. code:: yaml
-
-                host: kafka-example.com:12345
+        .. code:: yaml
+            host: kafka-example.com:12345
         """
-        try:
-            with open(config_file, 'r') as config:
-                self.kafka_config = yaml.safe_load(config)
-        except Exception as issue:
-            raise CBConfigFileNotFoundError(issue)
-        self.log = CBCloudLogger('CBKafka', '(system)')
-        self.kafka_host = self.kafka_config['host']
+        self.log = CBCloudLogger('CBMessageBrokerKafka', '(system)')
+        self.kafka_host = self.config['host']
         self.consumer: KafkaConsumer = None
         self.producer: KafkaProducer = None
 
-    def send_request(self, request: CBPackageRequest) -> None:
+    def send_package_request(self, request: CBPackageRequest) -> None:
         """
-        Send a message conforming to the package_request_schema to kafka
-        The information for the message is taken from an instance
-        of CBPackageRequest
+        Send a package build request
+
+        Send a message conforming to the package_request_schema
+        to kafka. The information for the message is taken from
+        an instance of CBPackageRequest
 
         :param CBPackageRequest request: Instance of CBPackageRequest
         """
@@ -75,53 +65,16 @@ class CBKafka:
         ).add_callback(self._on_send_success).add_errback(self._on_send_error)
         self.producer.flush()
 
-    def validate_request(self, message: str) -> Dict:
-        """
-        validate message against transport schema
-
-        invalid messages will be auto committed such that they
-        don't appear again
-
-        :param str message: value from consumer poll
-
-        :return: yaml formatted dict
-
-        :rtype: str
-        """
-        message_as_yaml = {}
-        try:
-            message_as_yaml = yaml.safe_load(message)
-            validator = Validator(package_request_schema)
-            validator.validate(
-                message_as_yaml, package_request_schema
-            )
-            if validator.errors:
-                self.log.error(
-                    'Validation for "{0}" failed with: {1}'.format(
-                        message_as_yaml, validator.errors
-                    )
-                )
-                self.acknowledge()
-        except yaml.YAMLError as issue:
-            self.log.error(
-                'YAML load for "{0}" failed with: "{1}"'.format(
-                    message, issue
-                )
-            )
-            self.acknowledge()
-        return message_as_yaml
-
     def acknowledge(self) -> None:
         """
-        Acknowledge message so we don't get it again for
-        this client/group
+        Acknowledge message so we don't get it again
         """
         if self.consumer:
             self.consumer.commit()
 
     def close(self) -> None:
         """
-        Close consumer for this client/group
+        Close connection to message system
         """
         if self.consumer:
             self.consumer.close()
@@ -131,7 +84,7 @@ class CBKafka:
         group: str = 'cb-group', timeout_ms: int = 1000
     ) -> List:
         """
-        Read messages from kafka.
+        Read messages from message system.
 
         :param str topic: kafka topic
         :param str client: kafka consumer client name
@@ -151,11 +104,17 @@ class CBKafka:
         return message_data
 
     def _on_send_success(self, record_metadata):
+        """
+        Callback for successful sending of a message
+        """
         self.log.info(
             f'Message successfully sent to: {record_metadata.topic}'
         )
 
     def _on_send_error(self, exception):
+        """
+        Callback for error sending of a message
+        """
         self.log.error(
             f'Message failed with: {exception}'
         )
@@ -163,8 +122,6 @@ class CBKafka:
     def _create_producer(self) -> None:
         """
         Create a KafkaProducer
-
-        :rtype: KafkaProducer
         """
         if not self.producer:
             try:
@@ -185,8 +142,6 @@ class CBKafka:
         :param str topic: kafka topic
         :param str client: kafka consumer client name
         :param str group: kafka consumer group name
-
-        :rtype: KafkaConsumer
         """
         if not self.consumer:
             try:

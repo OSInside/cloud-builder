@@ -103,3 +103,10 @@ class CBKafkaConsumerException(CBError):
     Exception raised if an instance of KafkaConsumer
     returned an error
     """
+
+
+class CBMessageBrokerSetupError(CBError):
+    """
+    Exception raised if there is no implementation for the
+    selected message broker
+    """
