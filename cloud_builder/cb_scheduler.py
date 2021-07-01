@@ -19,16 +19,22 @@
 usage: cb-scheduler -h | --help
        cb-scheduler
            [--update-interval=<time_sec>]
+           [--poll-timeout=<time_msec>]
            [--package-limit=<number>]
 
 options:
     --update-interval=<time_sec>
-        Optional update interval for the lookup of the
-        kafka cb_request topic. Default is 30sec
+        Optional update interval to reconnect to kafka
+        and the lookup for new requests in the cb-request
+        topic. Default is 10sec
+
+    --poll-timeout=<time_msec>
+        Optional kafka poll timeout to return if no
+        requests are available. Default: 5000msec
 
     --package-limit=<number>
         Max number of package builds this scheduler handles
-        at the same time. Default is 10
+        at the same time. Default: 10
 """
 import os
 import platform
@@ -49,6 +55,8 @@ from typing import Dict
 
 running_builds = 0
 running_limit = 10
+poll_timeout = 5000
+update_interval = 10
 
 
 @exception_handler
@@ -91,19 +99,29 @@ def main() -> None:
         global running_limit
         running_limit = int(args['--package-limit'])
 
-    repeat_timeout = int(args['--update-interval'] or 30)
+    if args['--update-interval']:
+        update_interval = int(args['--update-interval'])
 
-    handle_build_requests()
+    if args['--poll-timeout']:
+        poll_timeout = int(args['--poll-timeout'])
+
+    if poll_timeout / 1000 > update_interval:
+        # TODO: This is not allowed, as the BlockingScheduler would
+        # just create unnneded threads and new consumers which could
+        # cause an expensive rebalance in kafka
+        pass
+
+    handle_build_requests(poll_timeout)
 
     project_scheduler = BlockingScheduler()
     project_scheduler.add_job(
-        lambda: handle_build_requests(),
-        'interval', seconds=repeat_timeout
+        lambda: handle_build_requests(poll_timeout),
+        'interval', seconds=update_interval
     )
     project_scheduler.start()
 
 
-def handle_build_requests() -> None:
+def handle_build_requests(poll_timeout: int) -> None:
     global running_builds
     global running_limit
 
@@ -112,9 +130,7 @@ def handle_build_requests() -> None:
     if get_running_builds() >= running_limit:
         # runner is busy...
         log.response(
-            {
-                'message': 'Max running builds limit reached'
-            }
+            {'message': 'Max running builds limit reached'}
         )
         return
 
@@ -123,7 +139,13 @@ def handle_build_requests() -> None:
     )
     try:
         while(True):
-            for message in kafka.read('cb-request', timeout_ms=10000):
+            if get_running_builds() >= running_limit:
+                # runner is busy...
+                log.response(
+                    {'message': 'Max running builds limit reached'}
+                )
+                break
+            for message in kafka.read('cb-request', timeout_ms=poll_timeout):
                 request = kafka.validate_request(message.value)
                 if request['arch'] == platform.machine():
                     log.response(
