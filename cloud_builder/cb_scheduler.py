@@ -53,11 +53,6 @@ from kiwi.path import Path
 from apscheduler.schedulers.background import BlockingScheduler
 from typing import Dict
 
-running_builds = 0
-running_limit = 10
-poll_timeout = 5000
-update_interval = 10
-
 
 @exception_handler
 def main() -> None:
@@ -95,15 +90,9 @@ def main() -> None:
         Defaults.get_runner_package_root()
     )
 
-    if args['--package-limit']:
-        global running_limit
-        running_limit = int(args['--package-limit'])
-
-    if args['--update-interval']:
-        update_interval = int(args['--update-interval'])
-
-    if args['--poll-timeout']:
-        poll_timeout = int(args['--poll-timeout'])
+    running_limit = int(args['--package-limit'] or 10)
+    update_interval = int(args['--update-interval'] or 10)
+    poll_timeout = int(args['--poll-timeout'] or 5000)
 
     if poll_timeout / 1000 > update_interval:
         # TODO: This is not allowed, as the BlockingScheduler would
@@ -111,20 +100,17 @@ def main() -> None:
         # cause an expensive rebalance in kafka
         pass
 
-    handle_build_requests(poll_timeout)
+    handle_build_requests(poll_timeout, running_limit)
 
     project_scheduler = BlockingScheduler()
     project_scheduler.add_job(
-        lambda: handle_build_requests(poll_timeout),
+        lambda: handle_build_requests(poll_timeout, running_limit),
         'interval', seconds=update_interval
     )
     project_scheduler.start()
 
 
-def handle_build_requests(poll_timeout: int) -> None:
-    global running_builds
-    global running_limit
-
+def handle_build_requests(poll_timeout: int, running_limit: int) -> None:
     log = CBCloudLogger('CBScheduler', '(system)')
 
     if get_running_builds() >= running_limit:
