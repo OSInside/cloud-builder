@@ -46,7 +46,7 @@ class CBMessageBroker(metaclass=ABCMeta):
             message_broker = importlib.import_module(
                 f'cloud_builder.message_broker.{broker}'
             )
-            module_name = f'CBMessageBroker{name_map[broker]}'
+            module_name = name_map[broker]
             return message_broker.__dict__[module_name](
                 config_file
             )
