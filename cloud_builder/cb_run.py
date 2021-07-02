@@ -38,7 +38,24 @@ from cloud_builder.cloud_logger import CBCloudLogger
 @exception_handler
 def main() -> None:
     """
-    cb-run - ...
+    cb-run - calls the run.sh script which must be present
+    in the given root_path. cb-run is usually called after
+    cb-prepare which creates an environment to satisfy the
+    cb-run requirements
+
+    The called run.sh script is expected to run a program
+    that builds packages and stores them below the path
+    returned by Defaults.get_runner_results_root()
+
+    If the OBS build script is used this will be the
+    following directory lookup:
+
+    root_path
+    └── home
+        └── abuild
+
+    At the end of cb-run an information record will be send
+    to preserve the result information for later use
     """
     args = docopt(
         __doc__,
@@ -76,7 +93,9 @@ def main() -> None:
         status = status_flags.package_build_succeeded
         find_call = Command.run(
             [
-                'find', os.path.join(args['--root'], 'home', 'abuild'),
+                'find', os.path.join(
+                    args['--root'], Defaults.get_runner_results_root()
+                ),
                 '-name', '*.rpm'
             ]
         )

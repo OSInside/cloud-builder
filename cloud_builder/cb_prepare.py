@@ -53,10 +53,10 @@ def main() -> None:
 
     which needs to be present as part of the package sources.
 
-    The build utility from the open build service is used
-    in a simple run.sh shell script which is created inside
-    of the buildroot after KIWI has successfully created it.
-    After this point, the buildroot is completely prepared
+    The build utility from the open build service is called
+    from within a simple run.sh shell script that is written
+    inside of the buildroot after KIWI has successfully created
+    it. After this point, the buildroot is completely prepared
     and can be used to run the actual package build.
     """
     args = docopt(

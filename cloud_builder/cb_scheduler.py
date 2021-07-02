@@ -56,27 +56,56 @@ from typing import Dict
 
 @exception_handler
 def main() -> None:
-    # TODO: docstring incomplete
     """
-    Each distribution target for the package needs to get
-    configured as a profile in the cloud_builder.kiwi such that
-    the package can be build for different distributions and
-    architectures. The profiles which actually references the
-    distribution becomes effective when listed in the
+    cb-scheduler - listens on incoming package build requests
+    from the message broker on a regular schedule. Only if
+    the max package to build limit is not exceeded, request
+    messages from the broker are accepted. In case the request
+    matches the runner capabilities e.g architecture it gets
+    acknowledged and removed from the broker queue.
+
+    A package can be build for different distribution targets
+    and architectures. Each distribution target/arch needs to
+    be configured as a profile in cloud_builder.kiwi and added
+    as effective build target in:
 
         cloud_builder.yml
 
-    metadata file under the distributions tag. This file is
-    used to configure general build parameters for the package
-    and typically looks like the following example:
+    An example cloud_builder.yml to build the xclock package
+    for the Tumbleweed distribution for x86_64 and aarch64
+    would look like the following:
 
     .. code:: yaml
+
         name: xclock
 
         distributions:
           -
-            profile: TW
+            dist: TW
             arch: x86_64
+          -
+            dist: TW
+            arch: aarch64
+
+    The above instructs the scheduler to create two buildroot
+    environments, one for Tumbleweed(x86_64) and one for
+    Tumbleweed(aarch64) and build the xclock package in each
+    of these buildroots. To process this properly the scheduler
+    creates a script which calls cb-prepare followed by cb-run
+    with the corresponding parameters for each element of the
+    distributions list.
+
+    The dist and arch settings of a distribution are combined
+    into profile names given to cb-prepare as parameter and used
+    in KIWI to create the buildroot environment. From the above
+    example this would lead to two profiles named:
+
+    * TW.x86_64
+    * TW.aarch64
+
+    The cloud_builder.kiwi file has to provide instructions
+    such that the creation of a correct buildroot for these
+    profiles is possible.
     """
     args = docopt(
         __doc__,
@@ -111,6 +140,19 @@ def main() -> None:
 
 
 def handle_build_requests(poll_timeout: int, running_limit: int) -> None:
+    """
+    Check on the runner state and if ok listen to the
+    message broker queue for new package build requests
+
+    :param int poll_timeout:
+        timeout in msec after which the blocking read() to the
+        message broker returns
+    :param int running_limit:
+        allow up to running_limit package builds at the same time.
+        If exceeded an eventual connection to the message broker
+        will be closed and opened again if the limit is no
+        longer reached
+    """
     log = CBCloudLogger('CBScheduler', '(system)')
 
     if get_running_builds() >= running_limit:
@@ -156,6 +198,13 @@ def handle_build_requests(poll_timeout: int, running_limit: int) -> None:
 
 
 def build_package(request: Dict) -> None:
+    """
+    Update the package sources and run the script which
+    utilizes cb-prepare/cb-run to build the package for
+    all configured targets
+
+    :param dict request: yaml dict request record
+    """
     log = CBCloudLogger(
         'CBScheduler', os.path.basename(request['package'])
     )
@@ -188,6 +237,13 @@ def build_package(request: Dict) -> None:
 def reset_build_if_running(
     package_config: Dict, log: CBCloudLogger
 ) -> None:
+    """
+    Check if the same package/arch is currently/still running
+    and kill the process associated with it
+
+    :param dict package_config: yaml dict from cloud_builder.yml
+    :param CBCloudLogger log: logger instance
+    """
     package_root = os.path.join(
         Defaults.get_runner_package_root(), package_config['name']
     )
@@ -213,6 +269,13 @@ def reset_build_if_running(
 
 
 def get_running_builds() -> int:
+    """
+    Lookup the process table for running builds
+
+    :return: Number of running build processes
+
+    :rtype: int
+    """
     # TODO: lookup current running limit
     return 0
 
@@ -220,6 +283,16 @@ def get_running_builds() -> int:
 def check_package_sources(
     package_source_path: str, log: CBCloudLogger
 ) -> bool:
+    """
+    Sanity checks on the given package sources
+
+    1. Check if given source exists
+    2. Check if given source has enough metadata to
+       be build with Cloud Builder
+
+    :param str package_source_path: path to package sources
+    :param CBCloudLogger log: logger instance
+    """
     if not os.path.isdir(package_source_path):
         log.response(
             {
@@ -235,6 +308,17 @@ def check_package_sources(
 def create_run_script(
     package_config: Dict, package_source_path: str
 ) -> str:
+    """
+    Create script to call cb-prepare followed by cb-run
+    for each configured distribution/arch
+
+    :param dict package_config: yaml dict from cloud_builder.yml
+    :param str package_source_path: path to package sources
+
+    :return: file path name for script
+
+    :rtype: str
+    """
     package_root = os.path.join(
         Defaults.get_runner_package_root(), package_config['name']
     )
@@ -252,7 +336,7 @@ def create_run_script(
     ''')
     for target in package_config.get('distributions') or []:
         if target['arch'] == platform.machine():
-            dist_profile = f'{target["profile"]}.{target["arch"]}'
+            dist_profile = f'{target["dist"]}.{target["arch"]}'
             run_script += dedent('''
                 cb-prepare --root {runner_root} \\
                     --package {package_source_path} --profile {dist_profile}
