@@ -22,12 +22,12 @@ from logging import Logger
 
 class CBLogger:
     """
-    Implements the "CB" logger
+    Implements the local CB logger
     """
     @staticmethod
     def get_logger(logfile: str = None, level: int = logging.INFO) -> Logger:
         """
-        Configure "CB" logger
+        Configure CB logger
 
         Simple logger responding to logging.INFO level by default
         The logger is only created once, thus multiple get_logger()
@@ -56,6 +56,13 @@ class CBLogger:
 
     @staticmethod
     def hasFileHandler() -> bool:
+        """
+        Check if the logger has a file handler configured
+
+        :return: True if logging.FileHandler handler exists else False
+
+        :rtype: bool
+        """
         log = logging.getLogger('CB')
         for handler in log.handlers:
             if isinstance(handler, logging.FileHandler):
