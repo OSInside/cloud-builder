@@ -110,3 +110,10 @@ class CBMessageBrokerSetupError(CBError):
     Exception raised if there is no implementation for the
     selected message broker
     """
+
+
+class CBSchedulerIntervalError(CBError):
+    """
+    Exception raised if the update interval for the BlockingScheduler
+    is smaller than the poll timeout of the message broker
+    """
