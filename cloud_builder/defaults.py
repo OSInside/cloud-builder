@@ -37,11 +37,28 @@ class Defaults:
     Implements Cloud Builder project default values
     """
     @staticmethod
-    def get_runner_results_root():
+    def get_runner_results_root() -> str:
+        """
+        Returns the root path below which the used packaging
+        tool stores the build results. At the moment this
+        method is aligned to the behavior of the build tool
+        provided with the open buildservice project.
+
+        :return: directory path
+
+        :rtype: str
+        """
         return 'home/abuild'
 
     @staticmethod
     def get_cb_logfile() -> str:
+        """
+        Return local logfile pathname
+
+        :return: file path name
+
+        :rtype: str
+        """
         return '/var/log/cloud_builder.log'
 
     @staticmethod
