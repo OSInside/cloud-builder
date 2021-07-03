@@ -177,7 +177,10 @@ def handle_build_requests(poll_timeout: int, running_limit: int) -> None:
                 request = broker.validate_package_request(message.value)
                 if request['arch'] == platform.machine():
                     log.response(
-                        {'message': 'Accept package build request', **request}
+                        {
+                            'message': 'Accept package build request',
+                            **request
+                        }
                     )
                     broker.acknowledge()
                     build_package(request)
@@ -185,12 +188,12 @@ def handle_build_requests(poll_timeout: int, running_limit: int) -> None:
                     # do not acknowledge/build if the host architecture
                     # does not match the package. The request stays in
                     # the topic to be presented for other schedulers
-                    log.warning(
-                        'Cannot build package: "{0}" for "{1}" on "{2}"'.format(
-                            request['package'],
-                            request['arch'],
-                            platform.machine()
-                        )
+                    log.response(
+                        {
+                            'message':
+                                f'Incompatible arch: {platform.machine()}',
+                            **request
+                        }
                     )
     finally:
         log.info('Closing message broker connection')
@@ -211,11 +214,11 @@ def build_package(request: Dict) -> None:
     package_source_path = os.path.join(
         Defaults.get_runner_project_dir(), format(request['package'])
     )
-    if check_package_sources(package_source_path, log):
+    if check_package_sources(package_source_path, request, log):
         package_config = Defaults.get_package_config(
             package_source_path
         )
-        reset_build_if_running(package_config, log)
+        reset_build_if_running(package_config, request, log)
 
         status_flags = Defaults.get_status_flags()
         if request['action'] == status_flags.package_changed:
@@ -228,20 +231,21 @@ def build_package(request: Dict) -> None:
         Command.run(
             [
                 'bash', create_run_script(
-                    package_config, package_source_path
+                    package_config, package_source_path, request
                 )
             ]
         )
 
 
 def reset_build_if_running(
-    package_config: Dict, log: CBCloudLogger
+    package_config: Dict, request: Dict, log: CBCloudLogger
 ) -> None:
     """
     Check if the same package/arch is currently/still running
     and kill the process associated with it
 
     :param dict package_config: yaml dict from cloud_builder.yml
+    :param dict request: yaml dict request record
     :param CBCloudLogger log: logger instance
     """
     package_root = os.path.join(
@@ -262,7 +266,8 @@ def reset_build_if_running(
                     'message':
                         'Stop jobs associated with PID:{0} for rebuild'.format(
                             build_pid
-                        )
+                        ),
+                    **request
                 }
             )
             os.kill(build_pid, signal.SIGTERM)
@@ -281,7 +286,7 @@ def get_running_builds() -> int:
 
 
 def check_package_sources(
-    package_source_path: str, log: CBCloudLogger
+    package_source_path: str, request: Dict, log: CBCloudLogger
 ) -> bool:
     """
     Sanity checks on the given package sources
@@ -291,12 +296,14 @@ def check_package_sources(
        be build with Cloud Builder
 
     :param str package_source_path: path to package sources
+    :param dict request: yaml dict request record
     :param CBCloudLogger log: logger instance
     """
     if not os.path.isdir(package_source_path):
         log.response(
             {
-                'message': f'Package does not exist: {package_source_path}'
+                'message': f'Package does not exist: {package_source_path}',
+                **request
             }
         )
         return False
@@ -306,7 +313,7 @@ def check_package_sources(
 
 
 def create_run_script(
-    package_config: Dict, package_source_path: str
+    package_config: Dict, package_source_path: str, request: Dict
 ) -> str:
     """
     Create script to call cb-prepare followed by cb-run
@@ -314,6 +321,7 @@ def create_run_script(
 
     :param dict package_config: yaml dict from cloud_builder.yml
     :param str package_source_path: path to package sources
+    :param dict request: yaml dict request record
 
     :return: file path name for script
 
@@ -339,13 +347,17 @@ def create_run_script(
             dist_profile = f'{target["dist"]}.{target["arch"]}'
             run_script += dedent('''
                 cb-prepare --root {runner_root} \\
-                    --package {package_source_path} --profile {dist_profile}
-                cb-run --root {target_root} &> {target_root}.log
+                    --package {package_source_path} \\
+                    --profile {dist_profile} \\
+                    --request-id {request_id}
+                cb-run --root {target_root} &> {target_root}.log \\
+                    --request-id {request_id}
             ''').format(
                 runner_root=Defaults.get_runner_package_root(),
                 package_source_path=package_source_path,
                 dist_profile=dist_profile,
-                target_root=os.path.join(f'{package_root}@{dist_profile}')
+                target_root=os.path.join(f'{package_root}@{dist_profile}'),
+                request_id=request['request_id']
             )
     run_script += dedent('''
         }} &>{package_root}.log &

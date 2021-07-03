@@ -143,7 +143,6 @@ def update_project() -> None:
                 log.response(
                     {
                         'message': 'Sent update request',
-                        'package': package_source_path,
-                        'arch': target['arch']
+                        **package_request.get_data()
                     }
                 )

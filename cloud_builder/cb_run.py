@@ -17,13 +17,16 @@
 #
 """
 usage: cb-run -h | --help
-       cb-run --root=<root_path>
+       cb-run --root=<root_path> --request-id=<UUID>
 
 options:
     --root=<root_path>
         Path to chroot to build the package. It's required
         that cb-prepare has created that chroot for cb-run
         to work
+
+    --request-id=<UUID>
+        UUID for this build process
 """
 import os
 from docopt import docopt
@@ -38,10 +41,10 @@ from cloud_builder.cloud_logger import CBCloudLogger
 @exception_handler
 def main() -> None:
     """
-    cb-run - calls the run.sh script which must be present
-    in the given root_path. cb-run is usually called after
-    cb-prepare which creates an environment to satisfy the
-    cb-run requirements
+    cb-run - builds packages by calling the run.sh script
+    which must be present in the given root_path. cb-run
+    is usually called after cb-prepare which creates an
+    environment to satisfy the cb-run requirements
 
     The called run.sh script is expected to run a program
     that builds packages and stores them below the path
@@ -105,6 +108,7 @@ def main() -> None:
     log.response(
         {
             'identity': log.get_id(),
+            'request_id': args['--request-id'],
             'message': 'Package build finished',
             'status': status,
             'package': package_name,

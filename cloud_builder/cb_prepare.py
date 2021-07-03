@@ -17,7 +17,7 @@
 #
 """
 usage: cb-prepare -h | --help
-       cb-prepare --root=<root_path> --package=<package_path> --profile=<dist>
+       cb-prepare --root=<root_path> --package=<package_path> --profile=<dist> --request-id=<UUID>
 
 options:
     --root=<root_path>
@@ -28,6 +28,9 @@ options:
 
     --profile=<dist>
         Distribution profile name as used in cloud_builder.kiwi
+
+    --request-id=<UUID>
+        UUID for this prepare process
 """
 import os
 from docopt import docopt
@@ -143,6 +146,7 @@ def main() -> None:
     log.response(
         {
             'identity': log.get_id(),
+            'request_id': args['--request-id'],
             'message': message,
             'status': status,
             'preparelog': prepare_log_file
