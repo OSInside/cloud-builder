@@ -53,6 +53,8 @@ from kiwi.path import Path
 from apscheduler.schedulers.background import BlockingScheduler
 from typing import Dict
 
+from cloud_builder.exceptions import CBSchedulerIntervalError
+
 
 @exception_handler
 def main() -> None:
@@ -124,10 +126,12 @@ def main() -> None:
     poll_timeout = int(args['--poll-timeout'] or 5000)
 
     if poll_timeout / 1000 > update_interval:
-        # TODO: This is not allowed, as the BlockingScheduler would
+        # This should not be allowed, as the BlockingScheduler would
         # just create unnneded threads and new consumers which could
-        # cause an expensive rebalance in kafka
-        pass
+        # cause an expensive rebalance on the message broker
+        raise CBSchedulerIntervalError(
+            'Poll timeout on the message broker greater than update interval'
+        )
 
     handle_build_requests(poll_timeout, running_limit)
 
@@ -231,7 +235,7 @@ def build_package(request: Dict) -> None:
         Command.run(
             [
                 'bash', create_run_script(
-                    package_config, package_source_path, request
+                    package_config, request, package_source_path
                 )
             ]
         )
@@ -313,7 +317,7 @@ def check_package_sources(
 
 
 def create_run_script(
-    package_config: Dict, package_source_path: str, request: Dict
+    package_config: Dict, request: Dict, package_source_path: str
 ) -> str:
     """
     Create script to call cb-prepare followed by cb-run
