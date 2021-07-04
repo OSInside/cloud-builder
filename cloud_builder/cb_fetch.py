@@ -41,6 +41,7 @@ from cloud_builder.exceptions import exception_handler
 from cloud_builder.defaults import Defaults
 from cloud_builder.package_request import CBPackageRequest
 from cloud_builder.message_broker import CBMessageBroker
+from cloud_builder.response import CBResponse
 from kiwi.command import Command
 from apscheduler.schedulers.background import BlockingScheduler
 from kiwi.privileges import Privileges
@@ -140,9 +141,15 @@ def update_project() -> None:
                     package_source_path, target['arch']
                 )
                 broker.send_package_request(package_request)
-                log.response(
-                    {
-                        'message': 'Sent update request',
-                        **package_request.get_data()
-                    }
+                request = package_request.get_data()
+                status_flags = Defaults.get_status_flags()
+                response = CBResponse(
+                    request['request_id'], log.get_id()
                 )
+                response.set_package_update_request_response(
+                    message='Package update request scheduled',
+                    response_code=status_flags.package_update_request,
+                    package=request['package'],
+                    arch=request['arch']
+                )
+                log.response(response.get_data())

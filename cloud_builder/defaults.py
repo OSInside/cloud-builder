@@ -27,7 +27,12 @@ status_flags = NamedTuple(
         ('package_build_failed', str),
         ('package_build_succeeded', str),
         ('buildroot_setup_failed', str),
-        ('buildroot_setup_succeeded', str)
+        ('buildroot_setup_succeeded', str),
+        ('package_update_request', str),
+        ('package_request_accepted', str),
+        ('incompatible_build_arch', str),
+        ('reset_running_build', str),
+        ('package_not_existing', str)
     ]
 )
 
@@ -87,7 +92,12 @@ class Defaults:
             package_build_failed='package build failed',
             package_build_succeeded='package build succeeded',
             buildroot_setup_failed='build root setup failed',
-            buildroot_setup_succeeded='build root setup succeeded'
+            buildroot_setup_succeeded='build root setup succeeded',
+            package_update_request='package update request scheduled',
+            package_request_accepted='package request accepted',
+            incompatible_build_arch='incompatible build arch',
+            reset_running_build='reset running build',
+            package_not_existing='package does not exist'
         )
 
     @staticmethod

@@ -36,6 +36,7 @@ from cloud_builder.defaults import Defaults
 from kiwi.privileges import Privileges
 from kiwi.command import Command
 from cloud_builder.cloud_logger import CBCloudLogger
+from cloud_builder.response import CBResponse
 
 
 @exception_handler
@@ -105,15 +106,13 @@ def main() -> None:
         if find_call.output:
             packages = find_call.output.strip().split(os.linesep)
 
-    log.response(
-        {
-            'identity': log.get_id(),
-            'request_id': args['--request-id'],
-            'message': 'Package build finished',
-            'status': status,
-            'package': package_name,
-            'buildlog': build_log_file,
-            'results': packages,
-            'exitcode': exit_code
-        }
+    response = CBResponse(args['--request-id'], log.get_id())
+    response.set_package_build_response(
+        message='Package build finished',
+        response_code=status,
+        package=package_name,
+        log_file=build_log_file,
+        binary_packages=packages,
+        exit_code=exit_code
     )
+    log.response(response.get_data())

@@ -44,7 +44,7 @@ from docopt import docopt
 from textwrap import dedent
 from cloud_builder.version import __version__
 from cloud_builder.cloud_logger import CBCloudLogger
-from cloud_builder.exceptions import exception_handler
+from cloud_builder.response import CBResponse
 from cloud_builder.defaults import Defaults
 from cloud_builder.message_broker import CBMessageBroker
 from kiwi.command import Command
@@ -53,7 +53,10 @@ from kiwi.path import Path
 from apscheduler.schedulers.background import BlockingScheduler
 from typing import Dict
 
-from cloud_builder.exceptions import CBSchedulerIntervalError
+from cloud_builder.exceptions import (
+    exception_handler,
+    CBSchedulerIntervalError
+)
 
 
 @exception_handler
@@ -161,9 +164,7 @@ def handle_build_requests(poll_timeout: int, running_limit: int) -> None:
 
     if get_running_builds() >= running_limit:
         # runner is busy...
-        log.response(
-            {'message': 'Max running builds limit reached'}
-        )
+        log.info('Max running builds limit reached')
         return
 
     broker = CBMessageBroker.new(
@@ -173,18 +174,18 @@ def handle_build_requests(poll_timeout: int, running_limit: int) -> None:
         while(True):
             if get_running_builds() >= running_limit:
                 # runner is busy...
-                log.response(
-                    {'message': 'Max running builds limit reached'}
-                )
+                log.info('Max running builds limit reached')
                 break
             for message in broker.read('cb-request', timeout_ms=poll_timeout):
                 request = broker.validate_package_request(message.value)
+                status_flags = Defaults.get_status_flags()
+                response = CBResponse(request['request_id'], log.get_id())
                 if request['arch'] == platform.machine():
-                    log.response(
-                        {
-                            'message': 'Accept package build request',
-                            **request
-                        }
+                    response.set_package_build_scheduled_response(
+                        message='Accept package build request',
+                        response_code=status_flags.package_request_accepted,
+                        package=request['package'],
+                        arch=request['arch']
                     )
                     broker.acknowledge()
                     build_package(request)
@@ -192,13 +193,13 @@ def handle_build_requests(poll_timeout: int, running_limit: int) -> None:
                     # do not acknowledge/build if the host architecture
                     # does not match the package. The request stays in
                     # the topic to be presented for other schedulers
-                    log.response(
-                        {
-                            'message':
-                                f'Incompatible arch: {platform.machine()}',
-                            **request
-                        }
+                    response.set_buildhost_arch_incompatible_response(
+                        message=f'Incompatible arch: {platform.machine()}',
+                        response_code=status_flags.package_request_accepted,
+                        package=request['package'],
+                        arch=request['arch']
                     )
+                log.response(response.get_data())
     finally:
         log.info('Closing message broker connection')
         broker.close()
@@ -265,15 +266,17 @@ def reset_build_if_running(
             )
         )
         if psutil.pid_exists(build_pid):
-            log.response(
-                {
-                    'message':
-                        'Stop jobs associated with PID:{0} for rebuild'.format(
-                            build_pid
-                        ),
-                    **request
-                }
+            status_flags = Defaults.get_status_flags()
+            response = CBResponse(request['request_id'], log.get_id())
+            response.set_package_jobs_reset_response(
+                message='Kill job group for PID:{0} prior rebuild'.format(
+                    build_pid
+                ),
+                response_code=status_flags.reset_running_build,
+                package=request['package'],
+                arch=request['arch']
             )
+            log.response(response.get_data())
             os.kill(build_pid, signal.SIGTERM)
 
 
@@ -304,12 +307,15 @@ def check_package_sources(
     :param CBCloudLogger log: logger instance
     """
     if not os.path.isdir(package_source_path):
-        log.response(
-            {
-                'message': f'Package does not exist: {package_source_path}',
-                **request
-            }
+        status_flags = Defaults.get_status_flags()
+        response = CBResponse(request['request_id'], log.get_id())
+        response.set_package_not_existing_response(
+            message=f'Package does not exist: {package_source_path}',
+            response_code=status_flags.package_not_existing,
+            package=request['package'],
+            arch=request['arch']
         )
+        log.response(response.get_data())
         return False
 
     # TODO: Also check for meta data files (.kiwi and cloud_builder.yml)
