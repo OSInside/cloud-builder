@@ -70,8 +70,8 @@ class TestCBScheduler:
         mock_CBCloudLogger.return_value = log
         mock_get_running_builds.return_value = 20
         handle_build_requests(5000, 10)
-        log.response.assert_called_once_with(
-            {'message': 'Max running builds limit reached'}
+        log.info.assert_called_once_with(
+            'Max running builds limit reached'
         )
 
     @patch('cloud_builder.cb_scheduler.get_running_builds')
@@ -109,14 +109,19 @@ class TestCBScheduler:
 
         handle_build_requests(5000, 10)
 
-        assert log.response.call_args_list == [
-            call(
-                {'message': 'Accept package build request', **request}
-            ),
-            call(
-                {'message': 'Max running builds limit reached'}
-            )
-        ]
+        log.response.assert_called_once_with(
+            {
+                'schema_version': 0.1,
+                'identity': log.get_id.return_value,
+                'request_id': 'c8becd30-a5f6-43a6-a4f4-598ec1115b17',
+                'message': 'Accept package build request',
+                'response_code': mock_Defaults.get_status_flags.
+                return_value.package_request_accepted,
+                'package': 'vim',
+                'arch': 'x86_64'
+            }
+        )
+
         broker.acknowledge.assert_called_once_with()
         mock_build_package.assert_called_once_with(request)
         broker.close.assert_called_once_with()
@@ -156,14 +161,19 @@ class TestCBScheduler:
 
         handle_build_requests(5000, 10)
 
-        assert log.response.call_args_list == [
-            call(
-                {'message': 'Incompatible arch: aarch64', **request}
-            ),
-            call(
-                {'message': 'Max running builds limit reached'}
-            )
-        ]
+        log.response.assert_called_once_with(
+            {
+                'schema_version': 0.1,
+                'identity': log.get_id.return_value,
+                'request_id': 'c8becd30-a5f6-43a6-a4f4-598ec1115b17',
+                'message': 'Incompatible arch: aarch64',
+                'response_code': mock_Defaults.get_status_flags.
+                return_value.package_request_accepted,
+                'package': 'vim',
+                'arch': 'x86_64'
+            }
+        )
+
         broker.close.assert_called_once_with()
 
     @patch('cloud_builder.cb_scheduler.CBCloudLogger')
@@ -246,9 +256,13 @@ class TestCBScheduler:
             )
             log.response.assert_called_once_with(
                 {
-                    'message':
-                        'Stop jobs associated with PID:1234 for rebuild',
-                    **request
+                    'schema_version': 0.1,
+                    'identity': log.get_id.return_value,
+                    'request_id': 'c8becd30-a5f6-43a6-a4f4-598ec1115b17',
+                    'message': 'Kill job group for PID:1234 prior rebuild',
+                    'response_code': 'reset running build',
+                    'package': 'vim',
+                    'arch': 'x86_64'
                 }
             )
 
@@ -257,10 +271,17 @@ class TestCBScheduler:
 
     @patch('os.path.isdir')
     def test_check_package_sources(self, mock_os_path_isdir):
+        request = {
+            'action': 'package source changed',
+            'arch': 'x86_64',
+            'package': 'vim',
+            'request_id': 'c8becd30-a5f6-43a6-a4f4-598ec1115b17',
+            'schema_version': 0.1
+        }
         mock_os_path_isdir.return_value = False
-        assert check_package_sources('path', {}, Mock()) is False
+        assert check_package_sources('path', request, Mock()) is False
         mock_os_path_isdir.return_value = True
-        assert check_package_sources('path', {}, Mock()) is True
+        assert check_package_sources('path', request, Mock()) is True
 
     def test_create_run_script(self):
         request = {

@@ -37,6 +37,7 @@ from docopt import docopt
 from textwrap import dedent
 from cloud_builder.version import __version__
 from cloud_builder.cloud_logger import CBCloudLogger
+from cloud_builder.response import CBResponse
 from cloud_builder.exceptions import exception_handler
 from cloud_builder.defaults import Defaults
 from kiwi.utils.sync import DataSync
@@ -142,13 +143,15 @@ def main() -> None:
             message = 'Buildroot ready for package build'
         except Exception as issue:
             status = status_flags.buildroot_setup_failed
+            exit_code = 1
             message = format(issue)
-    log.response(
-        {
-            'identity': log.get_id(),
-            'request_id': args['--request-id'],
-            'message': message,
-            'status': status,
-            'preparelog': prepare_log_file
-        }
+    response = CBResponse(args['--request-id'], log.get_id())
+    response.set_package_buildroot_response(
+        message=message,
+        response_code=status,
+        package=package_name,
+        log_file=prepare_log_file,
+        build_root=target_root,
+        exit_code=exit_code
     )
+    log.response(response.get_data())
