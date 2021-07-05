@@ -20,6 +20,7 @@ from typing import List
 from kafka import KafkaConsumer
 from kafka import KafkaProducer
 
+from cloud_builder.defaults import Defaults
 from cloud_builder.package_request import CBPackageRequest
 from cloud_builder.cloud_logger import CBCloudLogger
 from cloud_builder.message_broker.base import CBMessageBrokerBase
@@ -61,7 +62,7 @@ class CBMessageBrokerKafka(CBMessageBrokerBase):
         self._create_producer()
         message = yaml.dump(request.get_data()).encode()
         self.producer.send(
-            'cb-request', message
+            Defaults.get_package_request_queue_name(), message
         ).add_callback(self._on_send_success).add_errback(self._on_send_error)
         self.producer.flush()
 

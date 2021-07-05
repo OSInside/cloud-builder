@@ -42,6 +42,22 @@ class Defaults:
     Implements Cloud Builder project default values
     """
     @staticmethod
+    def get_package_request_queue_name() -> str:
+        """
+        Return name of message queue for sending sending
+        package build requests
+        """
+        return 'cb-request'
+
+    @staticmethod
+    def get_response_queue_name() -> str:
+        """
+        Return name of message queue for sending cloud
+        builder response messages
+        """
+        return 'cb-response'
+
+    @staticmethod
     def get_runner_results_root() -> str:
         """
         Returns the root path below which the used packaging

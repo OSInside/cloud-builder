@@ -24,9 +24,8 @@ usage: cb-scheduler -h | --help
 
 options:
     --update-interval=<time_sec>
-        Optional update interval to reconnect to message broker
-        and the lookup for new requests in the cb-request
-        topic. Default is 10sec
+        Optional update interval to reconnect to the
+        message broker. Default is 10sec
 
     --poll-timeout=<time_msec>
         Optional message broker poll timeout to return if no
@@ -176,7 +175,10 @@ def handle_build_requests(poll_timeout: int, running_limit: int) -> None:
                 # runner is busy...
                 log.info('Max running builds limit reached')
                 break
-            for message in broker.read('cb-request', timeout_ms=poll_timeout):
+            for message in broker.read(
+                Defaults.get_package_request_queue_name(),
+                timeout_ms=poll_timeout
+            ):
                 request = broker.validate_package_request(message.value)
                 status_flags = Defaults.get_status_flags()
                 response = CBResponse(request['request_id'], log.get_id())
