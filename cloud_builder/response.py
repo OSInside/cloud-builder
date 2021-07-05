@@ -116,5 +116,15 @@ class CBResponse:
             'arch': arch
         }
 
+    def set_package_invalid_metadata_response(
+        self, message: str, response_code: str, package: str
+    ) -> None:
+        self.response_dict = {
+            **self.response_dict,
+            'message': message,
+            'response_code': response_code,
+            'package': package
+        }
+
     def get_data(self) -> Dict:
         return self.response_dict

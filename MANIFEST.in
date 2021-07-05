@@ -1,6 +1,7 @@
 # Manifest describing source package contents
 
 graft cloud_builder/message_broker
+graft cloud_builder/schemas
 graft systemd
 graft sysconfig
 graft package

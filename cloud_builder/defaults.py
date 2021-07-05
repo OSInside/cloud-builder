@@ -16,10 +16,7 @@
 # along with Cloud Builder.  If not, see <http://www.gnu.org/licenses/>
 #
 import os
-import yaml
-from typing import (
-    Dict, NamedTuple
-)
+from typing import NamedTuple
 
 status_flags = NamedTuple(
     'status_flags', [
@@ -32,7 +29,8 @@ status_flags = NamedTuple(
         ('package_request_accepted', str),
         ('incompatible_build_arch', str),
         ('reset_running_build', str),
-        ('package_not_existing', str)
+        ('package_not_existing', str),
+        ('invalid_metadata', str)
     ]
 )
 
@@ -113,7 +111,8 @@ class Defaults:
             package_request_accepted='package request accepted',
             incompatible_build_arch='incompatible build arch',
             reset_running_build='reset running build',
-            package_not_existing='package does not exist'
+            package_not_existing='package does not exist',
+            invalid_metadata='invalid package metadata'
         )
 
     @staticmethod
@@ -126,28 +125,6 @@ class Defaults:
         :rtype: str
         """
         return f'{os.environ.get("HOME")}/cloud_builder_sources'
-
-    @staticmethod
-    def get_package_config(package_path: str, filename: str = None) -> Dict:
-        """
-        Read cloud builder meta data file for the given package
-
-        :param str package_path: path to package sources
-        :param str filename:
-            alternative meta data file name, default is cloud_builder.yml
-
-        :return: yaml dictionary data
-
-        :rtype: Dict
-        """
-        config_data: Dict[str, str] = {}
-        config_file = filename or os.path.join(
-            package_path, 'cloud_builder.yml'
-        )
-        if os.path.isfile(config_file):
-            with open(config_file, 'r') as config:
-                config_data = yaml.safe_load(config) or {}
-        return config_data
 
     @staticmethod
     def get_kafka_config() -> str:
