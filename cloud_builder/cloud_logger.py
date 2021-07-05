@@ -81,4 +81,4 @@ class CBCloudLogger:
         self.log.info(
             '{0}: {1}'.format(self.id, yaml.dump(message).encode())
         )
-        # TODO: send this information to kafka(cb-response)
+        # TODO: send this information to Defaults.get_response_queue_name()
