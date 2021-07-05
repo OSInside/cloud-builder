@@ -190,6 +190,7 @@ def handle_build_requests(poll_timeout: int, running_limit: int) -> None:
                         arch=request['arch']
                     )
                     broker.acknowledge()
+                    log.response(response.get_data())
                     build_package(request)
                 else:
                     # do not acknowledge/build if the host architecture
@@ -201,7 +202,7 @@ def handle_build_requests(poll_timeout: int, running_limit: int) -> None:
                         package=request['package'],
                         arch=request['arch']
                     )
-                log.response(response.get_data())
+                    log.response(response.get_data())
     finally:
         log.info('Closing message broker connection')
         broker.close()
