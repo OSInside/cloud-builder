@@ -22,7 +22,7 @@ from typing import (
     Dict, List
 )
 from cloud_builder.package_request import CBPackageRequest
-from cloud_builder.package_request_schema import package_request_schema
+from cloud_builder.schemas.package_request_schema import package_request_schema
 from cloud_builder.cloud_logger import CBCloudLogger
 
 from cloud_builder.exceptions import CBConfigFileNotFoundError
@@ -80,7 +80,7 @@ class CBMessageBrokerBase(metaclass=ABCMeta):
                     )
                 )
                 self.acknowledge()
-        except yaml.YAMLError as issue:
+        except Exception as issue:
             self.log.error(
                 'YAML load for "{0}" failed with: "{1}"'.format(
                     message, issue

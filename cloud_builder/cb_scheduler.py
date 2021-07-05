@@ -45,6 +45,7 @@ from cloud_builder.version import __version__
 from cloud_builder.cloud_logger import CBCloudLogger
 from cloud_builder.response import CBResponse
 from cloud_builder.defaults import Defaults
+from cloud_builder.metadata import CBMetaData
 from cloud_builder.message_broker import CBMessageBroker
 from kiwi.command import Command
 from kiwi.privileges import Privileges
@@ -223,26 +224,27 @@ def build_package(request: Dict) -> None:
         Defaults.get_runner_project_dir(), format(request['package'])
     )
     if check_package_sources(package_source_path, request, log):
-        package_config = Defaults.get_package_config(
-            package_source_path
+        package_config = CBMetaData.get_package_config(
+            package_source_path, log, request['request_id']
         )
-        reset_build_if_running(package_config, request, log)
+        if package_config:
+            reset_build_if_running(package_config, request, log)
 
-        status_flags = Defaults.get_status_flags()
-        if request['action'] == status_flags.package_changed:
-            log.info('Update project git source repo prior build')
-            Command.run(
-                ['git', '-C', Defaults.get_runner_project_dir(), 'pull']
-            )
-
-        log.info('Starting build process')
-        Command.run(
-            [
-                'bash', create_run_script(
-                    package_config, request, package_source_path
+            status_flags = Defaults.get_status_flags()
+            if request['action'] == status_flags.package_changed:
+                log.info('Update project git source repo prior build')
+                Command.run(
+                    ['git', '-C', Defaults.get_runner_project_dir(), 'pull']
                 )
-            ]
-        )
+
+            log.info('Starting build process')
+            Command.run(
+                [
+                    'bash', create_run_script(
+                        package_config, request, package_source_path
+                    )
+                ]
+            )
 
 
 def reset_build_if_running(

@@ -37,8 +37,10 @@ import os
 from docopt import docopt
 from cloud_builder.version import __version__
 from cloud_builder.cloud_logger import CBCloudLogger
+from cloud_builder.identity import CBIdentity
 from cloud_builder.exceptions import exception_handler
 from cloud_builder.defaults import Defaults
+from cloud_builder.metadata import CBMetaData
 from cloud_builder.package_request import CBPackageRequest
 from cloud_builder.message_broker import CBMessageBroker
 from cloud_builder.response import CBResponse
@@ -131,8 +133,8 @@ def update_project() -> None:
     )
     for package_source_path in sorted(changed_packages.keys()):
         log = CBCloudLogger('CBFetch', os.path.basename(package_source_path))
-        package_config = Defaults.get_package_config(
-            package_source_path
+        package_config = CBMetaData.get_package_config(
+            package_source_path, log, CBIdentity.get_request_id()
         )
         if package_config:
             for target in package_config.get('distributions') or []:

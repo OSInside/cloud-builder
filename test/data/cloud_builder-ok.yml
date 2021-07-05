@@ -1,0 +1,10 @@
+schema_version: 0.1
+name: xclock
+
+distributions:
+  -
+    dist: TW
+    arch: x86_64
+  -
+    dist: TW
+    arch: aarch64
