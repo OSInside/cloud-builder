@@ -154,4 +154,4 @@ def main() -> None:
         build_root=target_root,
         exit_code=exit_code
     )
-    log.response(response.get_data())
+    log.response(response)

@@ -2,6 +2,7 @@ import yaml
 from mock import patch
 
 from cloud_builder.cloud_logger import CBCloudLogger
+from cloud_builder.response import CBResponse
 
 
 class TestCBCloudLogger:
@@ -32,12 +33,10 @@ class TestCBCloudLogger:
         )
 
     def test_response(self):
-        message_dict = {
-            'message': 'message'
-        }
-        self.cloud_logger.response(message_dict)
+        response = CBResponse('UUID', 'response_identity')
+        self.cloud_logger.response(response)
         self.cloud_logger.log.info.assert_called_once_with(
             '{0}: {1}'.format(
-                self.cloud_logger.id, yaml.dump(message_dict).encode()
+                self.cloud_logger.id, yaml.dump(response.get_data()).encode()
             )
         )

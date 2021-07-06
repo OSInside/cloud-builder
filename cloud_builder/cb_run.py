@@ -115,4 +115,4 @@ def main() -> None:
         binary_packages=packages,
         exit_code=exit_code
     )
-    log.response(response.get_data())
+    log.response(response)
