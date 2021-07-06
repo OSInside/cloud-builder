@@ -22,7 +22,9 @@ from typing import (
     Dict, List
 )
 from cloud_builder.package_request import CBPackageRequest
+from cloud_builder.response import CBResponse
 from cloud_builder.schemas.package_request_schema import package_request_schema
+from cloud_builder.schemas.response_schema import response_schema
 from cloud_builder.cloud_logger import CBCloudLogger
 
 from cloud_builder.exceptions import CBConfigFileNotFoundError
@@ -66,23 +68,56 @@ class CBMessageBrokerBase(metaclass=ABCMeta):
 
         :rtype: str
         """
+        return self.validate_message_with_schema(
+            message, package_request_schema
+        )
+
+    def validate_response(self, message: str) -> Dict:
+        """
+        Validate a response
+
+        Invalid messages will be auto committed such that they
+        don't appear again
+
+        :param str message: raw message
+
+        :return: yaml formatted dict
+
+        :rtype: str
+        """
+        return self.validate_message_with_schema(
+            message, response_schema
+        )
+
+    def validate_message_with_schema(self, message: str, schema: Dict) -> Dict:
+        """
+        Validate a message against a given schema
+
+        Invalid messages will be auto committed such that they
+        don't appear again
+
+        :param str message: raw message
+        :param Dict schema: Cerberus schema dict
+
+        :return: yaml formatted dict
+
+        :rtype: str
+        """
         message_as_yaml = {}
         try:
             message_as_yaml = yaml.safe_load(message)
-            validator = Validator(package_request_schema)
-            validator.validate(
-                message_as_yaml, package_request_schema
-            )
+            validator = Validator(schema)
+            validator.validate(message_as_yaml, schema)
             if validator.errors:
                 self.log.error(
-                    'Validation for "{0}" failed with: {1}'.format(
+                    'ValidationError for {0!r}: {1!r}'.format(
                         message_as_yaml, validator.errors
                     )
                 )
                 self.acknowledge()
         except Exception as issue:
             self.log.error(
-                'YAML load for "{0}" failed with: "{1}"'.format(
+                'YAMLError in {0!r}: {1!r}'.format(
                     message, issue
                 )
             )
@@ -97,6 +132,17 @@ class CBMessageBrokerBase(metaclass=ABCMeta):
         Implementation in specialized broker class
 
         :param CBPackageRequest request: unused
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def send_response(self, response: CBResponse) -> None:
+        """
+        Send a response
+
+        Implementation in specialized broker class
+
+        :param CBResponse response: unused
         """
         raise NotImplementedError
 

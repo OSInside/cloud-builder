@@ -181,29 +181,30 @@ def handle_build_requests(poll_timeout: int, running_limit: int) -> None:
                 timeout_ms=poll_timeout
             ):
                 request = broker.validate_package_request(message.value)
-                status_flags = Defaults.get_status_flags()
-                response = CBResponse(request['request_id'], log.get_id())
-                if request['arch'] == platform.machine():
-                    response.set_package_build_scheduled_response(
-                        message='Accept package build request',
-                        response_code=status_flags.package_request_accepted,
-                        package=request['package'],
-                        arch=request['arch']
-                    )
-                    broker.acknowledge()
-                    log.response(response.get_data())
-                    build_package(request)
-                else:
-                    # do not acknowledge/build if the host architecture
-                    # does not match the package. The request stays in
-                    # the topic to be presented for other schedulers
-                    response.set_buildhost_arch_incompatible_response(
-                        message=f'Incompatible arch: {platform.machine()}',
-                        response_code=status_flags.package_request_accepted,
-                        package=request['package'],
-                        arch=request['arch']
-                    )
-                    log.response(response.get_data())
+                if request:
+                    status_flags = Defaults.get_status_flags()
+                    response = CBResponse(request['request_id'], log.get_id())
+                    if request['arch'] == platform.machine():
+                        response.set_package_build_scheduled_response(
+                            message='Accept package build request',
+                            response_code=status_flags.package_request_accepted,
+                            package=request['package'],
+                            arch=request['arch']
+                        )
+                        broker.acknowledge()
+                        log.response(response.get_data())
+                        build_package(request)
+                    else:
+                        # do not acknowledge/build if the host architecture
+                        # does not match the package. The request stays in
+                        # the topic to be presented for other schedulers
+                        response.set_buildhost_arch_incompatible_response(
+                            message=f'Incompatible arch: {platform.machine()}',
+                            response_code=status_flags.package_request_accepted,
+                            package=request['package'],
+                            arch=request['arch']
+                        )
+                        log.response(response.get_data())
     finally:
         log.info('Closing message broker connection')
         broker.close()
