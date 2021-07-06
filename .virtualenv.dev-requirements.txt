@@ -32,6 +32,11 @@ types-requests
 # for building documentation
 sphinx
 sphinx_rtd_theme
+pyenchant
+
+# for github pages deployment tasks
+travis-sphinx
+ghp-import
 
 # for release
 twine
