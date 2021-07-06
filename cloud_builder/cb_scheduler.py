@@ -192,7 +192,7 @@ def handle_build_requests(poll_timeout: int, running_limit: int) -> None:
                             arch=request['arch']
                         )
                         broker.acknowledge()
-                        log.response(response.get_data())
+                        log.response(response)
                         build_package(request)
                     else:
                         # do not acknowledge/build if the host architecture
@@ -204,7 +204,7 @@ def handle_build_requests(poll_timeout: int, running_limit: int) -> None:
                             package=request['package'],
                             arch=request['arch']
                         )
-                        log.response(response.get_data())
+                        log.response(response)
     finally:
         log.info('Closing message broker connection')
         broker.close()
@@ -282,7 +282,7 @@ def reset_build_if_running(
                 package=request['package'],
                 arch=request['arch']
             )
-            log.response(response.get_data())
+            log.response(response)
             os.kill(build_pid, signal.SIGTERM)
 
 
@@ -321,7 +321,7 @@ def check_package_sources(
             package=request['package'],
             arch=request['arch']
         )
-        log.response(response.get_data())
+        log.response(response)
         return False
 
     # TODO: Also check for meta data files (.kiwi and cloud_builder.yml)

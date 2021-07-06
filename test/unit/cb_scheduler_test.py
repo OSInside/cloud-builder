@@ -74,6 +74,7 @@ class TestCBScheduler:
             'Max running builds limit reached'
         )
 
+    @patch('cloud_builder.cb_scheduler.CBResponse')
     @patch('cloud_builder.cb_scheduler.get_running_builds')
     @patch('cloud_builder.cb_scheduler.build_package')
     @patch('cloud_builder.cb_scheduler.CBCloudLogger')
@@ -82,7 +83,8 @@ class TestCBScheduler:
     @patch('platform.machine')
     def test_handle_build_requests_platform_ok(
         self, mock_platform_machine, mock_Defaults, mock_CBMessageBroker,
-        mock_CBCloudLogger, mock_build_package, mock_get_running_builds
+        mock_CBCloudLogger, mock_build_package, mock_get_running_builds,
+        mock_CBResponse
     ):
         log = Mock()
         mock_platform_machine.return_value = 'x86_64'
@@ -110,22 +112,14 @@ class TestCBScheduler:
         handle_build_requests(5000, 10)
 
         log.response.assert_called_once_with(
-            {
-                'schema_version': 0.1,
-                'identity': log.get_id.return_value,
-                'request_id': 'c8becd30-a5f6-43a6-a4f4-598ec1115b17',
-                'message': 'Accept package build request',
-                'response_code': mock_Defaults.get_status_flags.
-                return_value.package_request_accepted,
-                'package': 'vim',
-                'arch': 'x86_64'
-            }
+            mock_CBResponse.return_value
         )
 
         broker.acknowledge.assert_called_once_with()
         mock_build_package.assert_called_once_with(request)
         broker.close.assert_called_once_with()
 
+    @patch('cloud_builder.cb_scheduler.CBResponse')
     @patch('cloud_builder.cb_scheduler.get_running_builds')
     @patch('cloud_builder.cb_scheduler.build_package')
     @patch('cloud_builder.cb_scheduler.CBCloudLogger')
@@ -134,7 +128,8 @@ class TestCBScheduler:
     @patch('platform.machine')
     def test_handle_build_requests_platform_mismatch(
         self, mock_platform_machine, mock_Defaults, mock_CBMessageBroker,
-        mock_CBCloudLogger, mock_build_package, mock_get_running_builds
+        mock_CBCloudLogger, mock_build_package, mock_get_running_builds,
+        mock_CBResponse
     ):
         log = Mock()
         mock_platform_machine.return_value = 'aarch64'
@@ -162,16 +157,7 @@ class TestCBScheduler:
         handle_build_requests(5000, 10)
 
         log.response.assert_called_once_with(
-            {
-                'schema_version': 0.1,
-                'identity': log.get_id.return_value,
-                'request_id': 'c8becd30-a5f6-43a6-a4f4-598ec1115b17',
-                'message': 'Incompatible arch: aarch64',
-                'response_code': mock_Defaults.get_status_flags.
-                return_value.package_request_accepted,
-                'package': 'vim',
-                'arch': 'x86_64'
-            }
+            mock_CBResponse.return_value
         )
 
         broker.close.assert_called_once_with()
@@ -227,8 +213,10 @@ class TestCBScheduler:
     @patch('os.path.isfile')
     @patch('psutil.pid_exists')
     @patch('os.kill')
+    @patch('cloud_builder.cb_scheduler.CBResponse')
     def test_reset_build_if_running(
-        self, mock_os_kill, mock_psutil_pid_exists, mock_path_isfile
+        self, mock_CBResponse, mock_os_kill,
+        mock_psutil_pid_exists, mock_path_isfile
     ):
         mock_path_isfile.return_value = True
         mock_psutil_pid_exists.return_value = True
@@ -256,15 +244,7 @@ class TestCBScheduler:
                 1234, signal.SIGTERM
             )
             log.response.assert_called_once_with(
-                {
-                    'schema_version': 0.1,
-                    'identity': log.get_id.return_value,
-                    'request_id': 'c8becd30-a5f6-43a6-a4f4-598ec1115b17',
-                    'message': 'Kill job group for PID:1234 prior rebuild',
-                    'response_code': 'reset running build',
-                    'package': 'vim',
-                    'arch': 'x86_64'
-                }
+                mock_CBResponse.return_value
             )
 
     def test_get_running_builds(self):

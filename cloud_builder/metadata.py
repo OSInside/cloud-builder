@@ -69,7 +69,7 @@ class CBMetaData:
                             response_code=status_flags.invalid_metadata,
                             package=package_path
                         )
-                        log.response(response.get_data())
+                        log.response(response)
                         config_data = {}
                 except Exception as issue:
                     status_flags = Defaults.get_status_flags()
@@ -81,6 +81,6 @@ class CBMetaData:
                         response_code=status_flags.invalid_metadata,
                         package=package_path
                     )
-                    log.response(response.get_data())
+                    log.response(response)
                     config_data = {}
         return config_data

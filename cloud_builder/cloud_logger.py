@@ -19,7 +19,7 @@ import yaml
 from cloud_builder.logger import CBLogger
 from cloud_builder.defaults import Defaults
 from cloud_builder.identity import CBIdentity
-from typing import Dict
+from cloud_builder.response import CBResponse
 
 
 class CBCloudLogger:
@@ -71,14 +71,16 @@ class CBCloudLogger:
         """
         self.log.error(f'{self.id}: {message}')
 
-    def response(self, message: Dict) -> None:
+    def response(self, response: CBResponse) -> None:
         """
         Message broker plus local info log for
         response message
 
-        :param dict message: yaml dict message
+        :param CBResponse response: instance of CBResponse
         """
         self.log.info(
-            '{0}: {1}'.format(self.id, yaml.dump(message).encode())
+            '{0}: {1}'.format(
+                self.id, yaml.dump(response.get_data()).encode()
+            )
         )
         # TODO: send this information to Defaults.get_response_queue_name()

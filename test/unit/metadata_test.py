@@ -1,4 +1,6 @@
-from mock import Mock
+from mock import (
+    patch, Mock
+)
 
 from cloud_builder.metadata import CBMetaData
 
@@ -18,22 +20,22 @@ class TestCBMetaData:
             ]
         }
 
-    def test_get_package_config_invalid(self):
-        log = Mock()
+    @patch('cloud_builder.metadata.CBResponse')
+    def test_get_package_config_invalid(self, mock_CBResponse):
+        response = mock_CBResponse.return_value
         metadata = CBMetaData.get_package_config(
-            'path/to/package', log, 'request_id',
+            'path/to/package', Mock(), 'request_id',
             '../data/cloud_builder-invalid.yml'
         )
         assert metadata == {}
-        for response in log.response.call_args_list[0][0]:
-            assert 'ValidationError' in response['message']
+        assert response.set_package_invalid_metadata_response.called
 
-    def test_get_package_config_broken(self):
-        log = Mock()
+    @patch('cloud_builder.metadata.CBResponse')
+    def test_get_package_config_broken(self, mock_CBResponse):
+        response = mock_CBResponse.return_value
         metadata = CBMetaData.get_package_config(
-            'path/to/package', log, 'request_id',
+            'path/to/package', Mock(), 'request_id',
             '../data/cloud_builder-broken.yml'
         )
         assert metadata == {}
-        for response in log.response.call_args_list[0][0]:
-            assert 'DocumentError' in response['message']
+        assert response.set_package_invalid_metadata_response.called
