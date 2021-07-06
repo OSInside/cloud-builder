@@ -22,6 +22,7 @@ from kafka import KafkaProducer
 
 from cloud_builder.defaults import Defaults
 from cloud_builder.package_request import CBPackageRequest
+from cloud_builder.response import CBResponse
 from cloud_builder.cloud_logger import CBCloudLogger
 from cloud_builder.message_broker.base import CBMessageBrokerBase
 
@@ -63,6 +64,23 @@ class CBMessageBrokerKafka(CBMessageBrokerBase):
         message = yaml.dump(request.get_data()).encode()
         self.producer.send(
             Defaults.get_package_request_queue_name(), message
+        ).add_callback(self._on_send_success).add_errback(self._on_send_error)
+        self.producer.flush()
+
+    def send_response(self, response: CBResponse) -> None:
+        """
+        Send a response
+
+        Send a message conforming to the response_schema
+        to kafka. The information for the message is taken from
+        an instance of CBResponse
+
+        :param CBResponse response: Instance of CBResponse
+        """
+        self._create_producer()
+        message = yaml.dump(response.get_data()).encode()
+        self.producer.send(
+            Defaults.get_response_queue_name(), message
         ).add_callback(self._on_send_success).add_errback(self._on_send_error)
         self.producer.flush()
 
