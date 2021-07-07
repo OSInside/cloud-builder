@@ -43,3 +43,4 @@ class TestCBCloudLogger:
                 self.cloud_logger.id, yaml.dump(response.get_data()).encode()
             )
         )
+        broker.send_response.assert_called_once_with(response)

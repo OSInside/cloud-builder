@@ -16,7 +16,7 @@
 # along with Cloud Builder.  If not, see <http://www.gnu.org/licenses/>
 #
 import yaml
-from cloud_builder.message_broker import CBMessageBroker
+from typing import Any
 from cloud_builder.logger import CBLogger
 from cloud_builder.defaults import Defaults
 from cloud_builder.identity import CBIdentity
@@ -72,7 +72,9 @@ class CBCloudLogger:
         """
         self.log.error(f'{self.id}: {message}')
 
-    def response(self, response: CBResponse, broker: CBMessageBroker) -> None:
+    def response(
+        self, response: CBResponse, broker: Any
+    ) -> None:
         """
         Local and message broker log a CBResponse message
 
@@ -84,4 +86,4 @@ class CBCloudLogger:
                 self.id, yaml.dump(response.get_data()).encode()
             )
         )
-        # TODO: send this information to Defaults.get_response_queue_name()
+        broker.send_response(response)
