@@ -30,3 +30,9 @@ class TestDefaults:
         with patch.dict('os.environ', {'HOME': 'users_home'}):
             assert Defaults.get_kafka_config() == \
                 'users_home/.config/cb/kafka.yml'
+
+    def test_get_package_request_queue_name(self):
+        assert Defaults.get_package_request_queue_name() == 'cb-request'
+
+    def test_get_response_queue_name(self):
+        assert Defaults.get_response_queue_name() == 'cb-response'
