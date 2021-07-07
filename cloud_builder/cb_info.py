@@ -17,14 +17,14 @@
 #
 """
 usage: cb-info -h | --help
-       cb-info --package=<name> --request-id=<UUID>
+       cb-info
+           [--update-interval=<time_sec>]
 
 options:
-    --package=<name>
-        Package base name to lookup information for
+    --update-interval=<time_sec>
+        Optional update interval for the lookup
+        Default is 30sec
 
-    --request-id=<UUID>
-        UUID for this info request
 """
 from docopt import docopt
 from cloud_builder.version import __version__
@@ -64,5 +64,8 @@ def main() -> None:
     )
 
     Privileges.check_for_root_permissions()
-
     print(args)
+
+
+def lookup(package: str, request_id: str):
+    pass

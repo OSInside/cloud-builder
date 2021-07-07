@@ -109,6 +109,9 @@ install -D -m 644 systemd/cb-fetch-once.service \
 install -D -m 644 systemd/cb-scheduler.service \
     %{buildroot}%{_unitdir}/cb-scheduler.service
 
+install -D -m 644 systemd/cb-info.service \
+    %{buildroot}%{_unitdir}/cb-info.service
+
 # Install config file
 install -D -m 644 sysconfig/cloud_builder \
     %{buildroot}%{_sysconfdir}/cloud_builder
@@ -121,10 +124,12 @@ install -D -m 644 sysconfig/cloud_builder \
 %{_unitdir}/cb-fetch.service
 %{_unitdir}/cb-fetch-once.service
 %{_unitdir}/cb-scheduler.service
+%{_unitdir}/cb-info.service
 %config %{_sysconfdir}/cloud_builder
 %{_bindir}/cb-fetch
 %{_bindir}/cb-prepare
 %{_bindir}/cb-run
 %{_bindir}/cb-scheduler
+%{_bindir}/cb-info
 
 %changelog
