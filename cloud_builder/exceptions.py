@@ -52,7 +52,8 @@ def exception_handler(func: Callable) -> Callable:
             sys.exit(1)
         except SystemExit as issue:
             # user exception, program aborted by user
-            sys.exit(issue)
+            log.error(f'{issue}')
+            sys.exit(1)
         except Exception:
             # exception we did no expect, show python backtrace
             log.error('Unexpected error:')
