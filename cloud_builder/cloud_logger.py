@@ -73,17 +73,23 @@ class CBCloudLogger:
         self.log.error(f'{self.id}: {message}')
 
     def response(
-        self, response: CBResponse, broker: Any
+        self, response: CBResponse, broker: Any, filename: str = None
     ) -> None:
         """
         Local and message broker log a CBResponse message
 
         :param CBResponse response: instance of CBResponse
         :param CBMessageBroker broker: instance of CBMessageBroker
+        :param str filename: store to filename in yaml format
         """
         self.log.info(
             '{0}: {1}'.format(
                 self.id, yaml.dump(response.get_data()).encode()
             )
         )
+        if filename:
+            with open(filename, 'w') as out:
+                yaml.dump(
+                    response.get_data(), out, default_flow_style=False
+                )
         broker.send_response(response)

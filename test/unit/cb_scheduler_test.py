@@ -296,10 +296,10 @@ class TestCBScheduler:
                 --package source_path \\
                 --profile TW.x86_64 \\
                 --request-id c8becd30-a5f6-43a6-a4f4-598ec1115b17
-            cb-run --root /var/tmp/CB/vim@TW.x86_64 &> /var/tmp/CB/vim@TW.x86_64.log \\
+            cb-run --root /var/tmp/CB/vim@TW.x86_64 &> /var/tmp/CB/vim@TW.x86_64.build.log \\
                 --request-id c8becd30-a5f6-43a6-a4f4-598ec1115b17
 
-            } &>/var/tmp/CB/vim.log &
+            } &>/dev/null &
 
             echo $! > /var/tmp/CB/vim.pid
         ''')

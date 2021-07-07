@@ -76,8 +76,8 @@ def main() -> None:
 
     log = CBCloudLogger('CBRun', package_name)
 
-    build_log_file = os.path.join(
-        args['--root'], '.build.log'
+    build_log_file = ''.join(
+        [args['--root'].rstrip(os.sep), '.build.log']
     )
     log.info(
         f'Starting package build. For details see: {build_log_file}'
@@ -119,4 +119,6 @@ def main() -> None:
     broker = CBMessageBroker.new(
         'kafka', config_file=Defaults.get_kafka_config()
     )
-    log.response(response, broker)
+    log.response(
+        response, broker, f'{package_name}.yml'
+    )
