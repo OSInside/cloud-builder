@@ -154,4 +154,4 @@ def update_project() -> None:
                     package=request['package'],
                     arch=request['arch']
                 )
-                log.response(response)
+                log.response(response, broker)

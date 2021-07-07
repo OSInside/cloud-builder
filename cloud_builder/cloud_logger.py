@@ -16,6 +16,7 @@
 # along with Cloud Builder.  If not, see <http://www.gnu.org/licenses/>
 #
 import yaml
+from cloud_builder.message_broker import CBMessageBroker
 from cloud_builder.logger import CBLogger
 from cloud_builder.defaults import Defaults
 from cloud_builder.identity import CBIdentity
@@ -49,7 +50,7 @@ class CBCloudLogger:
 
     def info(self, message: str) -> None:
         """
-        Local log for info message
+        Local log an info message
 
         :param str message: message
         """
@@ -57,7 +58,7 @@ class CBCloudLogger:
 
     def warning(self, message: str) -> None:
         """
-        Local log for warning message
+        Local log a warning message
 
         :param str message: message
         """
@@ -65,18 +66,18 @@ class CBCloudLogger:
 
     def error(self, message: str) -> None:
         """
-        Local log for error message
+        Local log an error message
 
         :param str message: message
         """
         self.log.error(f'{self.id}: {message}')
 
-    def response(self, response: CBResponse) -> None:
+    def response(self, response: CBResponse, broker: CBMessageBroker) -> None:
         """
-        Message broker plus local info log for
-        response message
+        Local and message broker log a CBResponse message
 
         :param CBResponse response: instance of CBResponse
+        :param CBMessageBroker broker: instance of CBMessageBroker
         """
         self.log.info(
             '{0}: {1}'.format(

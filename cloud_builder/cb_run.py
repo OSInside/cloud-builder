@@ -32,6 +32,7 @@ import os
 from docopt import docopt
 from cloud_builder.version import __version__
 from cloud_builder.exceptions import exception_handler
+from cloud_builder.message_broker import CBMessageBroker
 from cloud_builder.defaults import Defaults
 from kiwi.privileges import Privileges
 from kiwi.command import Command
@@ -115,4 +116,7 @@ def main() -> None:
         binary_packages=packages,
         exit_code=exit_code
     )
-    log.response(response)
+    broker = CBMessageBroker.new(
+        'kafka', config_file=Defaults.get_kafka_config()
+    )
+    log.response(response, broker)

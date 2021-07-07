@@ -37,6 +37,7 @@ from docopt import docopt
 from textwrap import dedent
 from cloud_builder.version import __version__
 from cloud_builder.cloud_logger import CBCloudLogger
+from cloud_builder.message_broker import CBMessageBroker
 from cloud_builder.response import CBResponse
 from cloud_builder.exceptions import exception_handler
 from cloud_builder.defaults import Defaults
@@ -154,4 +155,7 @@ def main() -> None:
         build_root=target_root,
         exit_code=exit_code
     )
-    log.response(response)
+    broker = CBMessageBroker.new(
+        'kafka', config_file=Defaults.get_kafka_config()
+    )
+    log.response(response, broker)
