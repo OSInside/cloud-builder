@@ -52,7 +52,7 @@ class CBMessageBrokerBase(metaclass=ABCMeta):
         self.post_init()
 
     @abstractmethod
-    def post_init(self):
+    def post_init(self) -> None:
         pass
 
     def validate_package_request(self, message: str) -> Dict:
@@ -114,6 +114,7 @@ class CBMessageBrokerBase(metaclass=ABCMeta):
                         message_as_yaml, validator.errors
                     )
                 )
+                message_as_yaml = {}
                 self.acknowledge()
         except Exception as issue:
             self.log.error(
@@ -121,6 +122,7 @@ class CBMessageBrokerBase(metaclass=ABCMeta):
                     message, issue
                 )
             )
+            message_as_yaml = {}
             self.acknowledge()
         return message_as_yaml
 
