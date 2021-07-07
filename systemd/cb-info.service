@@ -1,0 +1,13 @@
+[Unit]
+Description=CB Project Info Service
+After=syslog.target
+Requires=network-online.target
+
+[Service]
+EnvironmentFile=-/etc/cloud_builder
+Type=simple
+Restart=on-failure
+ExecStart=/bin/bash -c 'sudo cb-info --update-interval ${CB_UPDATE}'
+
+[Install]
+WantedBy=multi-user.target
