@@ -34,6 +34,7 @@ config = {
     'packages': ['cloud_builder'],
     'entry_points': {
         'console_scripts': [
+            'cb-info=cloud_builder.cb_info:main',
             'cb-run=cloud_builder.cb_run:main',
             'cb-prepare=cloud_builder.cb_prepare:main',
             'cb-fetch=cloud_builder.cb_fetch:main',

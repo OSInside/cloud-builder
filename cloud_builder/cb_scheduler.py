@@ -371,7 +371,7 @@ def create_run_script(
                     --package {package_source_path} \\
                     --profile {dist_profile} \\
                     --request-id {request_id}
-                cb-run --root {target_root} &> {target_root}.log \\
+                cb-run --root {target_root} &> {target_root}.build.log \\
                     --request-id {request_id}
             ''').format(
                 runner_root=Defaults.get_runner_package_root(),
@@ -381,7 +381,7 @@ def create_run_script(
                 request_id=request['request_id']
             )
     run_script += dedent('''
-        }} &>{package_root}.log &
+        }} &>/dev/null &
 
         echo $! > {package_root}.pid
     ''').format(
