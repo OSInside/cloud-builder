@@ -1,5 +1,7 @@
 import yaml
-from mock import patch
+from mock import (
+    patch, Mock
+)
 
 from cloud_builder.cloud_logger import CBCloudLogger
 from cloud_builder.response import CBResponse
@@ -34,7 +36,8 @@ class TestCBCloudLogger:
 
     def test_response(self):
         response = CBResponse('UUID', 'response_identity')
-        self.cloud_logger.response(response)
+        broker = Mock()
+        self.cloud_logger.response(response, broker)
         self.cloud_logger.log.info.assert_called_once_with(
             '{0}: {1}'.format(
                 self.cloud_logger.id, yaml.dump(response.get_data()).encode()

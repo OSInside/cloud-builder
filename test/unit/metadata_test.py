@@ -21,7 +21,10 @@ class TestCBMetaData:
         }
 
     @patch('cloud_builder.metadata.CBResponse')
-    def test_get_package_config_invalid(self, mock_CBResponse):
+    @patch('cloud_builder.message_broker.CBMessageBroker.new')
+    def test_get_package_config_invalid(
+        self, mock_CBMessageBroker, mock_CBResponse
+    ):
         response = mock_CBResponse.return_value
         metadata = CBMetaData.get_package_config(
             'path/to/package', Mock(), 'request_id',
@@ -31,7 +34,10 @@ class TestCBMetaData:
         assert response.set_package_invalid_metadata_response.called
 
     @patch('cloud_builder.metadata.CBResponse')
-    def test_get_package_config_broken(self, mock_CBResponse):
+    @patch('cloud_builder.message_broker.CBMessageBroker.new')
+    def test_get_package_config_broken(
+        self, mock_CBMessageBroker, mock_CBResponse
+    ):
         response = mock_CBResponse.return_value
         metadata = CBMetaData.get_package_config(
             'path/to/package', Mock(), 'request_id',

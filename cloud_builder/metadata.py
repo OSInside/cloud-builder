@@ -20,6 +20,7 @@ import yaml
 from cerberus import Validator
 from cloud_builder.schemas.metadata_schema import metadata_schema
 from cloud_builder.cloud_logger import CBCloudLogger
+from cloud_builder.message_broker import CBMessageBroker
 from cloud_builder.response import CBResponse
 from cloud_builder.defaults import Defaults
 from typing import Dict
@@ -60,6 +61,9 @@ class CBMetaData:
                         config_data, metadata_schema
                     )
                     if validator.errors:
+                        broker = CBMessageBroker.new(
+                            'kafka', config_file=Defaults.get_kafka_config()
+                        )
                         status_flags = Defaults.get_status_flags()
                         response = CBResponse(request_id, log.get_id())
                         response.set_package_invalid_metadata_response(
@@ -69,9 +73,12 @@ class CBMetaData:
                             response_code=status_flags.invalid_metadata,
                             package=package_path
                         )
-                        log.response(response)
+                        log.response(response, broker)
                         config_data = {}
                 except Exception as issue:
+                    broker = CBMessageBroker.new(
+                        'kafka', config_file=Defaults.get_kafka_config()
+                    )
                     status_flags = Defaults.get_status_flags()
                     response = CBResponse(request_id, log.get_id())
                     response.set_package_invalid_metadata_response(
@@ -81,6 +88,6 @@ class CBMetaData:
                         response_code=status_flags.invalid_metadata,
                         package=package_path
                     )
-                    log.response(response)
+                    log.response(response, broker)
                     config_data = {}
         return config_data

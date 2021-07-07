@@ -192,8 +192,8 @@ def handle_build_requests(poll_timeout: int, running_limit: int) -> None:
                             arch=request['arch']
                         )
                         broker.acknowledge()
-                        log.response(response)
-                        build_package(request)
+                        log.response(response, broker)
+                        build_package(request, broker)
                     else:
                         # do not acknowledge/build if the host architecture
                         # does not match the package. The request stays in
@@ -204,19 +204,20 @@ def handle_build_requests(poll_timeout: int, running_limit: int) -> None:
                             package=request['package'],
                             arch=request['arch']
                         )
-                        log.response(response)
+                        log.response(response, broker)
     finally:
         log.info('Closing message broker connection')
         broker.close()
 
 
-def build_package(request: Dict) -> None:
+def build_package(request: Dict, broker: CBMessageBroker) -> None:
     """
     Update the package sources and run the script which
     utilizes cb-prepare/cb-run to build the package for
     all configured targets
 
     :param dict request: yaml dict request record
+    :param CBMessageBroker broker: instance of CBMessageBroker
     """
     log = CBCloudLogger(
         'CBScheduler', os.path.basename(request['package'])
@@ -224,12 +225,12 @@ def build_package(request: Dict) -> None:
     package_source_path = os.path.join(
         Defaults.get_runner_project_dir(), format(request['package'])
     )
-    if check_package_sources(package_source_path, request, log):
+    if check_package_sources(package_source_path, request, log, broker):
         package_config = CBMetaData.get_package_config(
             package_source_path, log, request['request_id']
         )
         if package_config:
-            reset_build_if_running(package_config, request, log)
+            reset_build_if_running(package_config, request, log, broker)
 
             status_flags = Defaults.get_status_flags()
             if request['action'] == status_flags.package_changed:
@@ -249,7 +250,8 @@ def build_package(request: Dict) -> None:
 
 
 def reset_build_if_running(
-    package_config: Dict, request: Dict, log: CBCloudLogger
+    package_config: Dict, request: Dict, log: CBCloudLogger,
+    broker: CBMessageBroker
 ) -> None:
     """
     Check if the same package/arch is currently/still running
@@ -258,6 +260,7 @@ def reset_build_if_running(
     :param dict package_config: yaml dict from cloud_builder.yml
     :param dict request: yaml dict request record
     :param CBCloudLogger log: logger instance
+    :param CBMessageBroker broker: instance of CBMessageBroker
     """
     package_root = os.path.join(
         Defaults.get_runner_package_root(), package_config['name']
@@ -282,7 +285,7 @@ def reset_build_if_running(
                 package=request['package'],
                 arch=request['arch']
             )
-            log.response(response)
+            log.response(response, broker)
             os.kill(build_pid, signal.SIGTERM)
 
 
@@ -299,7 +302,8 @@ def get_running_builds() -> int:
 
 
 def check_package_sources(
-    package_source_path: str, request: Dict, log: CBCloudLogger
+    package_source_path: str, request: Dict, log: CBCloudLogger,
+    broker: CBMessageBroker
 ) -> bool:
     """
     Sanity checks on the given package sources
@@ -311,6 +315,7 @@ def check_package_sources(
     :param str package_source_path: path to package sources
     :param dict request: yaml dict request record
     :param CBCloudLogger log: logger instance
+    :param CBMessageBroker broker: instance of CBMessageBroker
     """
     if not os.path.isdir(package_source_path):
         status_flags = Defaults.get_status_flags()
@@ -321,7 +326,7 @@ def check_package_sources(
             package=request['package'],
             arch=request['arch']
         )
-        log.response(response)
+        log.response(response, broker)
         return False
 
     # TODO: Also check for meta data files (.kiwi and cloud_builder.yml)

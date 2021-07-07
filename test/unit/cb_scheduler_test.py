@@ -112,11 +112,11 @@ class TestCBScheduler:
         handle_build_requests(5000, 10)
 
         log.response.assert_called_once_with(
-            mock_CBResponse.return_value
+            mock_CBResponse.return_value, broker
         )
 
         broker.acknowledge.assert_called_once_with()
-        mock_build_package.assert_called_once_with(request)
+        mock_build_package.assert_called_once_with(request, broker)
         broker.close.assert_called_once_with()
 
     @patch('cloud_builder.cb_scheduler.CBResponse')
@@ -157,7 +157,7 @@ class TestCBScheduler:
         handle_build_requests(5000, 10)
 
         log.response.assert_called_once_with(
-            mock_CBResponse.return_value
+            mock_CBResponse.return_value, broker
         )
 
         broker.close.assert_called_once_with()
@@ -175,6 +175,7 @@ class TestCBScheduler:
         mock_Command_run, mock_CBCloudLogger, mock_CBMetaData
     ):
         log = Mock()
+        broker = Mock()
         mock_CBCloudLogger.return_value = log
         mock_check_package_sources.return_value = True
         status_flags = Mock(package_changed='package source changed')
@@ -188,10 +189,10 @@ class TestCBScheduler:
             'request_id': 'c8becd30-a5f6-43a6-a4f4-598ec1115b17',
             'schema_version': 0.1
         }
-        build_package(request)
+        build_package(request, broker)
         mock_reset_build_if_running.assert_called_once_with(
             mock_CBMetaData.get_package_config.return_value,
-            request, log
+            request, log, broker
         )
         mock_create_run_script.assert_called_once_with(
             mock_CBMetaData.get_package_config.return_value,
@@ -234,17 +235,18 @@ class TestCBScheduler:
             ]
         }
         log = Mock()
+        broker = Mock()
         with patch('builtins.open', create=True) as mock_open:
             mock_open.return_value = MagicMock(spec=io.IOBase)
             file_handle = mock_open.return_value.__enter__.return_value
             file_handle.read.return_value = '1234'
-            reset_build_if_running(package_config, request, log)
+            reset_build_if_running(package_config, request, log, broker)
             mock_open.assert_called_once_with('/var/tmp/CB/vim.pid')
             mock_os_kill.assert_called_once_with(
                 1234, signal.SIGTERM
             )
             log.response.assert_called_once_with(
-                mock_CBResponse.return_value
+                mock_CBResponse.return_value, broker
             )
 
     def test_get_running_builds(self):
@@ -260,9 +262,9 @@ class TestCBScheduler:
             'schema_version': 0.1
         }
         mock_os_path_isdir.return_value = False
-        assert check_package_sources('path', request, Mock()) is False
+        assert check_package_sources('path', request, Mock(), Mock()) is False
         mock_os_path_isdir.return_value = True
-        assert check_package_sources('path', request, Mock()) is True
+        assert check_package_sources('path', request, Mock(), Mock()) is True
 
     def test_create_run_script(self):
         request = {
