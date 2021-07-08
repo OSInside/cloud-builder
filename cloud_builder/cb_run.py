@@ -80,7 +80,7 @@ def main() -> None:
         [args['--root'].rstrip(os.sep), '.build.log']
     )
     build_result_file = ''.join(
-        [args.get('--root').split('@')[0], '.yml']
+        [args['--root'].rstrip(os.sep), '.result.yml']
     )
     log.info(
         f'Starting package build. For details see: {build_log_file}'
