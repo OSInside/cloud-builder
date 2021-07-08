@@ -2,12 +2,12 @@ from mock import (
     patch, Mock
 )
 
-from cloud_builder.metadata import CBMetaData
+from cloud_builder.package_metadata import CBPackageMetaData
 
 
-class TestCBMetaData:
+class TestCBPackageMetaData:
     def test_get_package_config_ok(self):
-        metadata = CBMetaData.get_package_config(
+        metadata = CBPackageMetaData.get_package_config(
             'path/to/package', Mock(), 'request_id',
             '../data/cloud_builder-ok.yml'
         )
@@ -20,26 +20,26 @@ class TestCBMetaData:
             ]
         }
 
-    @patch('cloud_builder.metadata.CBResponse')
+    @patch('cloud_builder.package_metadata.CBResponse')
     @patch('cloud_builder.message_broker.CBMessageBroker.new')
     def test_get_package_config_invalid(
         self, mock_CBMessageBroker, mock_CBResponse
     ):
         response = mock_CBResponse.return_value
-        metadata = CBMetaData.get_package_config(
+        metadata = CBPackageMetaData.get_package_config(
             'path/to/package', Mock(), 'request_id',
             '../data/cloud_builder-invalid.yml'
         )
         assert metadata == {}
         assert response.set_package_invalid_metadata_response.called
 
-    @patch('cloud_builder.metadata.CBResponse')
+    @patch('cloud_builder.package_metadata.CBResponse')
     @patch('cloud_builder.message_broker.CBMessageBroker.new')
     def test_get_package_config_broken(
         self, mock_CBMessageBroker, mock_CBResponse
     ):
         response = mock_CBResponse.return_value
-        metadata = CBMetaData.get_package_config(
+        metadata = CBPackageMetaData.get_package_config(
             'path/to/package', Mock(), 'request_id',
             '../data/cloud_builder-broken.yml'
         )

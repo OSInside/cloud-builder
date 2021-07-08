@@ -28,7 +28,7 @@ from cloud_builder.defaults import Defaults
 from typing import Dict
 
 
-class CBMetaData:
+class CBPackageMetaData:
     """
     Implements Cloud Builder metadata handling
     """
