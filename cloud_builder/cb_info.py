@@ -44,7 +44,8 @@ def main() -> None:
            ├── package.sh
            ├── package@DIST.ARCH
            ├── package@DIST.ARCH.build.log
-           └── package@DIST.ARCH.prepare.log
+           ├── package@DIST.ARCH.prepare.log
+           └── package@DIST.ARCH.result.yml
 
     The local file information is used to construct
     a response record with information about the
