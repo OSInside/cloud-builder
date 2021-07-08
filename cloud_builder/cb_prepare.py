@@ -113,6 +113,7 @@ def main() -> None:
                     process_line = True
                 if process_line:
                     solve_log.write(line)
+                    solve_log.write(os.linesep)
 
     # Install buildroot and create prepare log
     prepare_log_file = f'{target_root}.prepare.log'
