@@ -299,7 +299,7 @@ class TestCBScheduler:
             cb-run --root /var/tmp/CB/vim@TW.x86_64 &> /var/tmp/CB/vim@TW.x86_64.build.log \\
                 --request-id c8becd30-a5f6-43a6-a4f4-598ec1115b17
 
-            } &>/dev/null &
+            } &>>/var/tmp/CB/vim.log &
 
             echo $! > /var/tmp/CB/vim.pid
         ''')

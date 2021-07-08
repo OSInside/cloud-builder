@@ -381,7 +381,7 @@ def create_run_script(
                 request_id=request['request_id']
             )
     run_script += dedent('''
-        }} &>/dev/null &
+        }} &>>{package_root}.log &
 
         echo $! > {package_root}.pid
     ''').format(
