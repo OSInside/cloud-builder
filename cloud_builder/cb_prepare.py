@@ -84,27 +84,52 @@ def main() -> None:
             [args["--root"], f'{package_name}@{dist_profile}']
         )
     )
-    prepare_log_file = f'{target_root}.prepare.log'
+    solve_log_file = f'{target_root}.solver.log'
     log.info(
-        'Creating buildroot {0}. For details see: {1}'.format(
-            target_root, prepare_log_file
+        'Solving buildroot package list for {0}. For details see: {1}'.format(
+            target_root, solve_log_file
         )
     )
-    kiwi_run = [
+    kiwi_solve = [
         Path.which(
             'kiwi-ng', alternative_lookup_paths=['/usr/local/bin']
         ),
-        '--logfile', prepare_log_file,
+        '--logfile', solve_log_file,
         '--profile', dist_profile,
-        'system', 'prepare',
+        'image', 'info',
         '--description', args['--package'],
-        '--allow-existing-root',
-        '--root', target_root
+        '--resolve-package-list'
     ]
     return_value = os.system(
-        ' '.join(kiwi_run)
+        ' '.join(kiwi_solve)
     )
     exit_code = return_value >> 8
+    if exit_code == 0:
+        prepare_log_file = f'{target_root}.prepare.log'
+        log.info(
+            'Creating buildroot {0}. For details see: {1}'.format(
+                target_root, prepare_log_file
+            )
+        )
+        kiwi_run = [
+            Path.which(
+                'kiwi-ng', alternative_lookup_paths=['/usr/local/bin']
+            ),
+            '--logfile', prepare_log_file,
+            '--profile', dist_profile,
+            'system', 'prepare',
+            '--description', args['--package'],
+            '--allow-existing-root',
+            '--root', target_root
+        ]
+        return_value = os.system(
+            ' '.join(kiwi_run)
+        )
+        exit_code = return_value >> 8
+    else:
+        # create empty prepare.log if solver operation has failed
+        with open(prepare_log_file, 'w'):
+            pass
     if exit_code != 0:
         status = status_flags.buildroot_setup_failed
         message = 'Failed in kiwi stage, see logfile for details'
