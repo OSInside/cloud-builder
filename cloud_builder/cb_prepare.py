@@ -41,6 +41,7 @@ from cloud_builder.message_broker import CBMessageBroker
 from cloud_builder.response import CBResponse
 from cloud_builder.exceptions import exception_handler
 from cloud_builder.defaults import Defaults
+from kiwi.command import Command
 from kiwi.utils.sync import DataSync
 from kiwi.privileges import Privileges
 from kiwi.path import Path
@@ -84,52 +85,61 @@ def main() -> None:
             [args["--root"], f'{package_name}@{dist_profile}']
         )
     )
-    solve_log_file = f'{target_root}.solver.log'
+
+    # Solve buildroot packages and create solver yml
+    solve_yml_file = f'{target_root}.solver.yml'
     log.info(
         'Solving buildroot package list for {0}. For details see: {1}'.format(
-            target_root, solve_log_file
+            target_root, solve_yml_file
         )
     )
-    kiwi_solve = [
-        Path.which(
-            'kiwi-ng', alternative_lookup_paths=['/usr/local/bin']
-        ),
-        '--logfile', solve_log_file,
-        '--profile', dist_profile,
-        'image', 'info',
-        '--description', args['--package'],
-        '--resolve-package-list'
-    ]
-    return_value = os.system(
-        ' '.join(kiwi_solve)
+    kiwi_solve = Command.run(
+        [
+            Path.which(
+                'kiwi-ng', alternative_lookup_paths=['/usr/local/bin']
+            ),
+            '--profile', dist_profile,
+            'image', 'info',
+            '--description', args['--package'],
+            '--resolve-package-list'
+        ], raise_on_error=False
     )
-    exit_code = return_value >> 8
-    if exit_code == 0:
-        prepare_log_file = f'{target_root}.prepare.log'
+    exit_code = kiwi_solve.returncode
+    if kiwi_solve.output:
+        with open(solve_yml_file, 'w') as solve_log:
+            process_line = False
+            for line in kiwi_solve.output.split(os.linesep):
+                if line.startswith('{'):
+                    process_line = True
+                if process_line:
+                    solve_log.write(line)
+
+    # Install buildroot and create prepare log
+    prepare_log_file = f'{target_root}.prepare.log'
+    with open(prepare_log_file, 'w'):
+        pass
+    if kiwi_solve.returncode == 0:
         log.info(
             'Creating buildroot {0}. For details see: {1}'.format(
                 target_root, prepare_log_file
             )
         )
-        kiwi_run = [
-            Path.which(
-                'kiwi-ng', alternative_lookup_paths=['/usr/local/bin']
-            ),
-            '--logfile', prepare_log_file,
-            '--profile', dist_profile,
-            'system', 'prepare',
-            '--description', args['--package'],
-            '--allow-existing-root',
-            '--root', target_root
-        ]
-        return_value = os.system(
-            ' '.join(kiwi_run)
+        kiwi_run = Command.run(
+            [
+                Path.which(
+                    'kiwi-ng', alternative_lookup_paths=['/usr/local/bin']
+                ),
+                '--logfile', prepare_log_file,
+                '--profile', dist_profile,
+                'system', 'prepare',
+                '--description', args['--package'],
+                '--allow-existing-root',
+                '--root', target_root
+            ], raise_on_error=False
         )
-        exit_code = return_value >> 8
-    else:
-        # create empty prepare.log if solver operation has failed
-        with open(prepare_log_file, 'w'):
-            pass
+        exit_code = kiwi_run.returncode
+
+    # Sync package sources and build script into buildroot
     if exit_code != 0:
         status = status_flags.buildroot_setup_failed
         message = 'Failed in kiwi stage, see logfile for details'
@@ -171,6 +181,8 @@ def main() -> None:
             status = status_flags.buildroot_setup_failed
             exit_code = 1
             message = format(issue)
+
+    # Send result response to the message broker
     response = CBResponse(args['--request-id'], log.get_id())
     response.set_package_buildroot_response(
         message=message,
