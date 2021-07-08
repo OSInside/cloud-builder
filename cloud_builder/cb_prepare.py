@@ -190,6 +190,7 @@ def main() -> None:
         response_code=status,
         package=package_name,
         log_file=prepare_log_file,
+        solver_file=solve_yml_file,
         build_root=target_root,
         exit_code=exit_code
     )

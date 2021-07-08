@@ -56,6 +56,11 @@ response_schema = {
         'type': 'string',
         'nullable': False
     },
+    'solver_file': {
+        'required': False,
+        'type': 'string',
+        'nullable': False
+    },
     'binary_packages': {
         'required': False,
         'type': 'list',

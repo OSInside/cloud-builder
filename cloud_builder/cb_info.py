@@ -47,11 +47,13 @@ def main() -> None:
     the following example:
 
     /var/tmp/CB/
+           ├── package.log
            ├── package.pid
            ├── package.sh
-           ├── package@DIST.ARCH
+           ├── package@DIST.ARCH/
            ├── package@DIST.ARCH.build.log
            ├── package@DIST.ARCH.prepare.log
+           ├── package@DIST.ARCH.solver.yml
            └── package@DIST.ARCH.result.yml
 
     The local file information is used to construct
@@ -91,12 +93,14 @@ def lookup(package: str, request_id: str, broker: Any):
             source_ip = result['identity'].split(':')[1]
             binary_packages = result['binary_packages']
             log_file = result['log_file']
+            solver_file = result['solver_file']
 
             print(request_id)
             print(package)
             print(source_ip)
             print(binary_packages)
             print(log_file)
+            print(solver_file)
             print(utc_mod_time)
             print(dist)
             print(arch)
