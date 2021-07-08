@@ -7,6 +7,10 @@ from cloud_builder.message_broker.base import CBMessageBrokerBase
 from cloud_builder.exceptions import CBConfigFileNotFoundError
 from cloud_builder.schemas.package_request_schema import package_request_schema
 from cloud_builder.schemas.response_schema import response_schema
+from cloud_builder.schemas.info_schema import (
+    info_response_schema,
+    info_request_schema
+)
 
 
 class TestCBMessageBrokerBase:
@@ -32,10 +36,24 @@ class TestCBMessageBrokerBase:
         )
 
     @patch.object(CBMessageBrokerBase, 'validate_message_with_schema')
-    def test_validate_response(self, mock_validate_message_with_schema):
-        self.broker.validate_response('message')
+    def test_validate_package_response(self, mock_validate_message_with_schema):
+        self.broker.validate_package_response('message')
         mock_validate_message_with_schema.assert_called_once_with(
             'message', response_schema
+        )
+
+    @patch.object(CBMessageBrokerBase, 'validate_message_with_schema')
+    def test_validate_info_request(self, mock_validate_message_with_schema):
+        self.broker.validate_info_request('message')
+        mock_validate_message_with_schema.assert_called_once_with(
+            'message', info_request_schema
+        )
+
+    @patch.object(CBMessageBrokerBase, 'validate_message_with_schema')
+    def test_validate_info_response(self, mock_validate_message_with_schema):
+        self.broker.validate_info_response('message')
+        mock_validate_message_with_schema.assert_called_once_with(
+            'message', info_response_schema
         )
 
     @patch.object(CBMessageBrokerBase, 'acknowledge')

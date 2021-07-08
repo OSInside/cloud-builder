@@ -18,7 +18,9 @@
 import os
 import yaml
 from cerberus import Validator
-from cloud_builder.schemas.metadata_schema import metadata_schema
+from cloud_builder.schemas.package_metadata_schema import (
+    package_metadata_schema
+)
 from cloud_builder.cloud_logger import CBCloudLogger
 from cloud_builder.message_broker import CBMessageBroker
 from cloud_builder.response import CBResponse
@@ -56,9 +58,9 @@ class CBMetaData:
             with open(config_file, 'r') as config:
                 try:
                     config_data = yaml.safe_load(config) or {}
-                    validator = Validator(metadata_schema)
+                    validator = Validator(package_metadata_schema)
                     validator.validate(
-                        config_data, metadata_schema
+                        config_data, package_metadata_schema
                     )
                     if validator.errors:
                         broker = CBMessageBroker.new(

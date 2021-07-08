@@ -26,8 +26,11 @@ from cloud_builder.response import CBResponse
 from cloud_builder.schemas.package_request_schema import package_request_schema
 from cloud_builder.schemas.response_schema import response_schema
 from cloud_builder.cloud_logger import CBCloudLogger
-
 from cloud_builder.exceptions import CBConfigFileNotFoundError
+from cloud_builder.schemas.info_schema import (
+    info_response_schema,
+    info_request_schema
+)
 
 
 class CBMessageBrokerBase(metaclass=ABCMeta):
@@ -72,9 +75,9 @@ class CBMessageBrokerBase(metaclass=ABCMeta):
             message, package_request_schema
         )
 
-    def validate_response(self, message: str) -> Dict:
+    def validate_package_response(self, message: str) -> Dict:
         """
-        Validate a response
+        Validate a package build response
 
         Invalid messages will be auto committed such that they
         don't appear again
@@ -87,6 +90,40 @@ class CBMessageBrokerBase(metaclass=ABCMeta):
         """
         return self.validate_message_with_schema(
             message, response_schema
+        )
+
+    def validate_info_request(self, message: str) -> Dict:
+        """
+        Validate a info request
+
+        Invalid messages will be auto committed such that they
+        don't appear again
+
+        :param str message: raw message
+
+        :return: yaml formatted dict
+
+        :rtype: str
+        """
+        return self.validate_message_with_schema(
+            message, info_request_schema
+        )
+
+    def validate_info_response(self, message: str) -> Dict:
+        """
+        Validate a info response
+
+        Invalid messages will be auto committed such that they
+        don't appear again
+
+        :param str message: raw message
+
+        :return: yaml formatted dict
+
+        :rtype: str
+        """
+        return self.validate_message_with_schema(
+            message, info_response_schema
         )
 
     def validate_message_with_schema(self, message: str, schema: Dict) -> Dict:

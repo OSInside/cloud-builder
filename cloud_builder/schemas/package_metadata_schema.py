@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Cloud Builder.  If not, see <http://www.gnu.org/licenses/>
 #
-metadata_schema = {
+package_metadata_schema = {
     'schema_version': {
         'required': True,
         'type': 'number',
