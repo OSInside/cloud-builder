@@ -63,7 +63,7 @@ response_schema = {
     },
     'exit_code': {
         'required': False,
-        'type': 'int'
+        'type': 'number'
     },
     'build_root': {
         'required': False,

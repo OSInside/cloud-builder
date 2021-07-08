@@ -26,9 +26,16 @@ options:
         Default is 30sec
 
 """
+import os
+import glob
+import psutil
+from typing import Any
+from datetime import datetime
 from docopt import docopt
 from cloud_builder.version import __version__
 from cloud_builder.exceptions import exception_handler
+from cloud_builder.message_broker import CBMessageBroker
+from cloud_builder.defaults import Defaults
 from kiwi.privileges import Privileges
 
 
@@ -50,13 +57,6 @@ def main() -> None:
     The local file information is used to construct
     a response record with information about the
     package build:
-
-    * package status, running/succeeded/failed
-    * per arch:
-      * package prepare log contents
-      * package build log contents
-      * timestamp of build log
-      * scp command to fetch binaries
     """
     args = docopt(
         __doc__,
@@ -65,8 +65,63 @@ def main() -> None:
     )
 
     Privileges.check_for_root_permissions()
+
+    broker = CBMessageBroker.new(
+        'kafka', config_file=Defaults.get_kafka_config()
+    )
+
     print(args)
+    lookup('xclock', 'uuid', broker)
 
 
-def lookup(package: str, request_id: str):
-    pass
+def lookup(package: str, request_id: str, broker: Any):
+    build_result_file_glob_pattern = os.sep.join(
+        [Defaults.get_runner_package_root(), f'{package}*.result.yml']
+    )
+    build_pid_file = os.sep.join(
+        [Defaults.get_runner_package_root(), f'{package}.pid']
+    )
+    for package_result_file in glob.iglob(build_result_file_glob_pattern):
+        utc_mod_time = get_result_modification_time(package_result_file)
+        (dist, arch) = package_result_file.replace(
+            Defaults.get_runner_package_root(), ''
+        ).split('@')[1].split('.')[:2]
+        with open(package_result_file) as result_file:
+            result = broker.validate_response(result_file.read())
+            source_ip = result['identity'].split(':')[1]
+            binary_packages = result['binary_packages']
+            log_file = result['log_file']
+
+            print(request_id)
+            print(package)
+            print(source_ip)
+            print(binary_packages)
+            print(log_file)
+            print(utc_mod_time)
+            print(dist)
+            print(arch)
+            print(
+                get_package_status(build_pid_file, result['response_code'])
+            )
+
+
+def get_result_modification_time(filename: str) -> datetime:
+    return datetime.utcfromtimestamp(
+        os.path.getmtime(filename)
+    )
+
+
+def get_package_status(pidfile: str, response_code: str) -> str:
+    status_flags = Defaults.get_status_flags()
+    with open(pidfile) as pid_fd:
+        build_pid = int(pid_fd.read())
+        if psutil.pid_exists(build_pid):
+            response_code = status_flags.package_build_running
+    if response_code == status_flags.package_build_succeeded:
+        return status_flags.package_build_succeeded
+    elif response_code == status_flags.package_build_failed:
+        return status_flags.package_build_failed
+    elif response_code == status_flags.package_build_running:
+        return status_flags.package_build_running
+    else:
+        return 'unknown'
