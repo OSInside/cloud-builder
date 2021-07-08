@@ -89,7 +89,7 @@ def lookup(package: str, request_id: str, broker: Any):
             Defaults.get_runner_package_root(), ''
         ).split('@')[1].split('.')[:2]
         with open(package_result_file) as result_file:
-            result = broker.validate_response(result_file.read())
+            result = broker.validate_package_response(result_file.read())
             source_ip = result['identity'].split(':')[1]
             binary_packages = result['binary_packages']
             log_file = result['log_file']
