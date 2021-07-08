@@ -162,7 +162,7 @@ class TestCBScheduler:
 
         broker.close.assert_called_once_with()
 
-    @patch('cloud_builder.cb_scheduler.CBMetaData')
+    @patch('cloud_builder.cb_scheduler.CBPackageMetaData')
     @patch('cloud_builder.cb_scheduler.CBCloudLogger')
     @patch('cloud_builder.cb_scheduler.Command.run')
     @patch('cloud_builder.cb_scheduler.Defaults')
@@ -172,7 +172,7 @@ class TestCBScheduler:
     def test_build_package(
         self, mock_reset_build_if_running, mock_create_run_script,
         mock_check_package_sources, mock_Defaults,
-        mock_Command_run, mock_CBCloudLogger, mock_CBMetaData
+        mock_Command_run, mock_CBCloudLogger, mock_CBPackageMetaData
     ):
         log = Mock()
         broker = Mock()
@@ -191,11 +191,11 @@ class TestCBScheduler:
         }
         build_package(request, broker)
         mock_reset_build_if_running.assert_called_once_with(
-            mock_CBMetaData.get_package_config.return_value,
+            mock_CBPackageMetaData.get_package_config.return_value,
             request, log, broker
         )
         mock_create_run_script.assert_called_once_with(
-            mock_CBMetaData.get_package_config.return_value,
+            mock_CBPackageMetaData.get_package_config.return_value,
             request, 'cloud_builder_sources/vim'
         )
         assert mock_Command_run.call_args_list == [
