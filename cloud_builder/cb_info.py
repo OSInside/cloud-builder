@@ -35,6 +35,8 @@ from docopt import docopt
 from cloud_builder.version import __version__
 from cloud_builder.exceptions import exception_handler
 from cloud_builder.message_broker import CBMessageBroker
+from cloud_builder.info_response import CBInfoResponse
+from cloud_builder.cloud_logger import CBCloudLogger
 from cloud_builder.defaults import Defaults
 from kiwi.privileges import Privileges
 
@@ -53,8 +55,8 @@ def main() -> None:
            ├── package@DIST.ARCH/
            ├── package@DIST.ARCH.build.log
            ├── package@DIST.ARCH.prepare.log
-           ├── package@DIST.ARCH.solver.yml
-           └── package@DIST.ARCH.result.yml
+           ├── package@DIST.ARCH.result.yml
+           └── package@DIST.ARCH.solver.json
 
     The local file information is used to construct
     a response record with information about the
@@ -82,12 +84,18 @@ def main() -> None:
 
 
 def lookup(package: str, request_id: str, broker: Any):
+    log = CBCloudLogger('CBInfo', package)
+
     build_result_file_glob_pattern = os.sep.join(
         [Defaults.get_runner_package_root(), f'{package}*.result.yml']
     )
     build_pid_file = os.sep.join(
         [Defaults.get_runner_package_root(), f'{package}.pid']
     )
+    response = CBInfoResponse(
+        request_id, log.get_id()
+    )
+    print(response)
     for package_result_file in glob.iglob(build_result_file_glob_pattern):
         utc_mod_time = get_result_modification_time(package_result_file)
         (dist, arch) = package_result_file.replace(

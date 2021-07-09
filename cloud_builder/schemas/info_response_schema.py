@@ -53,7 +53,7 @@ info_response_schema = {
                     'type': 'string',
                     'nullable': False
                 },
-                'architectures': {
+                'distributions': {
                     'required': True,
                     'type': 'list',
                     'nullable': False,
