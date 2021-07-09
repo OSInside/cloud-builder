@@ -285,14 +285,14 @@ class TestCBScheduler:
 
             set -e
 
+            rm -f /var/tmp/CB/vim.log
+
             function finish {
                 kill $(jobs -p) &>/dev/null
             }
 
             {
             trap finish EXIT
-
-            rm -f /var/tmp/CB/vim.log
 
             cb-prepare --root /var/tmp/CB \\
                 --package source_path \\
