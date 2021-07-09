@@ -95,31 +95,30 @@ def lookup(package: str, request_id: str, broker: Any):
     response = CBInfoResponse(
         request_id, log.get_id()
     )
-    print(response)
     for package_result_file in glob.iglob(build_result_file_glob_pattern):
-        utc_mod_time = get_result_modification_time(package_result_file)
+        utc_modification_time = get_result_modification_time(
+            package_result_file
+        )
         (dist, arch) = package_result_file.replace(
             Defaults.get_runner_package_root(), ''
         ).split('@')[1].split('.')[:2]
         with open(package_result_file) as result_file:
             result = broker.validate_package_response(result_file.read())
             source_ip = result['identity'].split(':')[1]
-            binary_packages = result['binary_packages']
-            log_file = result['log_file']
-            solver_file = result['solver_file']
-
-            print(request_id)
-            print(package)
-            print(source_ip)
-            print(binary_packages)
-            print(log_file)
-            print(solver_file)
-            print(utc_mod_time)
-            print(dist)
-            print(arch)
-            print(
-                get_package_status(build_pid_file, result['response_code'])
+            response.set_info_response(package, source_ip)
+            response.add_info_response_architecture(arch)
+            response.add_info_response_distribution_for_arch(
+                arch,
+                dist,
+                result['binary_packages'],
+                result['log_file'],
+                result['solver_file'],
+                format(utc_modification_time),
+                get_package_status(
+                    build_pid_file, result['response_code']
+                )
             )
+            log.info_response(response, broker)
 
 
 def get_result_modification_time(filename: str) -> datetime:
