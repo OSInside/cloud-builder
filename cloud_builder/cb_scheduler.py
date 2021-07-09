@@ -150,6 +150,10 @@ def handle_build_requests(poll_timeout: int, running_limit: int) -> None:
     """
     Check on the runner state and if ok listen to the
     message broker queue for new package build requests
+    The package_request_queue is used as shared queue
+    within a single group. It's important to have this
+    queue configured to distribute messages across
+    several readers to let multiple CB scheduler scale
 
     :param int poll_timeout:
         timeout in msec after which the blocking read() to the

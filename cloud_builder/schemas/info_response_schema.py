@@ -15,29 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with Cloud Builder.  If not, see <http://www.gnu.org/licenses/>
 #
-info_request_schema = {
-    'schema_version': {
-        'required': True,
-        'type': 'number',
-        'nullable': False
-    },
-    'identity': {
-        'required': True,
-        'type': 'string',
-        'nullable': False
-    },
-    'request_id': {
-        'required': True,
-        'type': 'string',
-        'nullable': False
-    },
-    'package': {
-        'required': True,
-        'type': 'string',
-        'nullable': False
-    }
-}
-
 info_response_schema = {
     'schema_version': {
         'required': True,

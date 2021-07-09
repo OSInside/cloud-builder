@@ -42,7 +42,7 @@ class TestCBMessageBrokerKafka:
         request = CBPackageRequest()
         self.kafka.send_package_request(request)
         producer.send.assert_called_once_with(
-            'cb-request', yaml.dump(request.get_data()).encode()
+            'cb-package-request', yaml.dump(request.get_data()).encode()
         )
         producer.flush.assert_called_once_with()
 

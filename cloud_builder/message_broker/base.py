@@ -25,12 +25,10 @@ from cloud_builder.package_request import CBPackageRequest
 from cloud_builder.response import CBResponse
 from cloud_builder.schemas.package_request_schema import package_request_schema
 from cloud_builder.schemas.response_schema import response_schema
+from cloud_builder.schemas.info_request_schema import info_request_schema
+from cloud_builder.schemas.info_response_schema import info_response_schema
 from cloud_builder.cloud_logger import CBCloudLogger
 from cloud_builder.exceptions import CBConfigFileNotFoundError
-from cloud_builder.schemas.info_schema import (
-    info_response_schema,
-    info_request_schema
-)
 
 
 class CBMessageBrokerBase(metaclass=ABCMeta):
