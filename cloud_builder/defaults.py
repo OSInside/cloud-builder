@@ -43,18 +43,50 @@ class Defaults:
     @staticmethod
     def get_package_request_queue_name() -> str:
         """
-        Return name of message queue for sending sending
-        package build requests
+        Return name of message queue used for sending
+        package build requests.
+
+        Queue is a shared queue:
+        Each reader compete with each other and for each message,
+        only one reader will get it. It's important to configure
+        the queue in a way that it distributes requests across
+        readers. In kafka this done by assigning as many partitions
+        as there are potential readers
         """
-        return 'cb-request'
+        return 'cb-package-request'
 
     @staticmethod
     def get_response_queue_name() -> str:
         """
-        Return name of message queue for sending cloud
-        builder response messages
+        Return name of message queue used for sending
+        response messages of the Cloud Builder system
+
+        Queue is a publish/subscribe queue:
+        Each message is broadcast to all readers.
         """
         return 'cb-response'
+
+    @staticmethod
+    def get_info_request_queue_name() -> str:
+        """
+        Return name of message queue used for sending
+        info requests
+
+        Queue is a publish/subscribe queue:
+        Each message is broadcast to all readers.
+        """
+        return 'cb-info-request'
+
+    @staticmethod
+    def get_info_response_queue_name() -> str:
+        """
+        Return name of message queue used for sending
+        info response messages
+
+        Queue is a publish/subscribe queue:
+        Each message is broadcast to all readers.
+        """
+        return 'cb-info-response'
 
     @staticmethod
     def get_runner_results_root() -> str:

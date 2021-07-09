@@ -32,7 +32,13 @@ class TestDefaults:
                 'users_home/.config/cb/kafka.yml'
 
     def test_get_package_request_queue_name(self):
-        assert Defaults.get_package_request_queue_name() == 'cb-request'
+        assert Defaults.get_package_request_queue_name() == 'cb-package-request'
 
     def test_get_response_queue_name(self):
         assert Defaults.get_response_queue_name() == 'cb-response'
+
+    def test_get_info_request_queue_name(self):
+        assert Defaults.get_info_request_queue_name() == 'cb-info-request'
+
+    def test_get_info_response_queue_name(self):
+        assert Defaults.get_info_response_queue_name() == 'cb-info-response'

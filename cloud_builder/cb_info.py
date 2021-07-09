@@ -72,6 +72,11 @@ def main() -> None:
         'kafka', config_file=Defaults.get_kafka_config()
     )
 
+    # In the code reading from the info queue use the
+    # pub/sub method and assign the unique request_id as
+    # consumer group name
+    # https://stackoverflow.com/questions/23136500/how-kafka-broadcast-to-many-consumer-groups
+
     print(args)
     lookup('xclock', 'uuid', broker)
 

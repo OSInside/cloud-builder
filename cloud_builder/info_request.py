@@ -15,23 +15,15 @@
 # You should have received a copy of the GNU General Public License
 # along with Cloud Builder.  If not, see <http://www.gnu.org/licenses/>
 #
-from typing import (
-    Dict
-)
+from typing import Dict
 
 
-class CBInfo:
+class CBInfoRequest:
     """
-    Implement creation of info schema valid data dict
+    Implement creation of info request schema valid data dict
     """
     def __init__(self, request_id: str, identity: str) -> None:
         self.info_schema_version = 0.1
-        self.info_response_dict: Dict = {
-            'schema_version': self.info_schema_version,
-            'identity': identity,
-            'request_id': request_id,
-            'architectures': []
-        }
         self.info_request_dict: Dict = {
             'schema_version': self.info_schema_version,
             'identity': identity,
@@ -39,23 +31,10 @@ class CBInfo:
         }
 
     def set_info_request(self, package: str) -> None:
-        self.response_dict = {
+        self.info_request_dict = {
             **self.info_request_dict,
             'package': package
         }
 
-    def set_info_response(self, package: str, source_ip: str) -> None:
-        self.response_dict = {
-            **self.response_dict,
-            'package': package,
-            'source_ip': source_ip
-        }
-
-    def add_info_response_architecture(self):
-        pass
-
-    def add_info_response_distribution(self):
-        pass
-
     def get_data(self) -> Dict:
-        return self.response_dict
+        return self.info_request_dict
