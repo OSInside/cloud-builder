@@ -16,11 +16,14 @@
 # along with Cloud Builder.  If not, see <http://www.gnu.org/licenses/>
 #
 import yaml
-from typing import Any
+from typing import (
+    Any, Dict
+)
 from cloud_builder.logger import CBLogger
 from cloud_builder.defaults import Defaults
 from cloud_builder.identity import CBIdentity
 from cloud_builder.response import CBResponse
+from cloud_builder.info_response import CBInfoResponse
 
 
 class CBCloudLogger:
@@ -72,6 +75,19 @@ class CBCloudLogger:
         """
         self.log.error(f'{self.id}: {message}')
 
+    def info_response(
+        self, response: CBInfoResponse, broker: Any, filename: str = None
+    ) -> None:
+        """
+        Local and message broker log a CBInfoResponse message
+
+        :param CBInfoResponse response: instance of CBInfoResponse
+        :param CBMessageBroker broker: instance of CBMessageBroker
+        :param str filename: store to filename in yaml format
+        """
+        self._process_response(response.get_data(), filename)
+        broker.send_info_response(response)
+
     def response(
         self, response: CBResponse, broker: Any, filename: str = None
     ) -> None:
@@ -82,14 +98,25 @@ class CBCloudLogger:
         :param CBMessageBroker broker: instance of CBMessageBroker
         :param str filename: store to filename in yaml format
         """
+        self._process_response(response.get_data(), filename)
+        broker.send_response(response)
+
+    def _process_response(
+        self, response_dict: Dict, filename: str = None
+    ) -> None:
+        """
+        Local log a response_dict
+
+        :param Dict response_dict: message dict
+        :param str filename: store to filename in yaml format
+        """
         self.log.info(
             '{0}: {1}'.format(
-                self.id, yaml.dump(response.get_data()).encode()
+                self.id, yaml.dump(response_dict).encode()
             )
         )
         if filename:
             with open(filename, 'w') as out:
                 yaml.dump(
-                    response.get_data(), out, default_flow_style=False
+                    response_dict, out, default_flow_style=False
                 )
-        broker.send_response(response)

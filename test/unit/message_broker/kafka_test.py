@@ -5,6 +5,7 @@ from mock import (
 import yaml
 from cloud_builder.package_request import CBPackageRequest
 from cloud_builder.response import CBResponse
+from cloud_builder.info_response import CBInfoResponse
 from cloud_builder.message_broker.kafka import CBMessageBrokerKafka
 from cloud_builder.exceptions import (
     CBKafkaProducerException,
@@ -53,6 +54,16 @@ class TestCBMessageBrokerKafka:
         self.kafka.send_response(response)
         producer.send.assert_called_once_with(
             'cb-response', yaml.dump(response.get_data()).encode()
+        )
+        producer.flush.assert_called_once_with()
+
+    @patch('cloud_builder.message_broker.kafka.KafkaProducer')
+    def test_send_info_response(self, mock_KafkaProducer):
+        producer = mock_KafkaProducer.return_value
+        response = CBInfoResponse('request_id', 'identity')
+        self.kafka.send_info_response(response)
+        producer.send.assert_called_once_with(
+            'cb-info-response', yaml.dump(response.get_data()).encode()
         )
         producer.flush.assert_called_once_with()
 

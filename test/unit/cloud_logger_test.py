@@ -6,6 +6,7 @@ from mock import (
 
 from cloud_builder.cloud_logger import CBCloudLogger
 from cloud_builder.response import CBResponse
+from cloud_builder.info_response import CBInfoResponse
 
 
 class TestCBCloudLogger:
@@ -34,6 +35,17 @@ class TestCBCloudLogger:
         self.cloud_logger.log.error.assert_called_once_with(
             '{0}: {1}'.format(self.cloud_logger.id, 'message')
         )
+
+    def test_info_response(self):
+        response = CBInfoResponse('UUID', 'response_identity')
+        broker = Mock()
+        self.cloud_logger.info_response(response, broker)
+        self.cloud_logger.log.info.assert_called_once_with(
+            '{0}: {1}'.format(
+                self.cloud_logger.id, yaml.dump(response.get_data()).encode()
+            )
+        )
+        broker.send_info_response.assert_called_once_with(response)
 
     def test_response(self):
         response = CBResponse('UUID', 'response_identity')

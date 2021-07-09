@@ -16,24 +16,22 @@
 # along with Cloud Builder.  If not, see <http://www.gnu.org/licenses/>
 #
 from typing import Dict
+from cloud_builder.identity import CBIdentity
 
 
 class CBInfoRequest:
     """
     Implement creation of info request schema valid data dict
     """
-    def __init__(self, request_id: str, identity: str) -> None:
-        self.info_schema_version = 0.1
-        self.info_request_dict: Dict = {
-            'schema_version': self.info_schema_version,
-            'identity': identity,
-            'request_id': request_id
-        }
+    def __init__(self) -> None:
+        self.info_request_dict: Dict = {}
+        self.info_request_schema_version = 0.1
 
     def set_info_request(self, package: str) -> None:
         self.info_request_dict = {
-            **self.info_request_dict,
-            'package': package
+            'schema_version': self.info_request_schema_version,
+            'request_id': CBIdentity.get_request_id(),
+            'package': package,
         }
 
     def get_data(self) -> Dict:
