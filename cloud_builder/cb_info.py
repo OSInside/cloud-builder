@@ -73,7 +73,7 @@ def main() -> None:
     )
 
     # In the code reading from the info queue use the
-    # pub/sub method and assign the unique request_id as
+    # pub/sub method and assign group_id=f'cb-{CBIdentity.get_external_ip()}' as
     # consumer group name
     # https://stackoverflow.com/questions/23136500/how-kafka-broadcast-to-many-consumer-groups
 
