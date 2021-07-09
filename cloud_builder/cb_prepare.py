@@ -86,8 +86,8 @@ def main() -> None:
         )
     )
 
-    # Solve buildroot packages and create solver yml
-    solve_yml_file = f'{target_root}.solver.yml'
+    # Solve buildroot packages and create solver json
+    solve_yml_file = f'{target_root}.solver.json'
     log.info(
         'Solving buildroot package list for {0}. For details see: {1}'.format(
             target_root, solve_yml_file
