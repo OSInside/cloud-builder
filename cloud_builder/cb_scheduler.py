@@ -360,13 +360,17 @@ def create_run_script(
 
         set -e
 
-        function finish {
+        function finish {{
             kill $(jobs -p) &>/dev/null
-        }
+        }}
 
-        {
+        {{
         trap finish EXIT
-    ''')
+
+        rm -f {package_root}.log
+    ''').format(
+        package_root=package_root
+    )
     for target in package_config.get('distributions') or []:
         if target['arch'] == platform.machine():
             dist_profile = f'{target["dist"]}.{target["arch"]}'
