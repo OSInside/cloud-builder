@@ -16,7 +16,7 @@
 # along with Cloud Builder.  If not, see <http://www.gnu.org/licenses/>
 #
 from typing import (
-    Dict
+    Dict, List
 )
 
 
@@ -40,11 +40,31 @@ class CBInfoResponse:
             'source_ip': source_ip
         }
 
-    def add_info_response_architecture(self):
-        pass
+    def add_info_response_architecture(self, arch: str) -> None:
+        self.info_response_dict['architectures'].append(
+            {
+                'arch': arch,
+                'distributions': []
+            }
+        )
 
-    def add_info_response_distribution(self):
-        pass
+    def add_info_response_distribution_for_arch(
+        self, arch: str, dist: str, binary_packages: List[str],
+        log_file: str, solver_file: str, utc_modification_time: str,
+        build_status: str
+    ) -> None:
+        for arch_record in self.info_response_dict['architectures']:
+            if arch_record['arch'] == arch:
+                arch_record['distributions'].append(
+                    {
+                        'dist': dist,
+                        'binary_packages': binary_packages,
+                        'log_file': log_file,
+                        'solver_file': solver_file,
+                        'utc_modification_time': utc_modification_time,
+                        'build_status': build_status
+                    }
+                )
 
     def get_data(self) -> Dict:
         return self.info_response_dict
