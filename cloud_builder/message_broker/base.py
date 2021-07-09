@@ -23,6 +23,7 @@ from typing import (
 )
 from cloud_builder.package_request import CBPackageRequest
 from cloud_builder.response import CBResponse
+from cloud_builder.info_response import CBInfoResponse
 from cloud_builder.schemas.package_request_schema import package_request_schema
 from cloud_builder.schemas.response_schema import response_schema
 from cloud_builder.schemas.info_request_schema import info_request_schema
@@ -180,6 +181,17 @@ class CBMessageBrokerBase(metaclass=ABCMeta):
         Implementation in specialized broker class
 
         :param CBResponse response: unused
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def send_info_response(self, response: CBInfoResponse) -> None:
+        """
+        Send a info response
+
+        Implementation in specialized broker class
+
+        :param CBInfoResponse response: unused
         """
         raise NotImplementedError
 

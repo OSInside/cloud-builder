@@ -95,6 +95,10 @@ class TestCBMessageBrokerBase:
         with raises(NotImplementedError):
             self.broker.send_response(Mock())
 
+    def test_send_info_response(self):
+        with raises(NotImplementedError):
+            self.broker.send_info_response(Mock())
+
     def test_acknowledge(self):
         with raises(NotImplementedError):
             self.broker.acknowledge()
