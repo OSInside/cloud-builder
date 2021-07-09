@@ -76,8 +76,13 @@ def main() -> None:
 
     log = CBCloudLogger('CBRun', package_name)
 
+    # created by run.sh script written in cb_prepare and called here
     build_log_file = ''.join(
         [args['--root'].rstrip(os.sep), '.build.log']
+    )
+    # created by kiwi resolve-package-list called in cb_prepare
+    solver_json_file = ''.join(
+        [args['--root'].rstrip(os.sep), '.solver.json']
     )
     build_result_file = ''.join(
         [args['--root'].rstrip(os.sep), '.result.yml']
@@ -116,6 +121,7 @@ def main() -> None:
         response_code=status,
         package=package_name,
         log_file=build_log_file,
+        solver_file=solver_json_file,
         binary_packages=packages,
         exit_code=exit_code
     )

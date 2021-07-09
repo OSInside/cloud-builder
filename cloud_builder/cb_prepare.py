@@ -87,10 +87,10 @@ def main() -> None:
     )
 
     # Solve buildroot packages and create solver json
-    solve_yml_file = f'{target_root}.solver.json'
+    solver_json_file = f'{target_root}.solver.json'
     log.info(
         'Solving buildroot package list for {0}. For details see: {1}'.format(
-            target_root, solve_yml_file
+            target_root, solver_json_file
         )
     )
     kiwi_solve = Command.run(
@@ -106,7 +106,7 @@ def main() -> None:
     )
     exit_code = kiwi_solve.returncode
     if kiwi_solve.output:
-        with open(solve_yml_file, 'w') as solve_log:
+        with open(solver_json_file, 'w') as solve_log:
             process_line = False
             for line in kiwi_solve.output.split(os.linesep):
                 if line.startswith('{'):
@@ -190,7 +190,7 @@ def main() -> None:
         response_code=status,
         package=package_name,
         log_file=prepare_log_file,
-        solver_file=solve_yml_file,
+        solver_file=solver_json_file,
         build_root=target_root,
         exit_code=exit_code
     )

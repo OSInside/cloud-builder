@@ -34,7 +34,7 @@ class CBResponse:
 
     def set_package_build_response(
         self, message: str, response_code: str, package: str,
-        log_file: str, binary_packages: List[str],
+        log_file: str, solver_file: str, binary_packages: List[str],
         exit_code: int
     ) -> None:
         self.response_dict = {
@@ -43,6 +43,7 @@ class CBResponse:
             'response_code': response_code,
             'package': package,
             'log_file': log_file,
+            'solver_file': solver_file,
             'binary_packages': binary_packages,
             'exit_code': exit_code
         }

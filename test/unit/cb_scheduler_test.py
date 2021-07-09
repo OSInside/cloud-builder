@@ -292,6 +292,8 @@ class TestCBScheduler:
             {
             trap finish EXIT
 
+            rm -f /var/tmp/CB/vim.log
+
             cb-prepare --root /var/tmp/CB \\
                 --package source_path \\
                 --profile TW.x86_64 \\
