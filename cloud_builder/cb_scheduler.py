@@ -360,14 +360,14 @@ def create_run_script(
 
         set -e
 
+        rm -f {package_root}.log
+
         function finish {{
             kill $(jobs -p) &>/dev/null
         }}
 
         {{
         trap finish EXIT
-
-        rm -f {package_root}.log
     ''').format(
         package_root=package_root
     )
