@@ -27,14 +27,12 @@ class TestExceptions:
     def test_exception_handler_system_exit(
         self, mock_sys_exit, mock_get_logger
     ):
-        log = mock_get_logger.return_value
         func = Mock()
 
-        func.side_effect = SystemExit('user_abort')
+        func.side_effect = SystemExit
         wrapper = exception_handler(func)
         wrapper()
-        log.error.assert_called_once_with('user_abort')
-        mock_sys_exit.assert_called_once_with(1)
+        assert mock_sys_exit.called
 
     @patch('cloud_builder.exceptions.CBLogger.get_logger')
     @patch('sys.exit')
