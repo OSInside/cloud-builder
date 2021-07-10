@@ -41,10 +41,14 @@ info_response_schema = {
         'type': 'string',
         'nullable': False
     },
+    'is_running': {
+        'required': True,
+        'type': 'bool'
+    },
     'architectures': {
         'required': True,
         'type': 'list',
-        'nullable': False,
+        'nullable': True,
         'schema': {
             'type': 'dict',
             'schema': {

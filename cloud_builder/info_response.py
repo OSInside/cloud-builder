@@ -33,11 +33,14 @@ class CBInfoResponse:
             'architectures': []
         }
 
-    def set_info_response(self, package: str, source_ip: str) -> None:
+    def set_info_response(
+        self, package: str, source_ip: str, is_running: bool
+    ) -> None:
         self.info_response_dict = {
             **self.info_response_dict,
             'package': package,
-            'source_ip': source_ip
+            'source_ip': source_ip,
+            'is_running': is_running
         }
 
     def add_info_response_architecture(self, arch: str) -> None:

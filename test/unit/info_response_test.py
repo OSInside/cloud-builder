@@ -6,11 +6,12 @@ class TestCBInfoResponse:
         self.info_response = CBInfoResponse('uuid', 'identity')
 
     def test_set_info_response(self):
-        self.info_response.set_info_response('package', 'source_ip')
+        self.info_response.set_info_response('package', 'source_ip', True)
         assert self.info_response.get_data() == {
             **self.info_response.info_response_dict,
             'package': 'package',
-            'source_ip': 'source_ip'
+            'source_ip': 'source_ip',
+            'is_running': True
         }
 
     def test_add_info_response_architecture(self):

@@ -85,40 +85,40 @@ def main() -> None:
 
 def lookup(package: str, request_id: str, broker: Any):
     log = CBCloudLogger('CBInfo', package)
-
-    build_result_file_glob_pattern = os.sep.join(
-        [Defaults.get_runner_package_root(), f'{package}*.result.yml']
-    )
     build_pid_file = os.sep.join(
         [Defaults.get_runner_package_root(), f'{package}.pid']
     )
-    response = CBInfoResponse(
-        request_id, log.get_id()
-    )
-    for package_result_file in glob.iglob(build_result_file_glob_pattern):
-        utc_modification_time = get_result_modification_time(
-            package_result_file
+    if os.path.isfile(build_pid_file):
+        source_ip = log.get_id().split(':')[1]
+        response = CBInfoResponse(
+            request_id, log.get_id()
         )
-        (dist, arch) = package_result_file.replace(
-            Defaults.get_runner_package_root(), ''
-        ).split('@')[1].split('.')[:2]
-        with open(package_result_file) as result_file:
-            result = broker.validate_package_response(result_file.read())
-            source_ip = result['identity'].split(':')[1]
-            response.set_info_response(package, source_ip)
-            response.add_info_response_architecture(arch)
-            response.add_info_response_distribution_for_arch(
-                arch,
-                dist,
-                result['binary_packages'],
-                result['log_file'],
-                result['solver_file'],
-                format(utc_modification_time),
-                get_package_status(
-                    build_pid_file, result['response_code']
-                )
+        response.set_info_response(
+            package, source_ip, is_building(build_pid_file)
+        )
+        build_result_file_glob_pattern = os.sep.join(
+            [Defaults.get_runner_package_root(), f'{package}*.result.yml']
+        )
+        for package_result_file in glob.iglob(build_result_file_glob_pattern):
+            utc_modification_time = get_result_modification_time(
+                package_result_file
             )
-            log.info_response(response, broker)
+            (dist, arch) = package_result_file.replace(
+                Defaults.get_runner_package_root(), ''
+            ).split('@')[1].split('.')[:2]
+            with open(package_result_file) as result_file:
+                result = broker.validate_package_response(result_file.read())
+                response.add_info_response_architecture(arch)
+                response.add_info_response_distribution_for_arch(
+                    arch,
+                    dist,
+                    result['binary_packages'],
+                    result['log_file'],
+                    result['solver_file'],
+                    format(utc_modification_time),
+                    get_package_status(result['response_code'])
+                )
+        log.info_response(response, broker)
 
 
 def get_result_modification_time(filename: str) -> datetime:
@@ -127,12 +127,8 @@ def get_result_modification_time(filename: str) -> datetime:
     )
 
 
-def get_package_status(pidfile: str, response_code: str) -> str:
+def get_package_status(response_code: str) -> str:
     status_flags = Defaults.get_status_flags()
-    with open(pidfile) as pid_fd:
-        build_pid = int(pid_fd.read())
-        if psutil.pid_exists(build_pid):
-            response_code = status_flags.package_build_running
     if response_code == status_flags.package_build_succeeded:
         return status_flags.package_build_succeeded
     elif response_code == status_flags.package_build_failed:
@@ -141,3 +137,11 @@ def get_package_status(pidfile: str, response_code: str) -> str:
         return status_flags.package_build_running
     else:
         return 'unknown'
+
+
+def is_building(pidfile: str) -> bool:
+    with open(pidfile) as pid_fd:
+        build_pid = int(pid_fd.read())
+        if psutil.pid_exists(build_pid):
+            return True
+    return False
