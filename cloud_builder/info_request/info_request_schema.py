@@ -21,11 +21,6 @@ info_request_schema = {
         'type': 'number',
         'nullable': False
     },
-    'identity': {
-        'required': True,
-        'type': 'string',
-        'nullable': False
-    },
     'request_id': {
         'required': True,
         'type': 'string',
