@@ -34,8 +34,8 @@ from datetime import datetime
 from docopt import docopt
 from cloud_builder.version import __version__
 from cloud_builder.exceptions import exception_handler
-from cloud_builder.message_broker import CBMessageBroker
-from cloud_builder.info_response import CBInfoResponse
+from cloud_builder.broker import CBMessageBroker
+from cloud_builder.info_response.info_response import CBInfoResponse
 from cloud_builder.cloud_logger import CBCloudLogger
 from cloud_builder.defaults import Defaults
 from kiwi.privileges import Privileges

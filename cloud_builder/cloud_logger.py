@@ -22,8 +22,8 @@ from typing import (
 from cloud_builder.logger import CBLogger
 from cloud_builder.defaults import Defaults
 from cloud_builder.identity import CBIdentity
-from cloud_builder.response import CBResponse
-from cloud_builder.info_response import CBInfoResponse
+from cloud_builder.response.response import CBResponse
+from cloud_builder.info_response.info_response import CBInfoResponse
 
 
 class CBCloudLogger:

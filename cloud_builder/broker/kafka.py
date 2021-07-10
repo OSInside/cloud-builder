@@ -21,11 +21,11 @@ from kafka import KafkaConsumer
 from kafka import KafkaProducer
 
 from cloud_builder.defaults import Defaults
-from cloud_builder.package_request import CBPackageRequest
-from cloud_builder.response import CBResponse
-from cloud_builder.info_response import CBInfoResponse
+from cloud_builder.package_request.package_request import CBPackageRequest
+from cloud_builder.response.response import CBResponse
+from cloud_builder.info_response.info_response import CBInfoResponse
 from cloud_builder.cloud_logger import CBCloudLogger
-from cloud_builder.message_broker.base import CBMessageBrokerBase
+from cloud_builder.broker.base import CBMessageBrokerBase
 
 from cloud_builder.exceptions import (
     CBKafkaProducerException,

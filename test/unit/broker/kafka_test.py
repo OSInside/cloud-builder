@@ -3,10 +3,10 @@ from mock import (
     patch, Mock
 )
 import yaml
-from cloud_builder.package_request import CBPackageRequest
-from cloud_builder.response import CBResponse
-from cloud_builder.info_response import CBInfoResponse
-from cloud_builder.message_broker.kafka import CBMessageBrokerKafka
+from cloud_builder.package_request.package_request import CBPackageRequest
+from cloud_builder.response.response import CBResponse
+from cloud_builder.info_response.info_response import CBInfoResponse
+from cloud_builder.broker.kafka import CBMessageBrokerKafka
 from cloud_builder.exceptions import (
     CBKafkaProducerException,
     CBKafkaConsumerException
@@ -14,7 +14,7 @@ from cloud_builder.exceptions import (
 
 
 class TestCBMessageBrokerKafka:
-    @patch('cloud_builder.message_broker.kafka.CBCloudLogger')
+    @patch('cloud_builder.broker.kafka.CBCloudLogger')
     def setup(self, mock_CBCloudLogger):
         config_file = '../data/cb/kafka.yml'
         with open(config_file) as config:
@@ -25,19 +25,19 @@ class TestCBMessageBrokerKafka:
             self.kafka.post_init()
         assert self.kafka.kafka_host == 'URI:9092'
 
-    @patch('cloud_builder.message_broker.kafka.KafkaProducer')
+    @patch('cloud_builder.broker.kafka.KafkaProducer')
     def test_create_producer_raises(self, mock_KafkaProducer):
         mock_KafkaProducer.side_effect = Exception
         with raises(CBKafkaProducerException):
             self.kafka._create_producer()
 
-    @patch('cloud_builder.message_broker.kafka.KafkaConsumer')
+    @patch('cloud_builder.broker.kafka.KafkaConsumer')
     def test_create_consumer_raises(self, mock_KafkaConsumer):
         mock_KafkaConsumer.side_effect = Exception
         with raises(CBKafkaConsumerException):
             self.kafka._create_consumer('topic', 'client', 'group')
 
-    @patch('cloud_builder.message_broker.kafka.KafkaProducer')
+    @patch('cloud_builder.broker.kafka.KafkaProducer')
     def test_send_package_request(self, mock_KafkaProducer):
         producer = mock_KafkaProducer.return_value
         request = CBPackageRequest()
@@ -47,7 +47,7 @@ class TestCBMessageBrokerKafka:
         )
         producer.flush.assert_called_once_with()
 
-    @patch('cloud_builder.message_broker.kafka.KafkaProducer')
+    @patch('cloud_builder.broker.kafka.KafkaProducer')
     def test_send_response(self, mock_KafkaProducer):
         producer = mock_KafkaProducer.return_value
         response = CBResponse('request_id', 'identity')
@@ -57,7 +57,7 @@ class TestCBMessageBrokerKafka:
         )
         producer.flush.assert_called_once_with()
 
-    @patch('cloud_builder.message_broker.kafka.KafkaProducer')
+    @patch('cloud_builder.broker.kafka.KafkaProducer')
     def test_send_info_response(self, mock_KafkaProducer):
         producer = mock_KafkaProducer.return_value
         response = CBInfoResponse('request_id', 'identity')
@@ -77,7 +77,7 @@ class TestCBMessageBrokerKafka:
         self.kafka.close()
         self.kafka.consumer.close.assert_called_once_with()
 
-    @patch('cloud_builder.message_broker.kafka.KafkaConsumer')
+    @patch('cloud_builder.broker.kafka.KafkaConsumer')
     def test_read(self, mock_KafkaConsumer):
         consumer = mock_KafkaConsumer.return_value
         TopicPartition = Mock()

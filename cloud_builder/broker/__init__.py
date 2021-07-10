@@ -28,9 +28,6 @@ from cloud_builder.exceptions import CBMessageBrokerSetupError
 class CBMessageBroker(metaclass=ABCMeta):
     """
     **CBMessageBroker factory**
-
-    :param str broker: broker name
-    :param str config_file: a yaml config file
     """
     @abstractmethod
     def __init__(self) -> None:
@@ -38,19 +35,25 @@ class CBMessageBroker(metaclass=ABCMeta):
 
     @staticmethod
     @abstractmethod
-    def new(broker: str, config_file: str):
+    def new(broker_name: str, config_file: str):
+        """
+        Create new instance of given message broker
+
+        :param str broker_name: broker name
+        :param str config_file: a yaml config file
+        """
         name_map = {
             'kafka': 'CBMessageBrokerKafka'
         }
         try:
-            message_broker = importlib.import_module(
-                f'cloud_builder.message_broker.{broker}'
+            broker = importlib.import_module(
+                f'cloud_builder.broker.{broker_name}'
             )
-            module_name = name_map[broker]
-            return message_broker.__dict__[module_name](
+            module_name = name_map[broker_name]
+            return broker.__dict__[module_name](
                 config_file
             )
         except Exception as issue:
             raise CBMessageBrokerSetupError(
-                f'No support for {broker} message broker: {issue}'
+                f'No support for {broker_name} message broker: {issue}'
             )

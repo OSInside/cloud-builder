@@ -18,12 +18,12 @@
 import os
 import yaml
 from cerberus import Validator
-from cloud_builder.schemas.package_metadata_schema import (
+from cloud_builder.package_metadata.package_metadata_schema import (
     package_metadata_schema
 )
 from cloud_builder.cloud_logger import CBCloudLogger
-from cloud_builder.message_broker import CBMessageBroker
-from cloud_builder.response import CBResponse
+from cloud_builder.broker import CBMessageBroker
+from cloud_builder.response.response import CBResponse
 from cloud_builder.defaults import Defaults
 from typing import Dict
 
