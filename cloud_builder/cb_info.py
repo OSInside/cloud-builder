@@ -19,12 +19,16 @@
 usage: cb-info -h | --help
        cb-info
            [--update-interval=<time_sec>]
+           [--poll-timeout=<time_msec>]
 
 options:
     --update-interval=<time_sec>
-        Optional update interval for the lookup
-        Default is 30sec
+        Optional update interval to reconnect to the
+        message broker. Default is 10sec
 
+    --poll-timeout=<time_msec>
+        Optional message broker poll timeout to return if no
+        requests are available. Default: 5000msec
 """
 import os
 import glob
@@ -33,12 +37,18 @@ from typing import Any
 from datetime import datetime
 from docopt import docopt
 from cloud_builder.version import __version__
-from cloud_builder.exceptions import exception_handler
 from cloud_builder.broker import CBMessageBroker
 from cloud_builder.info_response.info_response import CBInfoResponse
+from cloud_builder.identity import CBIdentity
 from cloud_builder.cloud_logger import CBCloudLogger
 from cloud_builder.defaults import Defaults
 from kiwi.privileges import Privileges
+from apscheduler.schedulers.background import BlockingScheduler
+
+from cloud_builder.exceptions import (
+    exception_handler,
+    CBSchedulerIntervalError
+)
 
 
 @exception_handler
@@ -70,17 +80,69 @@ def main() -> None:
 
     Privileges.check_for_root_permissions()
 
+    update_interval = int(args['--update-interval'] or 10)
+    poll_timeout = int(args['--poll-timeout'] or 5000)
+
+    if poll_timeout / 1000 > update_interval:
+        # This should not be allowed, as the BlockingScheduler would
+        # just create unnneded threads and new consumers which could
+        # cause an expensive rebalance on the message broker
+        raise CBSchedulerIntervalError(
+            'Poll timeout on the message broker greater than update interval'
+        )
+
+    handle_info_requests(poll_timeout)
+
+    project_scheduler = BlockingScheduler()
+    project_scheduler.add_job(
+        lambda: handle_info_requests(poll_timeout),
+        'interval', seconds=update_interval
+    )
+    project_scheduler.start()
+
+
+def handle_info_requests(poll_timeout: int) -> None:
+    """
+    Listen to the message broker queue for info requests
+    in pub/sub mode. The subscription model is based on
+    group_id == IP address of the host running the cb-info
+    service. This way every info service is assigned to a
+    unique group and will receive the request.
+
+    The package information from the request is checked
+    if this host has built / or is building the requested
+    package such that information about it can be produced.
+    In case the package build information is found on this
+    host the info service acknowledges the request and
+    sends a response to the message broker queue for
+    info responses
+
+    :param int poll_timeout:
+        timeout in msec after which the blocking read() to the
+        message broker returns
+    """
+    log = CBCloudLogger('CBInfo', '(system)')
+
     broker = CBMessageBroker.new(
         'kafka', config_file=Defaults.get_kafka_config()
     )
-
-    # In the code reading from the info queue use the
-    # pub/sub method and assign group_id=f'cb-{CBIdentity.get_external_ip()}' as
-    # consumer group name
-    # https://stackoverflow.com/questions/23136500/how-kafka-broadcast-to-many-consumer-groups
-
-    print(args)
-    lookup('xclock', 'uuid', broker)
+    try:
+        while(True):
+            for message in broker.read(
+                topic=Defaults.get_info_request_queue_name(),
+                group=CBIdentity.get_external_ip(),
+                timeout_ms=poll_timeout
+            ):
+                request = broker.validate_info_request(message.value)
+                if request:
+                    lookup(
+                        request['package'],
+                        request['request_id'],
+                        broker
+                    )
+    finally:
+        log.info('Closing message broker connection')
+        broker.close()
 
 
 def lookup(package: str, request_id: str, broker: Any):
@@ -89,6 +151,7 @@ def lookup(package: str, request_id: str, broker: Any):
         [Defaults.get_runner_package_root(), f'{package}.pid']
     )
     if os.path.isfile(build_pid_file):
+        broker.acknowledge()
         source_ip = log.get_id().split(':')[1]
         response = CBInfoResponse(
             request_id, log.get_id()
