@@ -40,10 +40,10 @@ from cloud_builder.cloud_logger import CBCloudLogger
 from cloud_builder.identity import CBIdentity
 from cloud_builder.exceptions import exception_handler
 from cloud_builder.defaults import Defaults
-from cloud_builder.package_metadata import CBPackageMetaData
-from cloud_builder.package_request import CBPackageRequest
-from cloud_builder.message_broker import CBMessageBroker
-from cloud_builder.response import CBResponse
+from cloud_builder.package_metadata.package_metadata import CBPackageMetaData
+from cloud_builder.package_request.package_request import CBPackageRequest
+from cloud_builder.broker import CBMessageBroker
+from cloud_builder.response.response import CBResponse
 from kiwi.command import Command
 from apscheduler.schedulers.background import BlockingScheduler
 from kiwi.privileges import Privileges

@@ -1,13 +1,13 @@
 from mock import patch
 
-from cloud_builder.info_request import CBInfoRequest
+from cloud_builder.info_request.info_request import CBInfoRequest
 
 
 class TestCBInfoRequest:
     def setup(self):
         self.info_request = CBInfoRequest()
 
-    @patch('cloud_builder.info_request.CBIdentity')
+    @patch('cloud_builder.info_request.info_request.CBIdentity')
     def test_set_info_request(self, mock_CBIdentity):
         self.info_request.set_info_request('vim')
         assert self.info_request.get_data() == {

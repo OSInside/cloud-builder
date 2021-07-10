@@ -1,4 +1,4 @@
-from cloud_builder.response import CBResponse
+from cloud_builder.response.response import CBResponse
 
 
 class TestCBResponse:

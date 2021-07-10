@@ -43,10 +43,10 @@ from docopt import docopt
 from textwrap import dedent
 from cloud_builder.version import __version__
 from cloud_builder.cloud_logger import CBCloudLogger
-from cloud_builder.response import CBResponse
+from cloud_builder.response.response import CBResponse
 from cloud_builder.defaults import Defaults
-from cloud_builder.package_metadata import CBPackageMetaData
-from cloud_builder.message_broker import CBMessageBroker
+from cloud_builder.package_metadata.package_metadata import CBPackageMetaData
+from cloud_builder.broker import CBMessageBroker
 from kiwi.command import Command
 from kiwi.privileges import Privileges
 from kiwi.path import Path

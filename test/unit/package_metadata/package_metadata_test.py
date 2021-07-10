@@ -2,7 +2,7 @@ from mock import (
     patch, Mock
 )
 
-from cloud_builder.package_metadata import CBPackageMetaData
+from cloud_builder.package_metadata.package_metadata import CBPackageMetaData
 
 
 class TestCBPackageMetaData:
@@ -20,8 +20,8 @@ class TestCBPackageMetaData:
             ]
         }
 
-    @patch('cloud_builder.package_metadata.CBResponse')
-    @patch('cloud_builder.message_broker.CBMessageBroker.new')
+    @patch('cloud_builder.package_metadata.package_metadata.CBResponse')
+    @patch('cloud_builder.broker.CBMessageBroker.new')
     def test_get_package_config_invalid(
         self, mock_CBMessageBroker, mock_CBResponse
     ):
@@ -33,8 +33,8 @@ class TestCBPackageMetaData:
         assert metadata == {}
         assert response.set_package_invalid_metadata_response.called
 
-    @patch('cloud_builder.package_metadata.CBResponse')
-    @patch('cloud_builder.message_broker.CBMessageBroker.new')
+    @patch('cloud_builder.package_metadata.package_metadata.CBResponse')
+    @patch('cloud_builder.broker.CBMessageBroker.new')
     def test_get_package_config_broken(
         self, mock_CBMessageBroker, mock_CBResponse
     ):
