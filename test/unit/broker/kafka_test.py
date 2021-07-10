@@ -4,6 +4,7 @@ from mock import (
 )
 import yaml
 from cloud_builder.package_request.package_request import CBPackageRequest
+from cloud_builder.info_request.info_request import CBInfoRequest
 from cloud_builder.response.response import CBResponse
 from cloud_builder.info_response.info_response import CBInfoResponse
 from cloud_builder.broker.kafka import CBMessageBrokerKafka
@@ -44,6 +45,16 @@ class TestCBMessageBrokerKafka:
         self.kafka.send_package_request(request)
         producer.send.assert_called_once_with(
             'cb-package-request', yaml.dump(request.get_data()).encode()
+        )
+        producer.flush.assert_called_once_with()
+
+    @patch('cloud_builder.broker.kafka.KafkaProducer')
+    def test_send_info_request(self, mock_KafkaProducer):
+        producer = mock_KafkaProducer.return_value
+        request = CBInfoRequest()
+        self.kafka.send_info_request(request)
+        producer.send.assert_called_once_with(
+            'cb-info-request', yaml.dump(request.get_data()).encode()
         )
         producer.flush.assert_called_once_with()
 
