@@ -24,6 +24,7 @@ from typing import (
 from cloud_builder.package_request.package_request import CBPackageRequest
 from cloud_builder.response.response import CBResponse
 from cloud_builder.info_response.info_response import CBInfoResponse
+from cloud_builder.info_request.info_request import CBInfoRequest
 from cloud_builder.package_request.package_request_schema import (
     package_request_schema
 )
@@ -174,6 +175,17 @@ class CBMessageBrokerBase(metaclass=ABCMeta):
         Implementation in specialized broker class
 
         :param CBPackageRequest request: unused
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def send_info_request(self, request: CBInfoRequest) -> None:
+        """
+        Send an info request
+
+        Implementation in specialized broker class
+
+        :param CBInfoRequest request: unused
         """
         raise NotImplementedError
 
