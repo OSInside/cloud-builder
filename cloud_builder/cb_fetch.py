@@ -59,8 +59,8 @@ def main() -> None:
     changes on a configurable schedule. In case of a change
     a rebuild request is send to the message broker
 
-    The tree structure in the git repository has to follow
-    the predefined layout as follows:
+    The tree structure in the git repository has to respect
+    a predefined layout like in the following example:
 
     projects
     ├── ...
@@ -68,12 +68,12 @@ def main() -> None:
     │   └── SUB_PROJECT
     │       └── ...
     └── PROJECT_B
-        └── package
-            ├── cloud_builder.kiwi
-            ├── cloud_builder.yml
-            ├── package.changes
-            ├── package.spec
-            └── package.tar.xz
+        └── PACKAGE
+            ├── _Defaults.get_cloud_builder_metadata_file_name()_
+            ├── _Defaults.get_cloud_builder_kiwi_file_name()_
+            ├── PACKAGE.changes
+            ├── PACKAGE.spec
+            └── PACKAGE.tar.xz
     """
     args = docopt(
         __doc__,
@@ -137,14 +137,15 @@ def update_project() -> None:
             package_source_path, log, CBIdentity.get_request_id()
         )
         if package_config:
+            status_flags = Defaults.get_status_flags()
             for target in package_config.get('distributions') or []:
                 package_request = CBPackageRequest()
-                package_request.set_package_source_change_request(
-                    package_source_path, target['arch']
+                package_request.set_package_build_request(
+                    package_source_path, target['arch'], target['dist'],
+                    status_flags.package_changed
                 )
                 broker.send_package_request(package_request)
                 request = package_request.get_data()
-                status_flags = Defaults.get_status_flags()
                 response = CBResponse(
                     request['request_id'], log.get_id()
                 )
@@ -152,6 +153,7 @@ def update_project() -> None:
                     message='Package update request scheduled',
                     response_code=status_flags.package_update_request,
                     package=request['package'],
-                    arch=request['arch']
+                    arch=request['arch'],
+                    dist=request['dist']
                 )
                 log.response(response, broker)

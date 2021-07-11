@@ -44,7 +44,8 @@ class CBPackageMetaData:
         :param CBCloudLogger log: CBCloudLogger object instance
         :param str request_id: UUID
         :param str filename:
-            alternative meta data file name, default is cloud_builder.yml
+            alternative meta data file name, default is
+            Defaults.get_cloud_builder_metadata_file_name()
 
         :return: yaml dictionary data or empty dict
 
@@ -52,7 +53,7 @@ class CBPackageMetaData:
         """
         config_data: Dict[str, str] = {}
         config_file = filename or os.path.join(
-            package_path, 'cloud_builder.yml'
+            package_path, Defaults.get_cloud_builder_metadata_file_name()
         )
         if os.path.isfile(config_file):
             with open(config_file, 'r') as config:

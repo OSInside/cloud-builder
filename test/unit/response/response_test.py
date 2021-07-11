@@ -39,62 +39,63 @@ class TestCBResponse:
 
     def test_set_package_update_request_response(self):
         self.response.set_package_update_request_response(
-            'message', 'response_code', 'package', 'arch'
+            'message', 'response_code', 'package', 'arch', 'dist'
         )
         assert self.response.get_data() == {
             **self.response.response_dict,
             'message': 'message',
             'response_code': 'response_code',
             'package': 'package',
-            'arch': 'arch'
+            'arch': 'arch',
+            'dist': 'dist'
         }
 
     def test_set_package_build_scheduled_response(self):
         self.response.set_package_build_scheduled_response(
-            'message', 'response_code', 'package', 'arch'
+            'message', 'response_code', 'package', 'arch', 'dist'
         )
         assert self.response.get_data() == {
             **self.response.response_dict,
             'message': 'message',
             'response_code': 'response_code',
             'package': 'package',
-            'arch': 'arch'
+            'arch': 'arch',
+            'dist': 'dist'
         }
 
     def test_set_buildhost_arch_incompatible_response(self):
         self.response.set_buildhost_arch_incompatible_response(
-            'message', 'response_code', 'package', 'arch'
+            'message', 'response_code', 'package'
         )
         assert self.response.get_data() == {
             **self.response.response_dict,
             'message': 'message',
             'response_code': 'response_code',
-            'package': 'package',
-            'arch': 'arch'
+            'package': 'package'
         }
 
     def test_set_package_jobs_reset_response(self):
         self.response.set_package_jobs_reset_response(
-            'message', 'response_code', 'package', 'arch'
+            'message', 'response_code', 'package', 'arch', 'dist'
         )
         assert self.response.get_data() == {
             **self.response.response_dict,
             'message': 'message',
             'response_code': 'response_code',
             'package': 'package',
-            'arch': 'arch'
+            'arch': 'arch',
+            'dist': 'dist'
         }
 
     def test_set_package_not_existing_response(self):
         self.response.set_package_not_existing_response(
-            'message', 'response_code', 'package', 'arch'
+            'message', 'response_code', 'package'
         )
         assert self.response.get_data() == {
             **self.response.response_dict,
             'message': 'message',
             'response_code': 'response_code',
-            'package': 'package',
-            'arch': 'arch'
+            'package': 'package'
         }
 
     def test_set_package_invalid_metadata_response(self):

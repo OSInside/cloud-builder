@@ -16,7 +16,6 @@
 # along with Cloud Builder.  If not, see <http://www.gnu.org/licenses/>
 #
 from typing import Dict
-from cloud_builder.defaults import Defaults
 from cloud_builder.identity import CBIdentity
 
 
@@ -28,15 +27,16 @@ class CBPackageRequest:
         self.package_request_dict: Dict = {}
         self.package_request_schema_version = 0.1
 
-    def set_package_source_change_request(
-        self, package: str, arch: str
+    def set_package_build_request(
+        self, package: str, arch: str, dist: str, action: str
     ) -> None:
         self.package_request_dict = {
             'schema_version': self.package_request_schema_version,
             'request_id': CBIdentity.get_request_id(),
             'package': package,
             'arch': arch,
-            'action': Defaults.get_status_flags().package_changed
+            'dist': dist,
+            'action': action
         }
 
     def get_data(self) -> Dict:
