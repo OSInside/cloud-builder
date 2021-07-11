@@ -25,10 +25,10 @@
   resolve dependencies in parallell and trigger a rebuild by sending a request
   to the cb_request topic such that the scheduler rebuilds
 
-* Write a cb_info tool to check for conditions e.g state of a build,
-  log file, etc etc via the cb-info topic
+* write a collector which collects binary packages and creates
+  repositories from it
 
-* Write a client program cb-client which allows to e.g send a manual
+* Write a client program cb-ctl which allows to e.g send a manual
   rebuild to the cb_request topic
 
 * Create runner and fetcher/solver images for the cloud (Amazon)
