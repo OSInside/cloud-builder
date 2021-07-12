@@ -108,3 +108,25 @@ class TestCBResponse:
             'response_code': 'response_code',
             'package': 'package'
         }
+
+    def test_set_package_invalid_target_response(self):
+        self.response.set_package_invalid_target_response(
+            'message', 'response_code', 'package'
+        )
+        assert self.response.get_data() == {
+            **self.response.response_dict,
+            'message': 'message',
+            'response_code': 'response_code',
+            'package': 'package'
+        }
+
+    def test_set_package_metadata_not_existing_response(self):
+        self.response.set_package_metadata_not_existing_response(
+            'message', 'response_code', 'package'
+        )
+        assert self.response.get_data() == {
+            **self.response.response_dict,
+            'message': 'message',
+            'response_code': 'response_code',
+            'package': 'package'
+        }
