@@ -80,11 +80,13 @@ class TestCBMessageBrokerBase:
     def test_validate_message_with_schema_ok(self, mock_acknowledge):
         assert self.broker.validate_message_with_schema(
             "{'schema_version': 0.1, 'request_id': 'uuid', "
-            "'package': 'vim', 'arch': 'x86_64', 'action': 'action'}",
+            "'package': 'vim', 'arch': 'x86_64', 'dist': 'TW', "
+            "'action': 'action'}",
             package_request_schema
         ) == {
             'action': 'action',
             'arch': 'x86_64',
+            'dist': 'TW',
             'package': 'vim',
             'request_id': 'uuid',
             'schema_version': 0.1

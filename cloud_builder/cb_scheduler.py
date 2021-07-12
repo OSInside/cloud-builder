@@ -51,7 +51,9 @@ from kiwi.command import Command
 from kiwi.privileges import Privileges
 from kiwi.path import Path
 from apscheduler.schedulers.background import BlockingScheduler
-from typing import Dict
+from typing import (
+    Dict, Any
+)
 
 from cloud_builder.exceptions import (
     exception_handler,
@@ -71,12 +73,12 @@ def main() -> None:
 
     A package can be build for different distribution targets
     and architectures. Each distribution target/arch needs to
-    be configured as a profile in cloud_builder.kiwi and added
-    as effective build target in:
+    be configured as a profile in the .kiwi metadata and added
+    as effective build target in the package configuration file:
 
-        cloud_builder.yml
+        Defaults.get_cloud_builder_metadata_file_name()
 
-    An example cloud_builder.yml to build the xclock package
+    An example package config to build the xclock package
     for the Tumbleweed distribution for x86_64 and aarch64
     would look like the following:
 
@@ -98,7 +100,10 @@ def main() -> None:
     of these buildroots. To process this properly the scheduler
     creates a script which calls cb-prepare followed by cb-run
     with the corresponding parameters for each element of the
-    distributions list.
+    distributions list. Each dist.arch build process is triggered
+    by one build request. In the above example two requests
+    to build all targets in the distributions list would be
+    required.
 
     The dist and arch settings of a distribution are combined
     into profile names given to cb-prepare as parameter and used
@@ -108,7 +113,7 @@ def main() -> None:
     * TW.x86_64
     * TW.aarch64
 
-    The cloud_builder.kiwi file has to provide instructions
+    The .kiwi metadata file has to provide instructions
     such that the creation of a correct buildroot for these
     profiles is possible.
     """
@@ -186,35 +191,23 @@ def handle_build_requests(poll_timeout: int, running_limit: int) -> None:
             ):
                 request = broker.validate_package_request(message.value)
                 if request:
-                    status_flags = Defaults.get_status_flags()
-                    response = CBResponse(request['request_id'], log.get_id())
-                    if request['arch'] == platform.machine():
-                        response.set_package_build_scheduled_response(
-                            message='Accept package build request',
-                            response_code=status_flags.package_request_accepted,
-                            package=request['package'],
-                            arch=request['arch']
-                        )
-                        broker.acknowledge()
-                        log.response(response, broker)
-                        build_package(request, broker)
-                    else:
-                        # do not acknowledge/build if the host architecture
-                        # does not match the package. The request stays in
-                        # the topic to be presented for other schedulers
-                        response.set_buildhost_arch_incompatible_response(
-                            message=f'Incompatible arch: {platform.machine()}',
-                            response_code=status_flags.package_request_accepted,
-                            package=request['package'],
-                            arch=request['arch']
-                        )
-                        log.response(response, broker)
+                    package_source_path = os.path.join(
+                        Defaults.get_runner_project_dir(),
+                        format(request['package'])
+                    )
+                    package_config = is_request_valid(
+                        package_source_path, request, log, broker
+                    )
+                    if package_config:
+                        build_package(request, broker, package_config)
     finally:
         log.info('Closing message broker connection')
         broker.close()
 
 
-def build_package(request: Dict, broker: CBMessageBroker) -> None:
+def build_package(
+    request: Dict, broker: CBMessageBroker, package_config: Dict
+) -> None:
     """
     Update the package sources and run the script which
     utilizes cb-prepare/cb-run to build the package for
@@ -222,54 +215,44 @@ def build_package(request: Dict, broker: CBMessageBroker) -> None:
 
     :param dict request: yaml dict request record
     :param CBMessageBroker broker: instance of CBMessageBroker
+    :param dict package_config: yaml dict package metadata
     """
     log = CBCloudLogger(
         'CBScheduler', os.path.basename(request['package'])
     )
-    package_source_path = os.path.join(
-        Defaults.get_runner_project_dir(), format(request['package'])
+    reset_build_if_running(
+        request, log, broker
     )
-    if check_package_sources(package_source_path, request, log, broker):
-        package_config = CBPackageMetaData.get_package_config(
-            package_source_path, log, request['request_id']
+    status_flags = Defaults.get_status_flags()
+    if request['action'] == status_flags.package_changed:
+        log.info('Update project git source repo prior build')
+        Command.run(
+            ['git', '-C', Defaults.get_runner_project_dir(), 'pull']
         )
-        if package_config:
-            reset_build_if_running(package_config, request, log, broker)
 
-            status_flags = Defaults.get_status_flags()
-            if request['action'] == status_flags.package_changed:
-                log.info('Update project git source repo prior build')
-                Command.run(
-                    ['git', '-C', Defaults.get_runner_project_dir(), 'pull']
-                )
-
-            log.info('Starting build process')
-            Command.run(
-                [
-                    'bash', create_run_script(
-                        package_config, request, package_source_path
-                    )
-                ]
-            )
+    log.info('Starting build process')
+    Command.run(
+        ['bash', create_run_script(request)]
+    )
 
 
 def reset_build_if_running(
-    package_config: Dict, request: Dict, log: CBCloudLogger,
-    broker: CBMessageBroker
+    request: Dict, log: CBCloudLogger, broker: CBMessageBroker
 ) -> None:
     """
     Check if the same package/arch is currently/still running
     and kill the process associated with it
 
-    :param dict package_config: yaml dict from cloud_builder.yml
     :param dict request: yaml dict request record
     :param CBCloudLogger log: logger instance
     :param CBMessageBroker broker: instance of CBMessageBroker
     """
     package_root = os.path.join(
-        Defaults.get_runner_package_root(), package_config['name']
+        Defaults.get_runner_package_root(), os.path.basename(request['package'])
     )
-    package_run_pid = f'{package_root}.pid'
+    dist_profile = f'{request["dist"]}.{request["arch"]}'
+    target_root = f'{package_root}@{dist_profile}'
+    package_run_pid = f'{target_root}.pid'
     if os.path.isfile(package_run_pid):
         with open(package_run_pid) as pid_fd:
             build_pid = int(pid_fd.read().strip())
@@ -287,7 +270,8 @@ def reset_build_if_running(
                 ),
                 response_code=status_flags.reset_running_build,
                 package=request['package'],
-                arch=request['arch']
+                arch=request['arch'],
+                dist=request['dist']
             )
             log.response(response, broker)
             os.kill(build_pid, signal.SIGTERM)
@@ -305,97 +289,148 @@ def get_running_builds() -> int:
     return 0
 
 
-def check_package_sources(
-    package_source_path: str, request: Dict, log: CBCloudLogger,
-    broker: CBMessageBroker
-) -> bool:
+def is_request_valid(
+    package_source_path: str, request: Dict, log: CBCloudLogger, broker: Any
+) -> Dict:
     """
-    Sanity checks on the given package sources
+    Sanity checks between the request and the package sources
 
-    1. Check if given source exists
-    2. Check if given source has enough metadata to
-       be build with Cloud Builder
+    1. Check if given package source exists
+    2. Check if there is a cloud builder metadata and kiwi file
+    3. Check if architecture + dist is configured in the metadata
+    4. Check if the host architecture is compatbile with the
+       request architecture
 
     :param str package_source_path: path to package sources
     :param dict request: yaml dict request record
     :param CBCloudLogger log: logger instance
     :param CBMessageBroker broker: instance of CBMessageBroker
+
+    :return: metadata config dict
+
+    :rtype: dict
     """
+    status_flags = Defaults.get_status_flags()
+    response = CBResponse(
+        request['request_id'], log.get_id()
+    )
+    # 1. Check on package sources to exist
     if not os.path.isdir(package_source_path):
-        status_flags = Defaults.get_status_flags()
-        response = CBResponse(request['request_id'], log.get_id())
         response.set_package_not_existing_response(
             message=f'Package does not exist: {package_source_path}',
             response_code=status_flags.package_not_existing,
-            package=request['package'],
-            arch=request['arch']
+            package=request['package']
         )
         log.response(response, broker)
-        return False
+        return {}
 
-    # TODO: Also check for meta data files (.kiwi and cloud_builder.yml)
-    return True
+    # 2. Check on package metadata to exist
+    package_metadata = os.path.join(
+        package_source_path, Defaults.get_cloud_builder_metadata_file_name()
+    )
+    if not os.path.isfile(package_metadata):
+        response.set_package_metadata_not_existing_response(
+            message=f'Package metadata does not exist: {package_metadata}',
+            response_code=status_flags.package_metadata_not_existing,
+            package=request['package']
+        )
+        log.response(response, broker)
+        return {}
+
+    # 3. Check if requested arch+dist is configured
+    target_ok = False
+    request_arch = request['arch']
+    request_dist = request['dist']
+    package_config = CBPackageMetaData.get_package_config(
+        package_source_path, log, request['request_id']
+    )
+    if package_config:
+        for target in package_config.get('distributions') or []:
+            if request_arch == target.get('arch') and \
+               request_dist == target.get('dist'):
+                target_ok = True
+                break
+    if not target_ok:
+        response.set_package_invalid_target_response(
+            message=f'No build dist config for: {request_dist}.{request_arch}',
+            response_code=status_flags.package_target_not_configured,
+            package=request['package']
+        )
+        log.response(response, broker)
+        return {}
+
+    # 4. Check if host architecture is compatbile
+    if not request['arch'] == platform.machine():
+        response.set_buildhost_arch_incompatible_response(
+            message=f'Incompatible arch: {platform.machine()}',
+            response_code=status_flags.package_request_accepted,
+            package=request['package']
+        )
+        log.response(response, broker)
+        return {}
+
+    # All good...
+    response.set_package_build_scheduled_response(
+        message='Accept package build request',
+        response_code=status_flags.package_request_accepted,
+        package=request['package'],
+        arch=request['arch'],
+        dist=request['dist']
+    )
+    log.response(response, broker)
+    broker.acknowledge()
+    return package_config
 
 
-def create_run_script(
-    package_config: Dict, request: Dict, package_source_path: str
-) -> str:
+def create_run_script(request: Dict) -> str:
     """
     Create script to call cb-prepare followed by cb-run
     for each configured distribution/arch
 
-    :param dict package_config: yaml dict from cloud_builder.yml
-    :param str package_source_path: path to package sources
     :param dict request: yaml dict request record
 
     :return: file path name for script
 
     :rtype: str
     """
-    package_root = os.path.join(
-        Defaults.get_runner_package_root(), package_config['name']
+    package_source_path = os.path.join(
+        Defaults.get_runner_project_dir(), request['package']
     )
+    package_root = os.path.join(
+        Defaults.get_runner_package_root(), os.path.basename(request['package'])
+    )
+    dist_profile = f'{request["dist"]}.{request["arch"]}'
+    target_root = f'{package_root}@{dist_profile}'
     run_script = dedent('''
         #!/bin/bash
 
         set -e
 
-        rm -f {package_root}.log
+        rm -f {target_root}.log
 
         function finish {{
             kill $(jobs -p) &>/dev/null
         }}
 
         {{
-        trap finish EXIT
-    ''').format(
-        package_root=package_root
-    )
-    for target in package_config.get('distributions') or []:
-        if target['arch'] == platform.machine():
-            dist_profile = f'{target["dist"]}.{target["arch"]}'
-            run_script += dedent('''
-                cb-prepare --root {runner_root} \\
-                    --package {package_source_path} \\
-                    --profile {dist_profile} \\
-                    --request-id {request_id}
-                cb-run --root {target_root} &> {target_root}.build.log \\
-                    --request-id {request_id}
-            ''').format(
-                runner_root=Defaults.get_runner_package_root(),
-                package_source_path=package_source_path,
-                dist_profile=dist_profile,
-                target_root=os.path.join(f'{package_root}@{dist_profile}'),
-                request_id=request['request_id']
-            )
-    run_script += dedent('''
-        }} &>>{package_root}.log &
+            trap finish EXIT
+            cb-prepare --root {runner_root} \\
+                --package {package_source_path} \\
+                --profile {dist_profile} \\
+                --request-id {request_id}
+            cb-run --root {target_root} &> {target_root}.build.log \\
+                --request-id {request_id}
+        }} &>>{target_root}.run.log &
 
-        echo $! > {package_root}.pid
+        echo $! > {target_root}.pid
     ''').format(
-        package_root=package_root
+        runner_root=Defaults.get_runner_package_root(),
+        package_source_path=package_source_path,
+        dist_profile=dist_profile,
+        target_root=target_root,
+        request_id=request['request_id']
     )
-    package_run_script = f'{package_root}.sh'
+    package_run_script = f'{target_root}.sh'
     with open(package_run_script, 'w') as script:
         script.write(run_script)
     return package_run_script
