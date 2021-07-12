@@ -34,40 +34,35 @@ class CBInfoResponse:
         }
 
     def set_info_response(
-        self, package: str, source_ip: str, is_running: bool
+        self, package: str, source_ip: str, is_running: bool,
+        arch: str, dist: str, binary_packages: List[str] = [],
+        log_file: str = 'unknown', solver_file: str = 'unknown',
+        utc_modification_time: str = 'unknown', build_status: str = 'unknown'
     ) -> None:
         self.info_response_dict = {
             **self.info_response_dict,
             'package': package,
             'source_ip': source_ip,
-            'is_running': is_running
+            'is_running': is_running,
+            'arch': arch,
+            'dist': dist,
+            'binary_packages': binary_packages,
+            'log_file': log_file,
+            'solver_file': solver_file,
+            'utc_modification_time': utc_modification_time,
+            'build_status': build_status
         }
 
-    def add_info_response_architecture(self, arch: str) -> None:
-        self.info_response_dict['architectures'].append(
-            {
-                'arch': arch,
-                'distributions': []
-            }
-        )
-
-    def add_info_response_distribution_for_arch(
-        self, arch: str, dist: str, binary_packages: List[str],
-        log_file: str, solver_file: str, utc_modification_time: str,
+    def set_info_response_result(
+        self, binary_packages: List[str], log_file: str,
+        solver_file: str, utc_modification_time: str,
         build_status: str
     ) -> None:
-        for arch_record in self.info_response_dict['architectures']:
-            if arch_record['arch'] == arch:
-                arch_record['distributions'].append(
-                    {
-                        'dist': dist,
-                        'binary_packages': binary_packages,
-                        'log_file': log_file,
-                        'solver_file': solver_file,
-                        'utc_modification_time': utc_modification_time,
-                        'build_status': build_status
-                    }
-                )
+        self.info_response_dict['binary_packages'] = binary_packages
+        self.info_response_dict['log_file'] = log_file
+        self.info_response_dict['solver_file'] = solver_file
+        self.info_response_dict['utc_modification_time'] = utc_modification_time
+        self.info_response_dict['build_status'] = build_status
 
     def get_data(self) -> Dict:
         return self.info_response_dict

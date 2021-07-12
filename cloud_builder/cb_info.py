@@ -31,7 +31,6 @@ options:
         requests are available. Default: 5000msec
 """
 import os
-import glob
 import psutil
 from typing import Any
 from datetime import datetime
@@ -137,6 +136,8 @@ def handle_info_requests(poll_timeout: int) -> None:
                 if request:
                     lookup(
                         request['package'],
+                        request['arch'],
+                        request['dist'],
                         request['request_id'],
                         broker
                     )
@@ -145,10 +146,10 @@ def handle_info_requests(poll_timeout: int) -> None:
         broker.close()
 
 
-def lookup(package: str, request_id: str, broker: Any):
+def lookup(package: str, arch: str, dist: str, request_id: str, broker: Any):
     log = CBCloudLogger('CBInfo', package)
     build_pid_file = os.sep.join(
-        [Defaults.get_runner_package_root(), f'{package}.pid']
+        [Defaults.get_runner_package_root(), f'{package}@{dist}.{arch}.pid']
     )
     if os.path.isfile(build_pid_file):
         broker.acknowledge()
@@ -157,24 +158,21 @@ def lookup(package: str, request_id: str, broker: Any):
             request_id, log.get_id()
         )
         response.set_info_response(
-            package, source_ip, is_building(build_pid_file)
+            package, source_ip, is_building(build_pid_file), arch, dist
         )
-        build_result_file_glob_pattern = os.sep.join(
-            [Defaults.get_runner_package_root(), f'{package}*.result.yml']
+        package_result_file = os.sep.join(
+            [
+                Defaults.get_runner_package_root(),
+                f'{package}@{dist}.{arch}.result.yml'
+            ]
         )
-        for package_result_file in glob.iglob(build_result_file_glob_pattern):
+        if os.path.isfile(package_result_file):
             utc_modification_time = get_result_modification_time(
                 package_result_file
             )
-            (dist, arch) = package_result_file.replace(
-                Defaults.get_runner_package_root(), ''
-            ).split('@')[1].split('.')[:2]
             with open(package_result_file) as result_file:
                 result = broker.validate_package_response(result_file.read())
-                response.add_info_response_architecture(arch)
-                response.add_info_response_distribution_for_arch(
-                    arch,
-                    dist,
+                response.set_info_response_result(
                     result['binary_packages'],
                     result['log_file'],
                     result['solver_file'],

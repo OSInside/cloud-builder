@@ -45,56 +45,39 @@ info_response_schema = {
         'required': True,
         'type': 'bool'
     },
-    'architectures': {
+    'arch': {
+        'required': True,
+        'type': 'string',
+        'nullable': False
+    },
+    'dist': {
+        'required': True,
+        'type': 'string',
+        'nullable': False
+    },
+    'binary_packages': {
         'required': True,
         'type': 'list',
-        'nullable': True,
-        'schema': {
-            'type': 'dict',
-            'schema': {
-                'arch': {
-                    'required': True,
-                    'type': 'string',
-                    'nullable': False
-                },
-                'distributions': {
-                    'required': True,
-                    'type': 'list',
-                    'nullable': False,
-                    'schema': {
-                        'dist': {
-                            'required': True,
-                            'type': 'string',
-                            'nullable': False
-                        },
-                        'binary_packages': {
-                            'required': True,
-                            'type': 'list',
-                            'nullable': True
-                        },
-                        'log_file': {
-                            'required': True,
-                            'type': 'string',
-                            'nullable': False
-                        },
-                        'solver_file': {
-                            'required': True,
-                            'type': 'string',
-                            'nullable': False
-                        },
-                        'utc_modification_time': {
-                            'required': True,
-                            'type': 'string',
-                            'nullable': False
-                        },
-                        'build_status': {
-                            'required': True,
-                            'type': 'string',
-                            'nullable': False
-                        }
-                    }
-                }
-            }
-        }
+        'nullable': True
+    },
+    'log_file': {
+        'required': True,
+        'type': 'string',
+        'nullable': False
+    },
+    'solver_file': {
+        'required': True,
+        'type': 'string',
+        'nullable': False
+    },
+    'utc_modification_time': {
+        'required': True,
+        'type': 'string',
+        'nullable': False
+    },
+    'build_status': {
+        'required': True,
+        'type': 'string',
+        'nullable': False
     }
 }

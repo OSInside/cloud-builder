@@ -6,41 +6,40 @@ class TestCBInfoResponse:
         self.info_response = CBInfoResponse('uuid', 'identity')
 
     def test_set_info_response(self):
-        self.info_response.set_info_response('package', 'source_ip', True)
+        self.info_response.set_info_response(
+            'package', 'source_ip', True, 'x86_64', 'TW'
+        )
         assert self.info_response.get_data() == {
             **self.info_response.info_response_dict,
             'package': 'package',
             'source_ip': 'source_ip',
-            'is_running': True
+            'is_running': True,
+            'arch': 'x86_64',
+            'dist': 'TW',
+            'binary_packages': [],
+            'log_file': 'unknown',
+            'solver_file': 'unknown',
+            'utc_modification_time': 'unknown',
+            'build_status': 'unknown'
         }
 
-    def test_add_info_response_architecture(self):
-        self.info_response.add_info_response_architecture('arch')
-        assert self.info_response.get_data()['architectures'] == [
-            {
-                'arch': 'arch',
-                'distributions': []
-            }
-        ]
-
-    def test_add_info_response_distribution_for_arch(self):
-        self.info_response.add_info_response_architecture('arch')
-        self.info_response.add_info_response_distribution_for_arch(
-            'arch', 'dist', [], 'log_file', 'solver_file',
-            'utc_modification_time', 'build_status'
+    def test_set_info_response_result(self):
+        self.info_response.set_info_response(
+            'package', 'source_ip', True, 'x86_64', 'TW'
         )
-        assert self.info_response.get_data()['architectures'] == [
-            {
-                'arch': 'arch',
-                'distributions': [
-                    {
-                        'dist': 'dist',
-                        'binary_packages': [],
-                        'log_file': 'log_file',
-                        'solver_file': 'solver_file',
-                        'utc_modification_time': 'utc_modification_time',
-                        'build_status': 'build_status'
-                    }
-                ]
-            }
-        ]
+        self.info_response.set_info_response_result(
+            ['binary'], 'log_file', 'solver_file', 'timestamp', 'build_status'
+        )
+        assert self.info_response.get_data() == {
+            **self.info_response.info_response_dict,
+            'package': 'package',
+            'source_ip': 'source_ip',
+            'is_running': True,
+            'arch': 'x86_64',
+            'dist': 'TW',
+            'binary_packages': ['binary'],
+            'log_file': 'log_file',
+            'solver_file': 'solver_file',
+            'utc_modification_time': 'timestamp',
+            'build_status': 'build_status'
+        }

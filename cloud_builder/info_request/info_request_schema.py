@@ -30,5 +30,15 @@ info_request_schema = {
         'required': True,
         'type': 'string',
         'nullable': False
+    },
+    'arch': {
+        'required': True,
+        'type': 'string',
+        'nullable': False
+    },
+    'dist': {
+        'required': True,
+        'type': 'string',
+        'nullable': False
     }
 }
