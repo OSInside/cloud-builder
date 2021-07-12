@@ -42,3 +42,11 @@ class TestDefaults:
 
     def test_get_info_response_queue_name(self):
         assert Defaults.get_info_response_queue_name() == 'cb-info-response'
+
+    def test_get_cloud_builder_metadata_file_name(self):
+        assert Defaults.get_cloud_builder_metadata_file_name() == \
+            'cloud_builder.yml'
+
+    def test_get_cloud_builder_kiwi_file_name(self):
+        assert Defaults.get_cloud_builder_kiwi_file_name() == \
+            'cloud_builder.kiwi'
