@@ -31,6 +31,8 @@ status_flags = NamedTuple(
         ('incompatible_build_arch', str),
         ('reset_running_build', str),
         ('package_not_existing', str),
+        ('package_metadata_not_existing', str),
+        ('package_target_not_configured', str),
         ('invalid_metadata', str)
     ]
 )
@@ -40,6 +42,22 @@ class Defaults:
     """
     Implements Cloud Builder project default values
     """
+    @staticmethod
+    def get_cloud_builder_metadata_file_name() -> str:
+        """
+        Return name of package configuration file to be used
+        with Cloud Builder
+        """
+        return 'cloud_builder.yml'
+
+    @staticmethod
+    def get_cloud_builder_kiwi_file_name() -> str:
+        """
+        Return name of package buildroot kiwi config file to
+        be used with Cloud Builder
+        """
+        return 'cloud_builder.kiwi'
+
     @staticmethod
     def get_package_request_queue_name() -> str:
         """
@@ -146,7 +164,9 @@ class Defaults:
             incompatible_build_arch='incompatible build arch',
             reset_running_build='reset running build',
             package_not_existing='package does not exist',
-            invalid_metadata='invalid package metadata'
+            package_metadata_not_existing='package metadata does not exist',
+            invalid_metadata='invalid package metadata',
+            package_target_not_configured='package target not configured'
         )
 
     @staticmethod

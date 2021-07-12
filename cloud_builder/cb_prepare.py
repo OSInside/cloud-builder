@@ -27,7 +27,8 @@ options:
         Path to the package
 
     --profile=<dist>
-        Distribution profile name as used in cloud_builder.kiwi
+        Distribution profile name as set int the .kiwi
+        package buildroot metadata file
 
     --request-id=<UUID>
         UUID for this prepare process
@@ -53,9 +54,9 @@ def main() -> None:
     cb-prepare - creates a chroot tree suitable to build a
     package inside of it, also known as buildroot. The KIWI
     appliance builder is used to create the buildroot
-    according to a metadata definition file named:
+    according to a metadata definition file from:
 
-        cloud_builder.kiwi
+        Defaults.get_cloud_builder_kiwi_file_name()
 
     which needs to be present as part of the package sources.
 
