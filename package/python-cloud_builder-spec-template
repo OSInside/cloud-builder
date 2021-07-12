@@ -131,5 +131,6 @@ install -D -m 644 sysconfig/cloud_builder \
 %{_bindir}/cb-run
 %{_bindir}/cb-scheduler
 %{_bindir}/cb-info
+%{_bindir}/cb-ctl
 
 %changelog
