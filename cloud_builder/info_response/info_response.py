@@ -29,8 +29,7 @@ class CBInfoResponse:
         self.info_response_dict: Dict = {
             'schema_version': self.info_schema_version,
             'identity': identity,
-            'request_id': request_id,
-            'architectures': []
+            'request_id': request_id
         }
 
     def set_info_response(
