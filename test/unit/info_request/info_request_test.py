@@ -9,9 +9,11 @@ class TestCBInfoRequest:
 
     @patch('cloud_builder.info_request.info_request.CBIdentity')
     def test_set_info_request(self, mock_CBIdentity):
-        self.info_request.set_info_request('vim')
+        self.info_request.set_info_request('vim', 'x86_64', 'TW')
         assert self.info_request.get_data() == {
             'package': 'vim',
+            'arch': 'x86_64',
+            'dist': 'TW',
             'request_id': mock_CBIdentity.get_request_id.return_value,
             'schema_version': 0.1
         }
