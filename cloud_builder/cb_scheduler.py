@@ -224,15 +224,20 @@ def build_package(
         request, log, broker
     )
     status_flags = Defaults.get_status_flags()
-    if request['action'] == status_flags.package_changed:
+    if request['action'] == status_flags.package_changed or \
+       request['action'] == status_flags.package_and_meta_changed:
         log.info('Update project git source repo prior build')
         Command.run(
             ['git', '-C', Defaults.get_runner_project_dir(), 'pull']
         )
 
+    buildroot_rebuild = False
+    if request['action'] == status_flags.package_and_meta_changed:
+        buildroot_rebuild = True
+
     log.info('Starting build process')
     Command.run(
-        ['bash', create_run_script(request)]
+        ['bash', create_run_script(request, buildroot_rebuild)]
     )
 
 
@@ -382,12 +387,13 @@ def is_request_valid(
     return package_config
 
 
-def create_run_script(request: Dict) -> str:
+def create_run_script(request: Dict, buildroot_rebuild: bool) -> str:
     """
     Create script to call cb-prepare followed by cb-run
     for each configured distribution/arch
 
     :param dict request: yaml dict request record
+    :param bool buildroot_rebuild: rebuild buildroot True|False
 
     :return: file path name for script
 
@@ -408,6 +414,10 @@ def create_run_script(request: Dict) -> str:
 
         rm -f {target_root}.log
 
+        if {buildroot_rebuild}; then
+            rm -rf {target_root}
+        fi
+
         function finish {{
             kill $(jobs -p) &>/dev/null
         }}
@@ -424,6 +434,7 @@ def create_run_script(request: Dict) -> str:
 
         echo $! > {target_root}.pid
     ''').format(
+        buildroot_rebuild='true' if buildroot_rebuild else 'false',
         runner_root=Defaults.get_runner_package_root(),
         package_source_path=package_source_path,
         dist_profile=dist_profile,
