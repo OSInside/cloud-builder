@@ -138,11 +138,17 @@ def update_project() -> None:
         )
         if package_config:
             status_flags = Defaults.get_status_flags()
+            request_action = status_flags.package_changed
+            buildroot_config = Defaults.get_cloud_builder_kiwi_file_name()
+            if buildroot_config in changed_packages[package_source_path]:
+                # buildroot setup is part of changes list. This
+                # triggers a new build of the package buildroot
+                request_action = status_flags.package_and_meta_changed
             for target in package_config.get('distributions') or []:
                 package_request = CBPackageRequest()
                 package_request.set_package_build_request(
                     package_source_path, target['arch'], target['dist'],
-                    status_flags.package_changed
+                    request_action
                 )
                 broker.send_package_request(package_request)
                 request = package_request.get_data()
