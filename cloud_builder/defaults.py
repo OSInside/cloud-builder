@@ -21,6 +21,7 @@ from typing import NamedTuple
 status_flags = NamedTuple(
     'status_flags', [
         ('package_changed', str),
+        ('package_and_meta_changed', str),
         ('package_build_failed', str),
         ('package_build_succeeded', str),
         ('package_build_running', str),
@@ -154,12 +155,13 @@ class Defaults:
         """
         return status_flags(
             package_changed='package source changed',
+            package_and_meta_changed='package and its metadata changed',
             package_build_failed='package build failed',
             package_build_succeeded='package build succeeded',
             package_build_running='package build running',
             buildroot_setup_failed='build root setup failed',
             buildroot_setup_succeeded='build root setup succeeded',
-            package_update_request='package update request scheduled',
+            package_update_request='fetch service update request scheduled',
             package_request_accepted='package request accepted',
             incompatible_build_arch='incompatible build arch',
             reset_running_build='reset running build',
