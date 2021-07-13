@@ -133,12 +133,14 @@ class TestCBScheduler:
         log = Mock()
         broker = Mock()
         mock_CBCloudLogger.return_value = log
-        status_flags = Mock(package_changed='package source changed')
+        status_flags = Mock(
+            package_and_meta_changed='package source and its meta changed'
+        )
         mock_Defaults.get_status_flags.return_value = status_flags
         mock_Defaults.get_runner_project_dir.return_value = \
             'cloud_builder_sources'
         request = {
-            'action': 'package source changed',
+            'action': status_flags.package_and_meta_changed,
             'arch': 'x86_64',
             'dist': 'TW',
             'package': 'vim',
@@ -152,7 +154,7 @@ class TestCBScheduler:
         mock_reset_build_if_running.assert_called_once_with(
             request, log, broker
         )
-        mock_create_run_script.assert_called_once_with(request)
+        mock_create_run_script.assert_called_once_with(request, True)
         assert mock_Command_run.call_args_list == [
             call(
                 [
@@ -354,7 +356,7 @@ class TestCBScheduler:
         mock_Defaults.get_runner_package_root.return_value = \
             Defaults.get_runner_package_root()
         request = {
-            'action': 'package source changed',
+            'action': 'package source and its meta changed',
             'arch': 'x86_64',
             'dist': 'TW',
             'package': 'vim',
@@ -367,6 +369,10 @@ class TestCBScheduler:
             set -e
 
             rm -f /var/tmp/CB/vim@TW.x86_64.log
+
+            if true; then
+                rm -rf /var/tmp/CB/vim@TW.x86_64
+            fi
 
             function finish {
                 kill $(jobs -p) &>/dev/null
@@ -387,7 +393,7 @@ class TestCBScheduler:
         with patch('builtins.open', create=True) as mock_open:
             mock_open.return_value = MagicMock(spec=io.IOBase)
             file_handle = mock_open.return_value.__enter__.return_value
-            create_run_script(request)
+            create_run_script(request, True)
             mock_open.assert_called_once_with(
                 '/var/tmp/CB/vim@TW.x86_64.sh', 'w'
             )
