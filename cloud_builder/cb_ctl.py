@@ -99,7 +99,7 @@ def main() -> None:
         get_response_for_request(
             broker,
             args['--request-id'],
-            args['--timeout']
+            int(args['--timeout'] or 30)
         )
 
 
@@ -128,13 +128,20 @@ def get_package_info(
 def get_response_for_request(
     broker: Any, request_id: str, timeout_sec: int
 ) -> None:
-    for message in broker.read(
-        topic=Defaults.get_response_queue_name(),
-        group=f'cb-ctl:watch:{os.getpid()}',
-        timeout_ms=int(timeout_sec * 1000)
-    ):
-        response = broker.validate_response_request(message.value)
-        if response:
-            broker.acknowledge()
-            if response['request_id'] == request_id:
-                CBDisplay.print_yaml(response)
+    try:
+        while(True):
+            message = None
+            for message in broker.read(
+                topic=Defaults.get_response_queue_name(),
+                group=f'cb-ctl:watch:{os.getpid()}',
+                timeout_ms=timeout_sec * 1000
+            ):
+                response = broker.validate_package_response(message.value)
+                if response:
+                    broker.acknowledge()
+                    if response['request_id'] == request_id:
+                        CBDisplay.print_yaml(response)
+            if not message:
+                break
+    finally:
+        broker.close()
