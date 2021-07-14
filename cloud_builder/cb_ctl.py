@@ -18,7 +18,7 @@
 """
 usage: cb-ctl -h | --help
        cb-ctl --build=<package> --project-path=<path> --arch=<name> --dist=<name>
-       cb-ctl --info=<package>
+       cb-ctl --build-dependencies=<package> --arch=<name> --dist=<name>
            [--timeout=<time_sec>]
        cb-ctl --watch
            [--filter-request-id=<uuid>]
@@ -48,8 +48,8 @@ options:
     --dist=<name>
         Target distribution name
 
-    --info=<package>
-        Provide status information for package
+    --build-dependencies=<package>
+        Provide build root dependency information
 
     --watch
         Watch response messages of the cloud builder system
@@ -63,6 +63,7 @@ options:
 """
 import os
 from docopt import docopt
+from datetime import datetime
 from typing import (
     Any, Dict, Callable
 )
@@ -71,6 +72,7 @@ from cloud_builder.version import __version__
 from cloud_builder.defaults import Defaults
 from cloud_builder.broker import CBMessageBroker
 from cloud_builder.package_request.package_request import CBPackageRequest
+from cloud_builder.info_request.info_request import CBInfoRequest
 from cloud_builder.utils.display import CBDisplay
 from cloud_builder.exceptions import exception_handler
 
@@ -98,10 +100,12 @@ def main() -> None:
             args['--arch'],
             args['--dist']
         )
-    elif args['--info']:
-        get_package_info(
+    elif args['--build-dependencies']:
+        get_build_dependencies(
             broker,
-            args['--info'],
+            args['--build-dependencies'],
+            args['--arch'],
+            args['--dist'],
             args['--timeout']
         )
     elif args['--watch']:
@@ -133,11 +137,13 @@ def build_package(
     broker.close()
 
 
-def get_package_info(
-    broker: Any, package: str, timeout_sec: int
+def get_build_dependencies(
+    broker: Any, package: str, arch: str, dist: str, timeout_sec: int
 ) -> None:
-    # TODO
-    pass
+    request_id = send_info_request(broker, package, arch, dist)
+    info_response = info_reader(broker, request_id, timeout_sec)
+    # TODO... handle response and ssh cat the solver file
+    CBDisplay.print_yaml(info_response)
 
 
 def response_filter_request_id(request_id: str) -> Callable:
@@ -201,3 +207,71 @@ def response_reader(
                 break
     finally:
         broker.close()
+
+
+def send_info_request(
+    broker: Any, package: str, arch: str, dist: str
+) -> str:
+    info_request = CBInfoRequest()
+    info_request.set_info_request(package, arch, dist)
+    broker.send_info_request(info_request)
+    broker.close()
+    return info_request.get_data()['request_id']
+
+
+def info_reader(broker: Any, request_id: str, timeout_sec: int) -> Dict:
+    """
+    Read from the cloud builder info response queue.
+    In case multiple info services responds to the package
+    only the record of the latest timestamp will be
+    used
+
+    :param CBMessageBroker broker: broker instance
+    :param int timeout_sec:
+        Wait time_sec seconds of inactivity on the message
+        broker before return.
+    :param Callable func:
+        Callback method for response record
+    """
+    info_records = []
+    try:
+        while(True):
+            message = None
+            for message in broker.read(
+                topic=Defaults.get_info_response_queue_name(),
+                group=f'cb-ctl:{os.getpid()}',
+                timeout_ms=timeout_sec * 1000
+            ):
+                response = broker.validate_info_response(
+                    message.value
+                )
+                if response:
+                    broker.acknowledge()
+                    if response['request_id'] == request_id:
+                        info_records.append(response)
+            if not message:
+                break
+    finally:
+        broker.close()
+
+    if not info_records:
+        final_info_record = {}
+    elif len(info_records) == 1:
+        final_info_record = info_records[0]
+    else:
+        latest_timestamp = get_datetime_from_utc_timestamp(
+            info_records[0]['utc_modification_time']
+        )
+        for info_record in info_records:
+            timestamp = get_datetime_from_utc_timestamp(
+                info_record['utc_modification_time']
+            )
+            latest_timestamp = max((timestamp, latest_timestamp))
+        for info_record in info_records:
+            if info_record['utc_modification_time'] == format(latest_timestamp):
+                final_info_record = info_record
+    return final_info_record
+
+
+def get_datetime_from_utc_timestamp(timestamp: str) -> datetime:
+    return datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S.%f")
