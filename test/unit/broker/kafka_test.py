@@ -15,14 +15,14 @@ from cloud_builder.exceptions import (
 
 
 class TestCBMessageBrokerKafka:
-    @patch('cloud_builder.broker.kafka.CBCloudLogger')
-    def setup(self, mock_CBCloudLogger):
+    def setup(self):
         config_file = '../data/cb/kafka.yml'
         with open(config_file) as config:
             CBMessageBrokerKafka.__bases__ = (Mock,)
-            self.log = mock_CBCloudLogger.return_value
+            self.log = Mock()
             self.kafka = CBMessageBrokerKafka(config_file)
             self.kafka.config = yaml.safe_load(config)
+            self.kafka.log = self.log
             self.kafka.post_init()
         assert self.kafka.kafka_host == 'URI:9092'
 

@@ -25,7 +25,6 @@ from cloud_builder.package_request.package_request import CBPackageRequest
 from cloud_builder.info_request.info_request import CBInfoRequest
 from cloud_builder.response.response import CBResponse
 from cloud_builder.info_response.info_response import CBInfoResponse
-from cloud_builder.cloud_logger import CBCloudLogger
 from cloud_builder.broker.base import CBMessageBrokerBase
 
 from cloud_builder.exceptions import (
@@ -47,7 +46,6 @@ class CBMessageBrokerKafka(CBMessageBrokerBase):
         .. code:: yaml
             host: kafka-example.com:12345
         """
-        self.log = CBCloudLogger('CBMessageBrokerKafka', '(system)')
         self.kafka_host = self.config['host']
         self.consumer: KafkaConsumer = None
         self.producer: KafkaProducer = None

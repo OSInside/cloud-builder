@@ -17,9 +17,9 @@ from cloud_builder.info_response.info_response_schema import (
 
 class TestCBMessageBrokerBase:
     @patch.multiple(CBMessageBrokerBase, __abstractmethods__=set())
-    @patch('cloud_builder.broker.base.CBCloudLogger')
-    def setup(self, mock_CBCloudLogger):
-        self.log = mock_CBCloudLogger.return_value
+    @patch('cloud_builder.broker.base.CBLogger.get_logger')
+    def setup(self, mock_get_logger):
+        self.log = mock_get_logger.return_value
         self.broker = CBMessageBrokerBase(config_file='../data/cb/kafka.yml')
 
     @patch.multiple(CBMessageBrokerBase, __abstractmethods__=set())

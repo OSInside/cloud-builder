@@ -33,7 +33,7 @@ from cloud_builder.info_request.info_request_schema import info_request_schema
 from cloud_builder.info_response.info_response_schema import (
     info_response_schema
 )
-from cloud_builder.cloud_logger import CBCloudLogger
+from cloud_builder.logger import CBLogger
 from cloud_builder.exceptions import CBConfigFileNotFoundError
 
 
@@ -53,9 +53,7 @@ class CBMessageBrokerBase(metaclass=ABCMeta):
         except Exception as issue:
             raise CBConfigFileNotFoundError(issue)
 
-        self.log = CBCloudLogger(
-            'CBMessageBrokerBase', '(system)'
-        )
+        self.log = CBLogger.get_logger()
         self.post_init()
 
     @abstractmethod
