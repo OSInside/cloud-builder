@@ -67,29 +67,55 @@ class CBResponse:
         self, message: str, response_code: str, package: str,
         arch: str, dist: str
     ) -> None:
-        self.response_dict = {
-            **self.response_dict,
-            'message': message,
-            'response_code': response_code,
-            'package': package,
-            'arch': arch,
-            'dist': dist
-        }
+        self._set_dist_standard_response(
+            message, response_code, package, arch, dist
+        )
 
     def set_package_build_scheduled_response(
         self, message: str, response_code: str, package: str,
         arch: str, dist: str
     ) -> None:
-        self.response_dict = {
-            **self.response_dict,
-            'message': message,
-            'response_code': response_code,
-            'package': package,
-            'arch': arch,
-            'dist': dist
-        }
+        self._set_dist_standard_response(
+            message, response_code, package, arch, dist
+        )
+
+    def set_package_jobs_reset_response(
+        self, message: str, response_code: str, package: str,
+        arch: str, dist: str
+    ) -> None:
+        self._set_dist_standard_response(
+            message, response_code, package, arch, dist
+        )
 
     def set_buildhost_arch_incompatible_response(
+        self, message: str, response_code: str, package: str
+    ) -> None:
+        self._set_standard_response(message, response_code, package)
+
+    def set_package_not_existing_response(
+        self, message: str, response_code: str, package: str
+    ) -> None:
+        self._set_standard_response(message, response_code, package)
+
+    def set_package_invalid_metadata_response(
+        self, message: str, response_code: str, package: str
+    ) -> None:
+        self._set_standard_response(message, response_code, package)
+
+    def set_package_invalid_target_response(
+        self, message: str, response_code: str, package: str
+    ) -> None:
+        self._set_standard_response(message, response_code, package)
+
+    def set_package_metadata_not_existing_response(
+        self, message: str, response_code: str, package: str
+    ) -> None:
+        self._set_standard_response(message, response_code, package)
+
+    def get_data(self) -> Dict:
+        return self.response_dict
+
+    def _set_standard_response(
         self, message: str, response_code: str, package: str
     ) -> None:
         self.response_dict = {
@@ -99,7 +125,7 @@ class CBResponse:
             'package': package
         }
 
-    def set_package_jobs_reset_response(
+    def _set_dist_standard_response(
         self, message: str, response_code: str, package: str,
         arch: str, dist: str
     ) -> None:
@@ -111,46 +137,3 @@ class CBResponse:
             'arch': arch,
             'dist': dist
         }
-
-    def set_package_not_existing_response(
-        self, message: str, response_code: str, package: str
-    ) -> None:
-        self.response_dict = {
-            **self.response_dict,
-            'message': message,
-            'response_code': response_code,
-            'package': package
-        }
-
-    def set_package_invalid_metadata_response(
-        self, message: str, response_code: str, package: str
-    ) -> None:
-        self.response_dict = {
-            **self.response_dict,
-            'message': message,
-            'response_code': response_code,
-            'package': package
-        }
-
-    def set_package_invalid_target_response(
-        self, message: str, response_code: str, package: str
-    ) -> None:
-        self.response_dict = {
-            **self.response_dict,
-            'message': message,
-            'response_code': response_code,
-            'package': package
-        }
-
-    def set_package_metadata_not_existing_response(
-        self, message: str, response_code: str, package: str
-    ) -> None:
-        self.response_dict = {
-            **self.response_dict,
-            'message': message,
-            'response_code': response_code,
-            'package': package
-        }
-
-    def get_data(self) -> Dict:
-        return self.response_dict
