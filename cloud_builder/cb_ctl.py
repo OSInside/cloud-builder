@@ -21,7 +21,7 @@ usage: cb-ctl -h | --help
        cb-ctl --info=<package>
            [--timeout=<time_sec>]
        cb-ctl --watch
-           [--filer-request-id=<uuid>]
+           [--filter-request-id=<uuid>]
            [--timeout=<time_sec>]
 
 options:
@@ -54,7 +54,7 @@ options:
     --watch
         Watch response messages of the cloud builder system
 
-    --filer-request-id=<uuid>
+    --filter-request-id=<uuid>
         Filter messages by given request UUID
 
     --timeout=<time_sec>
@@ -64,7 +64,7 @@ options:
 import os
 from docopt import docopt
 from typing import (
-    Any, Dict, Optional, Callable
+    Any, Dict, Callable
 )
 
 from cloud_builder.version import __version__
@@ -106,10 +106,10 @@ def main() -> None:
         )
     elif args['--watch']:
         timeout = int(args['--timeout'] or 30)
-        if args['--filer-request-id']:
+        if args['--filter-request-id']:
             response_reader(
                 broker, timeout, response_filter_request_id(
-                    args['--filer-request-id']
+                    args['--filter-request-id']
                 )
             )
         else:
@@ -140,29 +140,17 @@ def get_package_info(
     pass
 
 
-def watch_response_queue(
-    broker: Any, request_id: Optional[str], timeout_sec: int
-) -> None:
-    try:
-        while(True):
-            message = None
-            for message in broker.read(
-                topic=Defaults.get_response_queue_name(),
-                group=f'cb-ctl:watch:{os.getpid()}',
-                timeout_ms=timeout_sec * 1000
-            ):
-                response = broker.validate_package_response(message.value)
-                if response:
-                    broker.acknowledge()
-                    if response['request_id'] == request_id:
-                        CBDisplay.print_yaml(response)
-            if not message:
-                break
-    finally:
-        broker.close()
-
-
 def response_filter_request_id(request_id: str) -> Callable:
+    """
+    Create callback closure for response_reader and
+    filter responses by given request_id
+
+    :param str request_id: request UUID
+
+    :return: response_reader Callable
+
+    :rtype: Callable
+    """
     def func(response: Dict) -> None:
         if response['request_id'] == request_id:
             CBDisplay.print_yaml(response)
@@ -170,6 +158,13 @@ def response_filter_request_id(request_id: str) -> Callable:
 
 
 def response_filter_none() -> Callable:
+    """
+    Create callback closure for response_reader, all messages
+
+    :return: response_reader Callable
+
+    :rtype: Callable
+    """
     def func(response: Dict) -> None:
         CBDisplay.print_yaml(response)
     return func
@@ -186,7 +181,7 @@ def response_reader(
         Wait time_sec seconds of inactivity on the message
         broker before return.
     :param Callable func:
-        Call method for response
+        Callback method for response record
     """
     try:
         while(True):
