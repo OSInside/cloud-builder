@@ -6,6 +6,7 @@ graft cloud_builder/info_response
 graft cloud_builder/package_metadata
 graft cloud_builder/package_request
 graft cloud_builder/response
+graft cloud_builder/utils
 graft systemd
 graft sysconfig
 graft package
