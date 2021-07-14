@@ -43,7 +43,7 @@ info_response_schema = {
     },
     'is_running': {
         'required': True,
-        'type': 'bool'
+        'type': 'boolean'
     },
     'arch': {
         'required': True,
