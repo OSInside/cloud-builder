@@ -20,7 +20,8 @@ usage: cb-ctl -h | --help
        cb-ctl --build=<package> --project-path=<path> --arch=<name> --dist=<name>
        cb-ctl --info=<package>
            [--timeout=<time_sec>]
-       cb-ctl --watch --request-id=<uuid>
+       cb-ctl --watch
+           [--filer-request-id=<uuid>]
            [--timeout=<time_sec>]
 
 options:
@@ -47,16 +48,26 @@ options:
     --dist=<name>
         Target distribution name
 
+    --info=<package>
+        Provide status information for package
+
+    --watch
+        Watch response messages of the cloud builder system
+
+    --filer-request-id=<uuid>
+        Filter messages by given request UUID
+
     --timeout=<time_sec>
         Wait time_sec seconds of inactivity on the message
         broker before return. Default: 30sec
 """
 import os
 from docopt import docopt
-from typing import Any
+from typing import (
+    Any, Dict, Optional, Callable
+)
 
 from cloud_builder.version import __version__
-from kiwi.privileges import Privileges
 from cloud_builder.defaults import Defaults
 from cloud_builder.broker import CBMessageBroker
 from cloud_builder.package_request.package_request import CBPackageRequest
@@ -74,8 +85,6 @@ def main() -> None:
         version='CB (ctl) version ' + __version__,
         options_first=True
     )
-
-    Privileges.check_for_root_permissions()
 
     broker = CBMessageBroker.new(
         'kafka', config_file=Defaults.get_kafka_config()
@@ -96,11 +105,11 @@ def main() -> None:
             args['--timeout']
         )
     elif args['--watch']:
-        get_response_for_request(
-            broker,
-            args['--request-id'],
-            int(args['--timeout'] or 30)
-        )
+        timeout = int(args['--timeout'] or 30)
+        if args['--filer-request-id']:
+            response_reader(broker, timeout, response_filter_request_id)
+        else:
+            response_reader(broker, timeout, response_filter_none)
 
 
 def build_package(
@@ -125,8 +134,8 @@ def get_package_info(
     pass
 
 
-def get_response_for_request(
-    broker: Any, request_id: str, timeout_sec: int
+def watch_response_queue(
+    broker: Any, request_id: Optional[str], timeout_sec: int
 ) -> None:
     try:
         while(True):
@@ -141,6 +150,47 @@ def get_response_for_request(
                     broker.acknowledge()
                     if response['request_id'] == request_id:
                         CBDisplay.print_yaml(response)
+            if not message:
+                break
+    finally:
+        broker.close()
+
+
+def response_filter_request_id(response: Dict) -> None:
+    CBDisplay.print_yaml(response)
+
+
+def response_filter_none(response: Dict) -> None:
+    CBDisplay.print_yaml(response)
+
+
+def response_reader(
+    broker: Any, timeout_sec: int, func: Callable
+) -> None:
+    """
+    Read from the cloud builder response queue
+
+    :param CBMessageBroker broker: broker instance
+    :param int timeout_sec:
+        Wait time_sec seconds of inactivity on the message
+        broker before return.
+    :param Callable func:
+        Call method for response
+    """
+    try:
+        while(True):
+            message = None
+            for message in broker.read(
+                topic=Defaults.get_response_queue_name(),
+                group=f'cb-ctl:{os.getpid()}',
+                timeout_ms=timeout_sec * 1000
+            ):
+                response = broker.validate_package_response(
+                    message.value
+                )
+                if response:
+                    broker.acknowledge()
+                    func(response)
             if not message:
                 break
     finally:
