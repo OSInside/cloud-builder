@@ -106,7 +106,7 @@ def main() -> None:
             args['--build-dependencies'],
             args['--arch'],
             args['--dist'],
-            args['--timeout']
+            int(args['--timeout'] or 30)
         )
     elif args['--watch']:
         timeout = int(args['--timeout'] or 30)
