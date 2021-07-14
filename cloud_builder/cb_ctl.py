@@ -107,9 +107,15 @@ def main() -> None:
     elif args['--watch']:
         timeout = int(args['--timeout'] or 30)
         if args['--filer-request-id']:
-            response_reader(broker, timeout, response_filter_request_id)
+            response_reader(
+                broker, timeout, response_filter_request_id(
+                    args['--filer-request-id']
+                )
+            )
         else:
-            response_reader(broker, timeout, response_filter_none)
+            response_reader(
+                broker, timeout, response_filter_none()
+            )
 
 
 def build_package(
@@ -156,12 +162,17 @@ def watch_response_queue(
         broker.close()
 
 
-def response_filter_request_id(response: Dict) -> None:
-    CBDisplay.print_yaml(response)
+def response_filter_request_id(request_id: str) -> Callable:
+    def func(response: Dict) -> None:
+        if response['request_id'] == request_id:
+            CBDisplay.print_yaml(response)
+    return func
 
 
-def response_filter_none(response: Dict) -> None:
-    CBDisplay.print_yaml(response)
+def response_filter_none() -> Callable:
+    def func(response: Dict) -> None:
+        CBDisplay.print_yaml(response)
+    return func
 
 
 def response_reader(
