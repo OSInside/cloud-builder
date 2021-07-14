@@ -15,12 +15,11 @@
 # You should have received a copy of the GNU General Public License
 # along with Cloud Builder.  If not, see <http://www.gnu.org/licenses/>
 #
-import yaml
-import sys
+import json
 from typing import Dict
 
 
 class CBDisplay:
     @staticmethod
     def print_yaml(data: Dict):
-        yaml.dump(data, sys.stdout, default_flow_style=False)
+        print(json.dumps(data, sort_keys=True, indent=4))
