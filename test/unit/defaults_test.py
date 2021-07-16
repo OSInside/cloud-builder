@@ -31,6 +31,11 @@ class TestDefaults:
             assert Defaults.get_kafka_config() == \
                 'users_home/.config/cb/kafka.yml'
 
+    def test_get_cb_ctl_config(self):
+        with patch.dict('os.environ', {'HOME': 'users_home'}):
+            assert Defaults.get_cb_ctl_config() == \
+                'users_home/.config/cb/cbctl.yml'
+
     def test_get_package_request_queue_name(self):
         assert Defaults.get_package_request_queue_name() == 'cb-package-request'
 
