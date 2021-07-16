@@ -152,7 +152,7 @@ def get_build_dependencies(
         runner_ip = info_response['source_ip']
         ssh_user = config['runner']['ssh_user']
         ssh_pkey_file = config['runner']['ssh_pkey_file']
-        print(f'ssh -i {ssh_pkey_file} {ssh_user}@{runner_ip}/{solver_file}')
+        print(f'ssh -i {ssh_pkey_file} -o StrictHostKeyChecking=accept-new {ssh_user}@{runner_ip} cat {solver_file}')
 
     # CBDisplay.print_yaml(info_response)
 
