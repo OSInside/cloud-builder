@@ -34,14 +34,15 @@ class CBResponse:
 
     def set_package_build_response(
         self, message: str, response_code: str, package: str,
-        log_file: str, solver_file: str, binary_packages: List[str],
-        exit_code: int
+        prepare_log_file: str, log_file: str, solver_file: str,
+        binary_packages: List[str], exit_code: int
     ) -> None:
         self.response_dict = {
             **self.response_dict,
             'message': message,
             'response_code': response_code,
             'package': package,
+            'prepare_log_file': prepare_log_file,
             'log_file': log_file,
             'solver_file': solver_file,
             'binary_packages': binary_packages,

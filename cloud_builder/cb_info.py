@@ -174,6 +174,7 @@ def lookup(package: str, arch: str, dist: str, request_id: str, broker: Any):
                 result = broker.validate_package_response(result_file.read())
                 response.set_info_response_result(
                     result['binary_packages'],
+                    result['prepare_log_file'],
                     result['log_file'],
                     result['solver_file'],
                     format(utc_modification_time),

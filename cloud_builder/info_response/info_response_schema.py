@@ -60,6 +60,11 @@ info_response_schema = {
         'type': 'list',
         'nullable': True
     },
+    'prepare_log_file': {
+        'required': True,
+        'type': 'string',
+        'nullable': False
+    },
     'log_file': {
         'required': True,
         'type': 'string',
