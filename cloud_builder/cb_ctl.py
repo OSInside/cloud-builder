@@ -63,6 +63,7 @@ options:
 """
 import os
 import yaml
+import json
 from docopt import docopt
 from datetime import datetime
 from typing import (
@@ -76,6 +77,8 @@ from cloud_builder.package_request.package_request import CBPackageRequest
 from cloud_builder.info_request.info_request import CBInfoRequest
 from cloud_builder.utils.display import CBDisplay
 from cloud_builder.exceptions import exception_handler
+
+from kiwi.command import Command
 
 
 @exception_handler
@@ -137,7 +140,7 @@ def build_package(
         Defaults.get_status_flags().package_update_request
     )
     broker.send_package_request(package_request)
-    CBDisplay.print_yaml(package_request.get_data())
+    CBDisplay.print_json(package_request.get_data())
     broker.close()
 
 
@@ -152,9 +155,17 @@ def get_build_dependencies(
         runner_ip = info_response['source_ip']
         ssh_user = config['runner']['ssh_user']
         ssh_pkey_file = config['runner']['ssh_pkey_file']
-        print(f'ssh -i {ssh_pkey_file} -o StrictHostKeyChecking=accept-new {ssh_user}@{runner_ip} cat {solver_file}')
-
-    # CBDisplay.print_yaml(info_response)
+        solver_data = json.loads(
+            Command.run(
+                [
+                    'ssh', '-i', ssh_pkey_file,
+                    '-o', 'StrictHostKeyChecking=accept-new',
+                    f'{ssh_user}@{runner_ip}',
+                    'cat', solver_file
+                ]
+            ).output
+        )
+        CBDisplay.print_json(solver_data)
 
 
 def response_filter_request_id(request_id: str) -> Callable:
@@ -170,7 +181,7 @@ def response_filter_request_id(request_id: str) -> Callable:
     """
     def func(response: Dict) -> None:
         if response['request_id'] == request_id:
-            CBDisplay.print_yaml(response)
+            CBDisplay.print_json(response)
     return func
 
 
@@ -183,7 +194,7 @@ def response_filter_none() -> Callable:
     :rtype: Callable
     """
     def func(response: Dict) -> None:
-        CBDisplay.print_yaml(response)
+        CBDisplay.print_json(response)
     return func
 
 

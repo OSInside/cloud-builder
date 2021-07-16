@@ -21,5 +21,5 @@ from typing import Dict
 
 class CBDisplay:
     @staticmethod
-    def print_yaml(data: Dict):
+    def print_json(data: Dict):
         print(json.dumps(data, sort_keys=True, indent=4))
