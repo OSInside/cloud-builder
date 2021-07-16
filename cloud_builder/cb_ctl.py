@@ -82,6 +82,7 @@ options:
 import os
 import yaml
 import json
+import logging
 from docopt import docopt
 from datetime import datetime
 from cerberus import Validator
@@ -113,6 +114,9 @@ def main() -> None:
     """
     cb-ctl - cloud builder control utility
     """
+    kiwi_log = logging.getLogger('kiwi')
+    kiwi_log.setLevel(logging.INFO)
+
     args = docopt(
         __doc__,
         version='CB (ctl) version ' + __version__,
