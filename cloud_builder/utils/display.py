@@ -21,5 +21,9 @@ from typing import Dict
 
 class CBDisplay:
     @staticmethod
-    def print_json(data: Dict):
+    def print_json(data: Dict) -> None:
         print(json.dumps(data, sort_keys=True, indent=4))
+
+    @staticmethod
+    def print_raw(data: str) -> None:
+        print(data)
