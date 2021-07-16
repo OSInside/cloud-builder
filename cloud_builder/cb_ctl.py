@@ -22,6 +22,8 @@ usage: cb-ctl -h | --help
            [--timeout=<time_sec>]
        cb-ctl --build-log=<package> --arch=<name> --dist=<name>
            [--timeout=<time_sec>]
+       cb-ctl --build-info=<package> --arch=<name> --dist=<name>
+           [--timeout=<time_sec>]
        cb-ctl --watch
            [--filter-request-id=<uuid>]
            [--timeout=<time_sec>]
@@ -133,6 +135,14 @@ def main() -> None:
             int(args['--timeout'] or 30),
             config
         )
+    elif args['--build-info']:
+        get_build_info(
+            broker,
+            args['--build-info'],
+            args['--arch'],
+            args['--dist'],
+            int(args['--timeout'] or 30)
+        )
     elif args['--watch']:
         timeout = int(args['--timeout'] or 30)
         if args['--filter-request-id']:
@@ -199,6 +209,14 @@ def get_build_log(
         CBDisplay.print_raw(build_log_data)
 
 
+def get_build_info(
+    broker: Any, package: str, arch: str, dist: str, imeout_sec: int
+) -> None:
+    CBDisplay.print_json(
+        get_info(broker, package, arch, dist, imeout_sec)
+    )
+
+
 def watch_filter_request_id(request_id: str) -> Callable:
     """
     Create callback closure for _response_reader and
@@ -225,12 +243,20 @@ def watch_filter_none() -> Callable:
     return func
 
 
+def get_info(
+    broker: Any, package: str, arch: str, dist: str, timeout_sec: int
+) -> Dict:
+    request_id = _send_info_request(broker, package, arch, dist)
+    return _info_reader(broker, request_id, timeout_sec)
+
+
 def _get_info_response_file(
     broker: Any, package: str, arch: str, dist: str,
     timeout_sec: int, config: Dict, response_file_name
 ) -> str:
-    request_id = _send_info_request(broker, package, arch, dist)
-    info_response = _info_reader(broker, request_id, timeout_sec)
+    info_response = get_info(
+        broker, package, arch, dist, timeout_sec
+    )
     if info_response:
         response_file = info_response[response_file_name]
         runner_ip = info_response['source_ip']
