@@ -20,6 +20,8 @@ usage: cb-ctl -h | --help
        cb-ctl --build=<package> --project-path=<path> --arch=<name> --dist=<name>
        cb-ctl --build-dependencies=<package> --arch=<name> --dist=<name>
            [--timeout=<time_sec>]
+       cb-ctl --build-log=<package> --arch=<name> --dist=<name>
+           [--timeout=<time_sec>]
        cb-ctl --watch
            [--filter-request-id=<uuid>]
            [--timeout=<time_sec>]
@@ -122,6 +124,15 @@ def main() -> None:
             int(args['--timeout'] or 30),
             config
         )
+    elif args['--build-log']:
+        get_build_log(
+            broker,
+            args['--build-log'],
+            args['--arch'],
+            args['--dist'],
+            int(args['--timeout'] or 30),
+            config
+        )
     elif args['--watch']:
         timeout = int(args['--timeout'] or 30)
         if args['--filter-request-id']:
@@ -173,7 +184,19 @@ def get_build_dependencies(
     solver_data = _get_info_response_file(
         broker, package, arch, dist, timeout_sec, config, 'solver_file'
     )
-    CBDisplay.print_json(solver_data)
+    if solver_data:
+        CBDisplay.print_json(json.loads(solver_data))
+
+
+def get_build_log(
+    broker: Any, package: str, arch: str, dist: str,
+    timeout_sec: int, config: Dict
+) -> None:
+    build_log_data = _get_info_response_file(
+        broker, package, arch, dist, timeout_sec, config, 'log_file'
+    )
+    if build_log_data:
+        CBDisplay.print_raw(build_log_data)
 
 
 def watch_filter_request_id(request_id: str) -> Callable:
@@ -205,7 +228,7 @@ def watch_filter_none() -> Callable:
 def _get_info_response_file(
     broker: Any, package: str, arch: str, dist: str,
     timeout_sec: int, config: Dict, response_file_name
-) -> Dict:
+) -> str:
     request_id = _send_info_request(broker, package, arch, dist)
     info_response = _info_reader(broker, request_id, timeout_sec)
     if info_response:
@@ -213,17 +236,15 @@ def _get_info_response_file(
         runner_ip = info_response['source_ip']
         ssh_user = config['runner']['ssh_user']
         ssh_pkey_file = config['runner']['ssh_pkey_file']
-        return json.loads(
-            Command.run(
-                [
-                    'ssh', '-i', ssh_pkey_file,
-                    '-o', 'StrictHostKeyChecking=accept-new',
-                    f'{ssh_user}@{runner_ip}',
-                    'cat', response_file
-                ]
-            ).output
-        )
-    return {}
+        return Command.run(
+            [
+                'ssh', '-i', ssh_pkey_file,
+                '-o', 'StrictHostKeyChecking=accept-new',
+                f'{ssh_user}@{runner_ip}',
+                'cat', response_file
+            ]
+        ).output
+    return ''
 
 
 def _response_reader(
