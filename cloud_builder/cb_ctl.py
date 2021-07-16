@@ -262,7 +262,7 @@ def fetch_binaries(
                 [
                     'scp', '-i', ssh_pkey_file,
                     '-o', 'StrictHostKeyChecking=accept-new',
-                    f'{ssh_user}@{runner_ip}{binary}',
+                    f'{ssh_user}@{runner_ip}:{binary}',
                     target_dir
                 ]
             )
