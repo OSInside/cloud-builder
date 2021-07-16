@@ -125,15 +125,30 @@ def main() -> None:
     elif args['--watch']:
         timeout = int(args['--timeout'] or 30)
         if args['--filter-request-id']:
-            response_reader(
-                broker, timeout, response_filter_request_id(
+            _response_reader(
+                broker, timeout, watch_filter_request_id(
                     args['--filter-request-id']
                 )
             )
         else:
-            response_reader(
-                broker, timeout, response_filter_none()
+            _response_reader(
+                broker, timeout, watch_filter_none()
             )
+
+
+def get_config() -> Dict:
+    try:
+        with open(Defaults.get_cb_ctl_config(), 'r') as config_fd:
+            config = yaml.safe_load(config_fd)
+    except Exception as issue:
+        raise CBConfigFileNotFoundError(issue)
+    validator = Validator(cbctl_config_schema)
+    validator.validate(config, cbctl_config_schema)
+    if validator.errors:
+        raise CBConfigFileValidationError(
+            'ValidationError for {0!r}: {1!r}'.format(config, validator.errors)
+        )
+    return config
 
 
 def build_package(
@@ -155,34 +170,18 @@ def get_build_dependencies(
     broker: Any, package: str, arch: str, dist: str,
     timeout_sec: int, config: Dict
 ) -> None:
-    request_id = send_info_request(broker, package, arch, dist)
-    info_response = info_reader(broker, request_id, timeout_sec)
-    if info_response:
-        solver_file = info_response['solver_file']
-        runner_ip = info_response['source_ip']
-        ssh_user = config['runner']['ssh_user']
-        ssh_pkey_file = config['runner']['ssh_pkey_file']
-        solver_data = json.loads(
-            Command.run(
-                [
-                    'ssh', '-i', ssh_pkey_file,
-                    '-o', 'StrictHostKeyChecking=accept-new',
-                    f'{ssh_user}@{runner_ip}',
-                    'cat', solver_file
-                ]
-            ).output
-        )
-        CBDisplay.print_json(solver_data)
+    solver_data = _get_info_response_file(
+        broker, package, arch, dist, timeout_sec, config, 'solver_file'
+    )
+    CBDisplay.print_json(solver_data)
 
 
-def response_filter_request_id(request_id: str) -> Callable:
+def watch_filter_request_id(request_id: str) -> Callable:
     """
-    Create callback closure for response_reader and
+    Create callback closure for _response_reader and
     filter responses by given request_id
 
     :param str request_id: request UUID
-
-    :return: response_reader Callable
 
     :rtype: Callable
     """
@@ -192,11 +191,9 @@ def response_filter_request_id(request_id: str) -> Callable:
     return func
 
 
-def response_filter_none() -> Callable:
+def watch_filter_none() -> Callable:
     """
-    Create callback closure for response_reader, all messages
-
-    :return: response_reader Callable
+    Create callback closure for _response_reader, all messages
 
     :rtype: Callable
     """
@@ -205,7 +202,31 @@ def response_filter_none() -> Callable:
     return func
 
 
-def response_reader(
+def _get_info_response_file(
+    broker: Any, package: str, arch: str, dist: str,
+    timeout_sec: int, config: Dict, response_file_name
+) -> Dict:
+    request_id = _send_info_request(broker, package, arch, dist)
+    info_response = _info_reader(broker, request_id, timeout_sec)
+    if info_response:
+        response_file = info_response[response_file_name]
+        runner_ip = info_response['source_ip']
+        ssh_user = config['runner']['ssh_user']
+        ssh_pkey_file = config['runner']['ssh_pkey_file']
+        return json.loads(
+            Command.run(
+                [
+                    'ssh', '-i', ssh_pkey_file,
+                    '-o', 'StrictHostKeyChecking=accept-new',
+                    f'{ssh_user}@{runner_ip}',
+                    'cat', response_file
+                ]
+            ).output
+        )
+    return {}
+
+
+def _response_reader(
     broker: Any, timeout_sec: int, func: Callable
 ) -> None:
     """
@@ -238,7 +259,7 @@ def response_reader(
         broker.close()
 
 
-def send_info_request(
+def _send_info_request(
     broker: Any, package: str, arch: str, dist: str
 ) -> str:
     info_request = CBInfoRequest()
@@ -248,7 +269,7 @@ def send_info_request(
     return info_request.get_data()['request_id']
 
 
-def info_reader(broker: Any, request_id: str, timeout_sec: int) -> Dict:
+def _info_reader(broker: Any, request_id: str, timeout_sec: int) -> Dict:
     """
     Read from the cloud builder info response queue.
     In case multiple info services responds to the package
@@ -288,11 +309,11 @@ def info_reader(broker: Any, request_id: str, timeout_sec: int) -> Dict:
     elif len(info_records) == 1:
         final_info_record = info_records[0]
     else:
-        latest_timestamp = get_datetime_from_utc_timestamp(
+        latest_timestamp = _get_datetime_from_utc_timestamp(
             info_records[0]['utc_modification_time']
         )
         for info_record in info_records:
-            timestamp = get_datetime_from_utc_timestamp(
+            timestamp = _get_datetime_from_utc_timestamp(
                 info_record['utc_modification_time']
             )
             latest_timestamp = max((timestamp, latest_timestamp))
@@ -302,20 +323,5 @@ def info_reader(broker: Any, request_id: str, timeout_sec: int) -> Dict:
     return final_info_record
 
 
-def get_datetime_from_utc_timestamp(timestamp: str) -> datetime:
+def _get_datetime_from_utc_timestamp(timestamp: str) -> datetime:
     return datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S.%f")
-
-
-def get_config() -> Dict:
-    try:
-        with open(Defaults.get_cb_ctl_config(), 'r') as config_fd:
-            config = yaml.safe_load(config_fd)
-    except Exception as issue:
-        raise CBConfigFileNotFoundError(issue)
-    validator = Validator(cbctl_config_schema)
-    validator.validate(config, cbctl_config_schema)
-    if validator.errors:
-        raise CBConfigFileValidationError(
-            'ValidationError for {0!r}: {1!r}'.format(config, validator.errors)
-        )
-    return config
