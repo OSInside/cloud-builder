@@ -10,7 +10,8 @@ from cloud_builder.info_response.info_response import CBInfoResponse
 from cloud_builder.broker.kafka import CBMessageBrokerKafka
 from cloud_builder.exceptions import (
     CBKafkaProducerException,
-    CBKafkaConsumerException
+    CBKafkaConsumerException,
+    CBConfigFileValidationError
 )
 
 
@@ -25,6 +26,17 @@ class TestCBMessageBrokerKafka:
             self.kafka.log = self.log
             self.kafka.post_init()
         assert self.kafka.kafka_host == 'URI:9092'
+
+    def test_setup_raises_invalid_config(self):
+        config_file = '../data/cb/kafka-invalid.yml'
+        with open(config_file) as config:
+            CBMessageBrokerKafka.__bases__ = (Mock,)
+            self.log = Mock()
+            self.kafka = CBMessageBrokerKafka(config_file)
+            self.kafka.config = yaml.safe_load(config)
+            self.kafka.log = self.log
+            with raises(CBConfigFileValidationError):
+                self.kafka.post_init()
 
     @patch('cloud_builder.broker.kafka.KafkaProducer')
     def test_create_producer_raises(self, mock_KafkaProducer):

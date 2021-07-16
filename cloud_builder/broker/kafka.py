@@ -19,6 +19,7 @@ import yaml
 from typing import List
 from kafka import KafkaConsumer
 from kafka import KafkaProducer
+from cerberus import Validator
 
 from cloud_builder.defaults import Defaults
 from cloud_builder.package_request.package_request import CBPackageRequest
@@ -26,10 +27,12 @@ from cloud_builder.info_request.info_request import CBInfoRequest
 from cloud_builder.response.response import CBResponse
 from cloud_builder.info_response.info_response import CBInfoResponse
 from cloud_builder.broker.base import CBMessageBrokerBase
+from cloud_builder.config.kafka_schema import kafka_config_schema
 
 from cloud_builder.exceptions import (
     CBKafkaProducerException,
-    CBKafkaConsumerException
+    CBKafkaConsumerException,
+    CBConfigFileValidationError
 )
 
 
@@ -46,6 +49,14 @@ class CBMessageBrokerKafka(CBMessageBrokerBase):
         .. code:: yaml
             host: kafka-example.com:12345
         """
+        validator = Validator(kafka_config_schema)
+        validator.validate(self.config, kafka_config_schema)
+        if validator.errors:
+            raise CBConfigFileValidationError(
+                'ValidationError for {0!r}: {1!r}'.format(
+                    self.config, validator.errors
+                )
+            )
         self.kafka_host = self.config['host']
         self.consumer: KafkaConsumer = None
         self.producer: KafkaProducer = None

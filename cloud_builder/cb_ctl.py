@@ -66,6 +66,7 @@ import yaml
 import json
 from docopt import docopt
 from datetime import datetime
+from cerberus import Validator
 from typing import (
     Any, Dict, Callable
 )
@@ -76,7 +77,13 @@ from cloud_builder.broker import CBMessageBroker
 from cloud_builder.package_request.package_request import CBPackageRequest
 from cloud_builder.info_request.info_request import CBInfoRequest
 from cloud_builder.utils.display import CBDisplay
-from cloud_builder.exceptions import exception_handler
+from cloud_builder.config.cbctl_schema import cbctl_config_schema
+
+from cloud_builder.exceptions import (
+    exception_handler,
+    CBConfigFileNotFoundError,
+    CBConfigFileValidationError
+)
 
 from kiwi.command import Command
 
@@ -300,8 +307,15 @@ def get_datetime_from_utc_timestamp(timestamp: str) -> datetime:
 
 
 def get_config() -> Dict:
-    # TODO: validate config and raise if not ok
-    config: Dict[str, str] = {}
-    with open(Defaults.get_cb_ctl_config(), 'r') as config_fd:
-        config = yaml.safe_load(config_fd) or {}
+    try:
+        with open(Defaults.get_cb_ctl_config(), 'r') as config_fd:
+            config = yaml.safe_load(config_fd)
+    except Exception as issue:
+        raise CBConfigFileNotFoundError(issue)
+    validator = Validator(cbctl_config_schema)
+    validator.validate(config, cbctl_config_schema)
+    if validator.errors:
+        raise CBConfigFileValidationError(
+            'ValidationError for {0!r}: {1!r}'.format(config, validator.errors)
+        )
     return config

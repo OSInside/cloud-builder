@@ -85,6 +85,12 @@ class CBError(Exception):
         return format(self.message)
 
 
+class CBConfigFileValidationError(CBError):
+    """
+    Exception raised if the config file is invalid against its schema
+    """
+
+
 class CBConfigFileNotFoundError(CBError):
     """
     Exception raised if a config file could not be found
