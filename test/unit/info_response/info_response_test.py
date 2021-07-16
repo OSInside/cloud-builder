@@ -17,6 +17,7 @@ class TestCBInfoResponse:
             'arch': 'x86_64',
             'dist': 'TW',
             'binary_packages': [],
+            'prepare_log_file': 'unknown',
             'log_file': 'unknown',
             'solver_file': 'unknown',
             'utc_modification_time': 'unknown',
@@ -28,7 +29,7 @@ class TestCBInfoResponse:
             'package', 'source_ip', True, 'x86_64', 'TW'
         )
         self.info_response.set_info_response_result(
-            ['binary'], 'log_file', 'solver_file', 'timestamp', 'build_status'
+            ['binary'], 'prepare_log_file', 'log_file', 'solver_file', 'timestamp', 'build_status'
         )
         assert self.info_response.get_data() == {
             **self.info_response.info_response_dict,
@@ -38,6 +39,7 @@ class TestCBInfoResponse:
             'arch': 'x86_64',
             'dist': 'TW',
             'binary_packages': ['binary'],
+            'prepare_log_file': 'prepare_log_file',
             'log_file': 'log_file',
             'solver_file': 'solver_file',
             'utc_modification_time': 'timestamp',

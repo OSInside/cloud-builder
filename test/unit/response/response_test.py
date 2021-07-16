@@ -7,14 +7,15 @@ class TestCBResponse:
 
     def test_set_package_build_response(self):
         self.response.set_package_build_response(
-            'message', 'response_code', 'package', 'log_file',
-            'solver_file', [], 0
+            'message', 'response_code', 'package', 'prepare_log_file',
+            'log_file', 'solver_file', [], 0
         )
         assert self.response.get_data() == {
             **self.response.response_dict,
             'message': 'message',
             'response_code': 'response_code',
             'package': 'package',
+            'prepare_log_file': 'prepare_log_file',
             'log_file': 'log_file',
             'solver_file': 'solver_file',
             'binary_packages': [],

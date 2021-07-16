@@ -77,6 +77,10 @@ def main() -> None:
     log = CBCloudLogger('CBRun', package_name)
 
     # created by run.sh script written in cb_prepare and called here
+    prepare_log_file = ''.join(
+        [args['--root'].rstrip(os.sep), '.prepare.log']
+    )
+    # created by run.sh script written in cb_prepare and called here
     build_log_file = ''.join(
         [args['--root'].rstrip(os.sep), '.build.log']
     )
@@ -120,6 +124,7 @@ def main() -> None:
         message='Package build finished',
         response_code=status,
         package=package_name,
+        prepare_log_file=prepare_log_file,
         log_file=build_log_file,
         solver_file=solver_json_file,
         binary_packages=packages,

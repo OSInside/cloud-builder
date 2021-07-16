@@ -56,6 +56,11 @@ response_schema = {
         'type': 'string',
         'nullable': False
     },
+    'prepare_log_file': {
+        'required': False,
+        'type': 'string',
+        'nullable': False
+    },
     'log_file': {
         'required': False,
         'type': 'string',
