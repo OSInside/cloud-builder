@@ -21,10 +21,10 @@
 Building Software Packages as a Service
 ---------------------------------------
 
-The {CB} project provides a collection of services which allows
-you to build software packages via a messaging API. Primarily
-**rpm** packages but also other package formats like **deb**,
-**pacman** and alike are possible.
+The {CB} project provides a collection of services which
+allows you to stand up a package building backend to build software
+packages through a messaging API. Primarily **rpm** packages but also
+other package formats like **deb**, **pacman** and alike are possible.
 
 If you don't want a monolithic server but small services for
 dedicated tasks that can scale with the amount of tasks. If you
