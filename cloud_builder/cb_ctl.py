@@ -24,6 +24,8 @@ usage: cb-ctl -h | --help
            [--timeout=<time_sec>]
        cb-ctl --build-info=<package> --arch=<name> --dist=<name>
            [--timeout=<time_sec>]
+       cb-ctl --get-binaries=<package> --arch=<name> --dist=<name> --target-dir=<dir>
+           [--timeout=<time_sec>]
        cb-ctl --watch
            [--filter-request-id=<uuid>]
            [--timeout=<time_sec>]
@@ -53,7 +55,19 @@ options:
         Target distribution name
 
     --build-dependencies=<package>
-        Provide build root dependency information
+        Provide latest build root dependency information
+
+    --build-log=<package>
+        Provide latest raw package build log
+
+    --build-info=<package>
+        Provide latest build result and status information
+
+    --get-binaries=<package>
+        Download latest binary packages
+
+    --target-dir=<dir>
+        Name of target directory for get-binaries download
 
     --watch
         Watch response messages of the cloud builder system
@@ -82,6 +96,7 @@ from cloud_builder.package_request.package_request import CBPackageRequest
 from cloud_builder.info_request.info_request import CBInfoRequest
 from cloud_builder.utils.display import CBDisplay
 from cloud_builder.config.cbctl_schema import cbctl_config_schema
+from cloud_builder.logger import CBLogger
 
 from cloud_builder.exceptions import (
     exception_handler,
@@ -90,6 +105,7 @@ from cloud_builder.exceptions import (
 )
 
 from kiwi.command import Command
+from kiwi.path import Path
 
 
 @exception_handler
@@ -142,6 +158,16 @@ def main() -> None:
             args['--arch'],
             args['--dist'],
             int(args['--timeout'] or 30)
+        )
+    elif args['--get-binaries']:
+        fetch_binaries(
+            broker,
+            args['--get-binaries'],
+            args['--arch'],
+            args['--dist'],
+            int(args['--timeout'] or 30),
+            args['--target-dir'],
+            config
         )
     elif args['--watch']:
         timeout = int(args['--timeout'] or 30)
@@ -210,11 +236,36 @@ def get_build_log(
 
 
 def get_build_info(
-    broker: Any, package: str, arch: str, dist: str, imeout_sec: int
+    broker: Any, package: str, arch: str, dist: str, timeout_sec: int
 ) -> None:
     CBDisplay.print_json(
-        get_info(broker, package, arch, dist, imeout_sec)
+        get_info(broker, package, arch, dist, timeout_sec)
     )
+
+
+def fetch_binaries(
+    broker: Any, package: str, arch: str, dist: str,
+    timeout_sec: int, target_dir, config: Dict
+) -> None:
+    log = CBLogger.get_logger()
+    info_response = get_info(
+        broker, package, arch, dist, timeout_sec
+    )
+    if info_response:
+        runner_ip = info_response['source_ip']
+        ssh_user = config['runner']['ssh_user']
+        ssh_pkey_file = config['runner']['ssh_pkey_file']
+        Path.create(target_dir)
+        for binary in info_response['binary_packages']:
+            log.info(f'Fetching {binary} -> {target_dir}')
+            Command.run(
+                [
+                    'scp', '-i', ssh_pkey_file,
+                    '-o', 'StrictHostKeyChecking=accept-new',
+                    f'{ssh_user}@{runner_ip}{binary}',
+                    target_dir
+                ]
+            )
 
 
 def watch_filter_request_id(request_id: str) -> Callable:
