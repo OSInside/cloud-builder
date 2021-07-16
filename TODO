@@ -1,3 +1,10 @@
+* remind yourself on Fedora selinux is active which prevents
+  several actions like rpm --initdb. To fix this call
+
+  sudo setenforce 0
+
+* Add option "--clean" to cb-ctl --build command (clean buildroot)
+
 * add tests
 
 * add documentation
