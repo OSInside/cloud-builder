@@ -88,6 +88,7 @@ def main() -> None:
     )
 
     # Solve buildroot packages and create solver json
+    prepare_log_file = f'{target_root}.prepare.log'
     solver_json_file = f'{target_root}.solver.json'
     log.info(
         'Solving buildroot package list for {0}. For details see: {1}'.format(
@@ -99,13 +100,13 @@ def main() -> None:
             Path.which(
                 'kiwi-ng', alternative_lookup_paths=['/usr/local/bin']
             ),
+            '--logfile', prepare_log_file,
             '--profile', dist_profile,
             'image', 'info',
             '--description', args['--package'],
             '--resolve-package-list'
         ], raise_on_error=False
     )
-    exit_code = kiwi_solve.returncode
     if kiwi_solve.output:
         with open(solver_json_file, 'w') as solve_log:
             process_line = False
@@ -116,30 +117,26 @@ def main() -> None:
                     solve_log.write(line)
                     solve_log.write(os.linesep)
 
-    # Install buildroot and create prepare log
-    prepare_log_file = f'{target_root}.prepare.log'
-    with open(prepare_log_file, 'w'):
-        pass
-    if kiwi_solve.returncode == 0:
-        log.info(
-            'Creating buildroot {0}. For details see: {1}'.format(
-                target_root, prepare_log_file
-            )
+    # Install buildroot
+    log.info(
+        'Creating buildroot {0}. For details see: {1}'.format(
+            target_root, prepare_log_file
         )
-        kiwi_run = Command.run(
-            [
-                Path.which(
-                    'kiwi-ng', alternative_lookup_paths=['/usr/local/bin']
-                ),
-                '--logfile', prepare_log_file,
-                '--profile', dist_profile,
-                'system', 'prepare',
-                '--description', args['--package'],
-                '--allow-existing-root',
-                '--root', target_root
-            ], raise_on_error=False
-        )
-        exit_code = kiwi_run.returncode
+    )
+    kiwi_run = Command.run(
+        [
+            Path.which(
+                'kiwi-ng', alternative_lookup_paths=['/usr/local/bin']
+            ),
+            '--logfile', prepare_log_file,
+            '--profile', dist_profile,
+            'system', 'prepare',
+            '--description', args['--package'],
+            '--allow-existing-root',
+            '--root', target_root
+        ], raise_on_error=False
+    )
+    exit_code = kiwi_run.returncode
 
     # Sync package sources and build script into buildroot
     if exit_code != 0:
