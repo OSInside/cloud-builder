@@ -95,6 +95,7 @@ def main() -> None:
             target_root, solver_json_file
         )
     )
+    Path.wipe(prepare_log_file)
     kiwi_solve = Command.run(
         [
             Path.which(
