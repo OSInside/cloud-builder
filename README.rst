@@ -6,5 +6,9 @@ Cloud Builder
 
 |GitHub CI Action|
 
-Cloud Builder provides services to stand up a package building
-cluster in cloud(VM) or container clusters.
+The Cloud Builder project provides a collection of services which
+allows you to stand up a package building backend to build software
+packages through a messaging API. Primarily **rpm** packages but also
+other package formats like **deb**, **pacman** and alike are possible.
+
+For more information see: [comming-soon]
