@@ -20,7 +20,7 @@ cbctl_config_schema = {
         'required': True,
         'type': 'dict',
         'schema': {
-            'ec2-user': {
+            'ssh_user': {
                 'required': True,
                 'type': 'string',
                 'nullable': False
