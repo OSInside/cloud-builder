@@ -194,6 +194,17 @@ class Defaults:
         return os.path.join(Defaults.__conf_path(), 'kafka.yml')
 
     @staticmethod
+    def get_cb_ctl_config() -> str:
+        """
+        Location of control plane (cb-ctl) config file
+
+        :return: A file path
+
+        :rtype: str
+        """
+        return os.path.join(Defaults.__conf_path(), 'cbctl.yml')
+
+    @staticmethod
     def __conf_path() -> str:
         """
         Base directory of config files for Cloud Builder

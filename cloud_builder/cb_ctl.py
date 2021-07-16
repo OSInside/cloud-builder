@@ -62,6 +62,7 @@ options:
         broker before return. Default: 30sec
 """
 import os
+import yaml
 from docopt import docopt
 from datetime import datetime
 from typing import (
@@ -88,6 +89,8 @@ def main() -> None:
         options_first=True
     )
 
+    config = get_config()
+
     broker = CBMessageBroker.new(
         'kafka', config_file=Defaults.get_kafka_config()
     )
@@ -106,7 +109,8 @@ def main() -> None:
             args['--build-dependencies'],
             args['--arch'],
             args['--dist'],
-            int(args['--timeout'] or 30)
+            int(args['--timeout'] or 30),
+            config
         )
     elif args['--watch']:
         timeout = int(args['--timeout'] or 30)
@@ -138,12 +142,19 @@ def build_package(
 
 
 def get_build_dependencies(
-    broker: Any, package: str, arch: str, dist: str, timeout_sec: int
+    broker: Any, package: str, arch: str, dist: str,
+    timeout_sec: int, config: Dict
 ) -> None:
     request_id = send_info_request(broker, package, arch, dist)
     info_response = info_reader(broker, request_id, timeout_sec)
-    # TODO... handle response and ssh cat the solver file
-    CBDisplay.print_yaml(info_response)
+    if info_response:
+        solver_file = info_response['solver_file']
+        runner_ip = info_response['source_ip']
+        ssh_user = config['runner']['ssh_user']
+        ssh_pkey_file = config['runner']['ssh_pkey_file']
+        print(f'ssh -i {ssh_pkey_file} {ssh_user}@{runner_ip}/{solver_file}')
+
+    # CBDisplay.print_yaml(info_response)
 
 
 def response_filter_request_id(request_id: str) -> Callable:
@@ -275,3 +286,11 @@ def info_reader(broker: Any, request_id: str, timeout_sec: int) -> Dict:
 
 def get_datetime_from_utc_timestamp(timestamp: str) -> datetime:
     return datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S.%f")
+
+
+def get_config() -> Dict:
+    # TODO: validate config and raise if not ok
+    config: Dict[str, str] = {}
+    with open(Defaults.get_cb_ctl_config(), 'r') as config_fd:
+        config = yaml.safe_load(config_fd) or {}
+    return config
