@@ -76,9 +76,13 @@ Requires:       python%{python3_pkgversion}-requests
 Requires:       python%{python3_pkgversion}-PyYAML
 Requires:       python%{python3_pkgversion}-APScheduler
 Requires:       python%{python3_pkgversion}-kafka-python
-Requires:       python%{python3_pkgversion}-Cerberus
 Requires:       python%{python3_pkgversion}-psutil
 Requires:       python%{python3_pkgversion}-setuptools
+%if 0%{?suse_version}
+Requires:       python%{python3_pkgversion}-Cerberus
+%else
+Requires:       python%{python3_pkgversion}-cerberus
+%endif
 Requires(preun):  systemd
 Requires(postun): systemd
 %description -n python%{python3_pkgversion}-cloud_builder
