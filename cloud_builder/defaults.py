@@ -191,7 +191,7 @@ class Defaults:
 
         :rtype: str
         """
-        return os.path.join(Defaults.__conf_path(), 'kafka.yml')
+        return '/etc/cloud_builder_broker.yml'
 
     @staticmethod
     def get_cb_ctl_config() -> str:
