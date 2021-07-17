@@ -28,7 +28,7 @@ class CBPackageRequest:
         self.package_request_schema_version = 0.1
 
     def set_package_build_request(
-        self, package: str, arch: str, dist: str, action: str
+        self, package: str, arch: str, dist: str, runner_group: str, action: str
     ) -> None:
         self.package_request_dict = {
             'schema_version': self.package_request_schema_version,
@@ -36,6 +36,7 @@ class CBPackageRequest:
             'package': package,
             'arch': arch,
             'dist': dist,
+            'runner_group': runner_group,
             'action': action
         }
 

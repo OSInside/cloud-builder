@@ -148,7 +148,7 @@ def update_project() -> None:
                 package_request = CBPackageRequest()
                 package_request.set_package_build_request(
                     package_source_path, target['arch'], target['dist'],
-                    request_action
+                    target['runner_group'], request_action
                 )
                 broker.send_package_request(package_request)
                 request = package_request.get_data()

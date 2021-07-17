@@ -3,7 +3,7 @@
 
   sudo setenforce 0
 
-* Add option "--clean" to cb-ctl --build command (clean buildroot)
+* Increase cb-ctl --build-log to fetch prepare and build log at once
 
 * add tests
 
