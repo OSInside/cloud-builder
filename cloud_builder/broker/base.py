@@ -219,6 +219,15 @@ class CBMessageBrokerBase(metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
+    def get_runner_group(self) -> str:
+        """
+        Return runner identification for package build requests
+
+        Implementation in specialized broker class
+        """
+        raise NotImplementedError
+
+    @abstractmethod
     def close(self) -> None:
         """
         Close connection to message system

@@ -138,6 +138,19 @@ class CBMessageBrokerKafka(CBMessageBrokerBase):
         if self.consumer:
             self.consumer.commit()
 
+    def get_runner_group(self) -> str:
+        """
+        Return runner identification for package build requests.
+        In kafka this is the topic name of the request queue
+
+        :return: kafka topic name
+
+        :rtype: str
+        """
+        if self.config.get('runner'):
+            return self.config['runner']['group']
+        return Defaults.get_package_request_queue_name()
+
     def close(self) -> None:
         """
         Close connection to message system

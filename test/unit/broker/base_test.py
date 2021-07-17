@@ -115,6 +115,10 @@ class TestCBMessageBrokerBase:
         with raises(NotImplementedError):
             self.broker.acknowledge()
 
+    def test_get_runner_group(self):
+        with raises(NotImplementedError):
+            self.broker.get_runner_group()
+
     def test_close(self):
         with raises(NotImplementedError):
             self.broker.close()

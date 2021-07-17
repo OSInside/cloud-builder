@@ -26,5 +26,16 @@ cloud_builder_broker_schema = {
                 'nullable': False
             }
         }
+    },
+    'runner': {
+        'required': False,
+        'type': 'dict',
+        'schema': {
+            'group': {
+                'required': True,
+                'type': 'string',
+                'nullable': False
+            }
+        }
     }
 }

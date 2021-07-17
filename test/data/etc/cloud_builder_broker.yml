@@ -1,2 +1,4 @@
 broker:
   host: URI:9092
+runner:
+  group: 'fedora'

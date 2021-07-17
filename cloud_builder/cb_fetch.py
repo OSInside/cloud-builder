@@ -129,7 +129,7 @@ def update_project() -> None:
         ['git', '-C', Defaults.get_runner_project_dir(), 'pull']
     )
     broker = CBMessageBroker.new(
-        'kafka', config_file=Defaults.get_kafka_config()
+        'kafka', config_file=Defaults.get_broker_config()
     )
     for package_source_path in sorted(changed_packages.keys()):
         log = CBCloudLogger('CBFetch', os.path.basename(package_source_path))

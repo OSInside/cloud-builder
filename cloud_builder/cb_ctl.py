@@ -126,7 +126,7 @@ def main() -> None:
     config = get_config()
 
     broker = CBMessageBroker.new(
-        'kafka', config_file=Defaults.get_kafka_config()
+        'kafka', config_file=Defaults.get_broker_config()
     )
 
     if args['--build']:

@@ -15,8 +15,8 @@ class TestCBPackageMetaData:
             'schema_version': 0.1,
             'name': 'xclock',
             'distributions': [
-                {'dist': 'TW', 'arch': 'x86_64'},
-                {'dist': 'TW', 'arch': 'aarch64'}
+                {'dist': 'TW', 'arch': 'x86_64', 'runner_group': 'suse'},
+                {'dist': 'TW', 'arch': 'aarch64', 'runner_group': 'suse'}
             ]
         }
 

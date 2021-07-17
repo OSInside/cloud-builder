@@ -26,8 +26,8 @@ class TestDefaults:
             assert Defaults.get_runner_project_dir() == \
                 'users_home/cloud_builder_sources'
 
-    def test_get_kafka_config(self):
-        assert Defaults.get_kafka_config() == '/etc/cloud_builder_broker.yml'
+    def test_get_broker_config(self):
+        assert Defaults.get_broker_config() == '/etc/cloud_builder_broker.yml'
 
     def test_get_cb_ctl_config(self):
         with patch.dict('os.environ', {'HOME': 'users_home'}):

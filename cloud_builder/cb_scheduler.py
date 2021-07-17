@@ -177,7 +177,7 @@ def handle_build_requests(poll_timeout: int, running_limit: int) -> None:
         return
 
     broker = CBMessageBroker.new(
-        'kafka', config_file=Defaults.get_kafka_config()
+        'kafka', config_file=Defaults.get_broker_config()
     )
     try:
         while(True):
@@ -186,8 +186,7 @@ def handle_build_requests(poll_timeout: int, running_limit: int) -> None:
                 log.info('Max running builds limit reached')
                 break
             for message in broker.read(
-                Defaults.get_package_request_queue_name(),
-                timeout_ms=poll_timeout
+                topic=broker.get_runner_group(), timeout_ms=poll_timeout
             ):
                 request = broker.validate_package_request(message.value)
                 if request:
