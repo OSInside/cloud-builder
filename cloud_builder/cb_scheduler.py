@@ -301,7 +301,7 @@ def is_request_valid(
 
     1. Check if given package source exists
     2. Check if there is a cloud builder metadata and kiwi file
-    3. Check if architecture + dist is configured in the metadata
+    3. Check if architecture + dist + runner_group is configured in the metadata
     4. Check if the host architecture is compatbile with the
        request architecture
 
@@ -345,18 +345,22 @@ def is_request_valid(
     target_ok = False
     request_arch = request['arch']
     request_dist = request['dist']
+    request_runner_group = request['runner_group']
     package_config = CBPackageMetaData.get_package_config(
         package_source_path, log, request['request_id']
     )
     if package_config:
         for target in package_config.get('distributions') or []:
             if request_arch == target.get('arch') and \
-               request_dist == target.get('dist'):
+               request_dist == target.get('dist') and \
+               request_runner_group == target.get('runner_group'):
                 target_ok = True
                 break
     if not target_ok:
         response.set_package_invalid_target_response(
-            message=f'No build dist config for: {request_dist}.{request_arch}',
+            message='No build config for: {0}.{1} in runner group {2}'.format(
+                request_dist, request_arch, request_runner_group
+            ),
             response_code=status_flags.package_target_not_configured,
             package=request['package']
         )
