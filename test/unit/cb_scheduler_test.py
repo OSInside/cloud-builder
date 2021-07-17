@@ -259,7 +259,7 @@ class TestCBScheduler:
         package_config = {
             'name': 'vim',
             'distributions': [
-                {'dist': 'FOO', 'arch': 'x86_64'}
+                {'dist': 'FOO', 'arch': 'x86_64', 'runner_group': 'suse'}
             ]
         }
         mock_CBPackageMetaData.get_package_config.return_value = package_config
@@ -269,6 +269,7 @@ class TestCBScheduler:
             'action': 'package source changed',
             'arch': 'x86_64',
             'dist': 'TW',
+            'runner_group': 'suse',
             'package': 'vim',
             'request_id': 'c8becd30-a5f6-43a6-a4f4-598ec1115b17',
             'schema_version': 0.1
@@ -293,7 +294,7 @@ class TestCBScheduler:
         package_config = {
             'name': 'vim',
             'distributions': [
-                {'dist': 'TW', 'arch': 'x86_64'}
+                {'dist': 'TW', 'arch': 'x86_64', 'runner_group': 'suse'}
             ]
         }
         mock_CBPackageMetaData.get_package_config.return_value = package_config
@@ -303,6 +304,7 @@ class TestCBScheduler:
             'action': 'package source changed',
             'arch': 'x86_64',
             'dist': 'TW',
+            'runner_group': 'suse',
             'package': 'vim',
             'request_id': 'c8becd30-a5f6-43a6-a4f4-598ec1115b17',
             'schema_version': 0.1
@@ -327,7 +329,7 @@ class TestCBScheduler:
         package_config = {
             'name': 'vim',
             'distributions': [
-                {'dist': 'TW', 'arch': 'x86_64'}
+                {'dist': 'TW', 'arch': 'x86_64', 'runner_group': 'suse'}
             ]
         }
         mock_CBPackageMetaData.get_package_config.return_value = package_config
@@ -337,6 +339,7 @@ class TestCBScheduler:
             'action': 'package source changed',
             'arch': 'x86_64',
             'dist': 'TW',
+            'runner_group': 'suse',
             'package': 'vim',
             'request_id': 'c8becd30-a5f6-43a6-a4f4-598ec1115b17',
             'schema_version': 0.1
