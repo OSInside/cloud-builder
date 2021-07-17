@@ -20,7 +20,9 @@ class TestCBMessageBrokerBase:
     @patch('cloud_builder.broker.base.CBLogger.get_logger')
     def setup(self, mock_get_logger):
         self.log = mock_get_logger.return_value
-        self.broker = CBMessageBrokerBase(config_file='../data/cb/kafka.yml')
+        self.broker = CBMessageBrokerBase(
+            config_file='../data/etc/cloud_builder_broker.yml'
+        )
 
     @patch.multiple(CBMessageBrokerBase, __abstractmethods__=set())
     def test_setup_raises_no_broker_config(self):

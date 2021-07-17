@@ -15,10 +15,16 @@
 # You should have received a copy of the GNU General Public License
 # along with Cloud Builder.  If not, see <http://www.gnu.org/licenses/>
 #
-kafka_config_schema = {
-    'host': {
+cloud_builder_broker_schema = {
+    'broker': {
         'required': True,
-        'type': 'string',
-        'nullable': False
+        'type': 'dict',
+        'schema': {
+            'host': {
+                'required': True,
+                'type': 'string',
+                'nullable': False
+            }
+        }
     }
 }

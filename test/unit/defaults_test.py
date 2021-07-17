@@ -27,9 +27,7 @@ class TestDefaults:
                 'users_home/cloud_builder_sources'
 
     def test_get_kafka_config(self):
-        with patch.dict('os.environ', {'HOME': 'users_home'}):
-            assert Defaults.get_kafka_config() == \
-                'users_home/.config/cb/kafka.yml'
+        assert Defaults.get_kafka_config() == '/etc/cloud_builder_broker.yml'
 
     def test_get_cb_ctl_config(self):
         with patch.dict('os.environ', {'HOME': 'users_home'}):

@@ -27,7 +27,9 @@ from cloud_builder.info_request.info_request import CBInfoRequest
 from cloud_builder.response.response import CBResponse
 from cloud_builder.info_response.info_response import CBInfoResponse
 from cloud_builder.broker.base import CBMessageBrokerBase
-from cloud_builder.config.kafka_schema import kafka_config_schema
+from cloud_builder.config.cloud_builder_broker_schema import (
+    cloud_builder_broker_schema
+)
 
 from cloud_builder.exceptions import (
     CBKafkaProducerException,
@@ -49,15 +51,15 @@ class CBMessageBrokerKafka(CBMessageBrokerBase):
         .. code:: yaml
             host: kafka-example.com:12345
         """
-        validator = Validator(kafka_config_schema)
-        validator.validate(self.config, kafka_config_schema)
+        validator = Validator(cloud_builder_broker_schema)
+        validator.validate(self.config, cloud_builder_broker_schema)
         if validator.errors:
             raise CBConfigFileValidationError(
                 'ValidationError for {0!r}: {1!r}'.format(
                     self.config, validator.errors
                 )
             )
-        self.kafka_host = self.config['host']
+        self.kafka_host = self.config['broker']['host']
         self.consumer: KafkaConsumer = None
         self.producer: KafkaProducer = None
 

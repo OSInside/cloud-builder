@@ -17,7 +17,7 @@ from cloud_builder.exceptions import (
 
 class TestCBMessageBrokerKafka:
     def setup(self):
-        config_file = '../data/cb/kafka.yml'
+        config_file = '../data/etc/cloud_builder_broker.yml'
         with open(config_file) as config:
             CBMessageBrokerKafka.__bases__ = (Mock,)
             self.log = Mock()
@@ -28,7 +28,7 @@ class TestCBMessageBrokerKafka:
         assert self.kafka.kafka_host == 'URI:9092'
 
     def test_setup_raises_invalid_config(self):
-        config_file = '../data/cb/kafka-invalid.yml'
+        config_file = '../data/etc/cloud_builder_broker-invalid.yml'
         with open(config_file) as config:
             CBMessageBrokerKafka.__bases__ = (Mock,)
             self.log = Mock()
