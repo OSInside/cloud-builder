@@ -54,9 +54,11 @@ class TestCBMessageBrokerKafka:
     def test_send_package_request(self, mock_KafkaProducer):
         producer = mock_KafkaProducer.return_value
         request = CBPackageRequest()
+        request.package_request_dict['runner_group'] = 'runner_group'
         self.kafka.send_package_request(request)
         producer.send.assert_called_once_with(
-            'cb-package-request', yaml.dump(request.get_data()).encode()
+            request.get_data()['runner_group'],
+            yaml.dump(request.get_data()).encode()
         )
         producer.flush.assert_called_once_with()
 

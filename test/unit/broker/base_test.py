@@ -83,12 +83,13 @@ class TestCBMessageBrokerBase:
         assert self.broker.validate_message_with_schema(
             "{'schema_version': 0.1, 'request_id': 'uuid', "
             "'package': 'vim', 'arch': 'x86_64', 'dist': 'TW', "
-            "'action': 'action'}",
+            "'runner_group': 'suse', 'action': 'action'}",
             package_request_schema
         ) == {
             'action': 'action',
             'arch': 'x86_64',
             'dist': 'TW',
+            'runner_group': 'suse',
             'package': 'vim',
             'request_id': 'uuid',
             'schema_version': 0.1

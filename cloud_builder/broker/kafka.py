@@ -76,7 +76,7 @@ class CBMessageBrokerKafka(CBMessageBrokerBase):
         self._create_producer()
         message = yaml.dump(request.get_data()).encode()
         self.producer.send(
-            Defaults.get_package_request_queue_name(), message
+            request.get_data()['runner_group'], message
         ).add_callback(self._on_send_success).add_errback(self._on_send_error)
         self.producer.flush()
 

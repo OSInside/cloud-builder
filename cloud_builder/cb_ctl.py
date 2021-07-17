@@ -17,7 +17,8 @@
 #
 """
 usage: cb-ctl -h | --help
-       cb-ctl --build=<package> --project-path=<path> --arch=<name> --dist=<name>
+       cb-ctl --build=<package> --project-path=<path> --arch=<name> --dist=<name> --runner-group=<name>
+           [--clean]
        cb-ctl --build-dependencies=<package> --arch=<name> --dist=<name>
            [--timeout=<time_sec>]
        cb-ctl --build-log=<package> --arch=<name> --dist=<name>
@@ -54,6 +55,9 @@ options:
     --dist=<name>
         Target distribution name
 
+    --runner-group=<name>
+        Send build request to specified runner group
+
     --build-dependencies=<package>
         Provide latest build root dependency information
 
@@ -78,6 +82,10 @@ options:
     --timeout=<time_sec>
         Wait time_sec seconds of inactivity on the message
         broker before return. Default: 30sec
+
+    --clean
+        Delete package buildroot if present on the runner
+        before building the package
 """
 import os
 import yaml
@@ -135,7 +143,9 @@ def main() -> None:
             args['--build'],
             args['--project-path'],
             args['--arch'],
-            args['--dist']
+            args['--dist'],
+            args['--runner-group'],
+            bool(args['--clean'])
         )
     elif args['--build-dependencies']:
         get_build_dependencies(
@@ -203,14 +213,17 @@ def get_config() -> Dict:
 
 
 def build_package(
-    broker: Any, package: str, project_path: str, arch: str, dist: str
+    broker: Any, package: str, project_path: str,
+    arch: str, dist: str, runner_group: str, clean_buildroot: bool
 ) -> None:
+    status_flags = Defaults.get_status_flags()
     package_request = CBPackageRequest()
     package_request.set_package_build_request(
         os.path.join(
             'projects', project_path, package,
-        ), arch, dist,
-        Defaults.get_status_flags().package_update_request
+        ), arch, dist, runner_group,
+        status_flags.package_and_meta_changed if clean_buildroot else
+        status_flags.package_update_request
     )
     broker.send_package_request(package_request)
     CBDisplay.print_json(package_request.get_data())
