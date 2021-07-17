@@ -70,6 +70,7 @@ cluster in cloud(VM) or container clusters.
 %package -n python%{python3_pkgversion}-cloud_builder
 Summary:        CB - Cloud Builder
 Group:          Development/Languages/Python
+Requires:       git
 Requires:       python%{python3_pkgversion}-docopt
 Requires:       python%{python3_pkgversion}-kiwi >= 9.21.21
 Requires:       python%{python3_pkgversion}-requests
