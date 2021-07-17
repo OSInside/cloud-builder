@@ -183,9 +183,9 @@ class Defaults:
         return f'{os.environ.get("HOME")}/cloud_builder_sources'
 
     @staticmethod
-    def get_kafka_config() -> str:
+    def get_broker_config() -> str:
         """
-        Location of kafka access credentials
+        Location of broker credentials and setup instructions
 
         :return: A file path
 

@@ -65,7 +65,7 @@ class CBPackageMetaData:
                     )
                     if validator.errors:
                         broker = CBMessageBroker.new(
-                            'kafka', config_file=Defaults.get_kafka_config()
+                            'kafka', config_file=Defaults.get_broker_config()
                         )
                         status_flags = Defaults.get_status_flags()
                         response = CBResponse(request_id, log.get_id())
@@ -80,7 +80,7 @@ class CBPackageMetaData:
                         config_data = {}
                 except Exception as issue:
                     broker = CBMessageBroker.new(
-                        'kafka', config_file=Defaults.get_kafka_config()
+                        'kafka', config_file=Defaults.get_broker_config()
                     )
                     status_flags = Defaults.get_status_flags()
                     response = CBResponse(request_id, log.get_id())

@@ -42,6 +42,11 @@ package_metadata_schema = {
                     'required': True,
                     'type': 'string',
                     'nullable': False
+                },
+                'runner_group': {
+                    'required': True,
+                    'type': 'string',
+                    'nullable': False
                 }
             }
         }

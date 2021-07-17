@@ -123,7 +123,7 @@ def handle_info_requests(poll_timeout: int) -> None:
     log = CBCloudLogger('CBInfo', '(system)')
 
     broker = CBMessageBroker.new(
-        'kafka', config_file=Defaults.get_kafka_config()
+        'kafka', config_file=Defaults.get_broker_config()
     )
     try:
         while(True):

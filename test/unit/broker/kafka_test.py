@@ -95,6 +95,11 @@ class TestCBMessageBrokerKafka:
         self.kafka.acknowledge()
         self.kafka.consumer.commit.assert_called_once_with()
 
+    def test_get_runner_group(self):
+        assert self.kafka.get_runner_group() == 'fedora'
+        self.kafka.config = {}
+        assert self.kafka.get_runner_group() == 'cb-package-request'
+
     def test_close(self):
         self.kafka.consumer = Mock()
         self.kafka.close()
