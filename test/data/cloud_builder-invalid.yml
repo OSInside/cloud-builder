@@ -1,6 +1,0 @@
-name: xclock
-
-distris:
-  -
-    dist: TW
-    arch: x86_64
