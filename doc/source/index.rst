@@ -11,6 +11,7 @@
    :maxdepth: 1
 
    infrastructure_setup
+   git_package_source_setup
    commands
 
 .. sidebar:: Links
