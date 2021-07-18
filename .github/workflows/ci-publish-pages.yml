@@ -1,0 +1,15 @@
+name: GitHubPages
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v1
+        - run: ./helper/deploy_pages.sh
+          env:
+            DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
