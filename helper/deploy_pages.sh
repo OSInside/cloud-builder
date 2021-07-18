@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -eu
+set -eux
 
 repo_uri="https://x-access-token:${DEPLOY_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
 remote_name="origin"
