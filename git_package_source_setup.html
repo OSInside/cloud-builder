@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Git Package Source Setup &mdash; Cloud Builder 0.1.10 documentation</title>
+  <title>Git Package Source Setup &mdash; Cloud Builder 0.1.11 documentation</title>
   
 
   
@@ -87,7 +87,12 @@
             
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="infrastructure_setup.html">Infrastructure Setup</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Git Package Source Setup</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Git Package Source Setup</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#understanding-the-project-structure">Understanding the project structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#understanding-cloud-builder-yml">Understanding <code class="file docutils literal notranslate"><span class="pre">cloud_builder.yml</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#understanding-cloud-builder-kiwi">Understanding <code class="file docutils literal notranslate"><span class="pre">cloud_builder.kiwi</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="commands.html">Cloud Builder Services</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="commands/cb_fetch.html">cb-fetch</a></li>
 <li class="toctree-l2"><a class="reference internal" href="commands/cb_scheduler.html">cb-scheduler</a></li>
@@ -166,6 +171,125 @@
             
   <div class="section" id="git-package-source-setup">
 <span id="id1"></span><h1>Git Package Source Setup<a class="headerlink" href="#git-package-source-setup" title="Permalink to this headline">¶</a></h1>
+<p>Cloud Builder reads any information about a package from a given
+git repository. This includes the following types of
+information:</p>
+<dl>
+<dt>The package configuration files:</dt><dd><p>These are files like the software source tarball, the
+.spec file for rpm packages or any other sort of setup
+file needed to build a package for the desired package
+manager.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This documentation will not cover the package setup
+for the various package managers and expects the data
+to build a package to be present and in understanding
+by the author.</p>
+</div>
+</dd>
+<dt>The <code class="file docutils literal notranslate"><span class="pre">cloud_builder.yml</span></code> project file:</dt><dd><p>This file contains information for Cloud Builder to know for which
+distribution and architecture the package should be build.
+It also contains information about the runner group that
+is eligible to pick up the build request.</p>
+</dd>
+<dt>The <code class="file docutils literal notranslate"><span class="pre">cloud_builder.kiwi</span></code> metadata file:</dt><dd><p>This file contains instructions how to build the buildroot
+environment within the package should be build. The buildroot
+is created using <a class="reference external" href="https://osinside.github.io/kiwi">KIWI</a></p>
+</dd>
+</dl>
+<p>To setup the git repository I suggest to start with the
+example <strong>cloud-builder-packages</strong> git repo from here:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ git clone https://github.com/OSInside/cloud-builder-packages.git
+</pre></div>
+</div>
+<div class="section" id="understanding-the-project-structure">
+<h2>Understanding the project structure<a class="headerlink" href="#understanding-the-project-structure" title="Permalink to this headline">¶</a></h2>
+<p>By convention the Cloud Builder package sources has to follow the structure
+you see in the git checkout. This means in general:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>projects
+├── ...
+│
+├── PROJECT_A
+│   └── SUB_PROJECT
+│       └── ...
+│
+└── PROJECT_B
+    └── PACKAGE
+        ├── cloud_builder.kiwi
+        ├── cloud_builder.yml
+        └── PACKAGE.source_files...
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>In your own git you need to make sure that all projects
+are stored below a directory called <code class="docutils literal notranslate"><span class="pre">projects</span></code>. This is
+the only convention Cloud Builder expects to be respected. Below
+<code class="docutils literal notranslate"><span class="pre">projects</span></code> you can freely choose the structure to store
+package sources</p>
+</div>
+</div>
+<div class="section" id="understanding-cloud-builder-yml">
+<h2>Understanding <code class="file docutils literal notranslate"><span class="pre">cloud_builder.yml</span></code><a class="headerlink" href="#understanding-cloud-builder-yml" title="Permalink to this headline">¶</a></h2>
+<p>In general the <code class="file docutils literal notranslate"><span class="pre">cloud_builder.yml</span></code> contains information about
+the target distribution for which the package should be build.
+A typical file looks like the following:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">schema_version</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0.1</span>
+<span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">python-kiwi_boxed_plugin</span>
+
+<span class="nt">distributions</span><span class="p">:</span>
+  <span class="p p-Indicator">-</span>
+    <span class="nt">dist</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">TW</span>
+    <span class="nt">arch</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">x86_64</span>
+    <span class="nt">runner_group</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">suse</span>
+
+  <span class="p p-Indicator">-</span>
+    <span class="nt">dist</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Fedora34</span>
+    <span class="nt">arch</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">x86_64</span>
+    <span class="nt">runner_group</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">fedora</span>
+</pre></div>
+</div>
+<dl>
+<dt>schema_version:</dt><dd><p>Cloud Builder validates any information send through the message broker and
+read by services via a Cerberus validated schema. Every schema comes
+with a version such that changes to the schema in the future becomes
+possible.</p>
+</dd>
+<dt>name:</dt><dd><p>Specifies the name of the package to connect the project file with
+the actual package. The name must match the name of the <strong>PACKAGE</strong>
+source directory</p>
+</dd>
+<dt>distributions:</dt><dd><p>Contains the target distribution(s) for which the package should be
+build</p>
+<ul class="simple">
+<li><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">dist</span></code>: A custom name to identify the distribution. It’s good
+to choose a name which makes it easy to get an idea about the
+target</p></li>
+<li><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">arch</span></code>: An architecture name. The name must match one of the
+names known to Python’s <code class="xref py py-obj docutils literal notranslate"><span class="pre">platform.machine()</span></code> names</p></li>
+<li><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">runner_group</span></code>:
+The runner group specifies a name that matches with the runner_group
+setup on the runner instance. A request to build the package will
+only be taken by runners of that group. That way a package for
+e.g Fedora can be connected to a runner which is based on Fedora.
+It’s possible to overcome incompatibilities between distributions
+like the rpm database that way.</p></li>
+</ul>
+<p>The information for <code class="xref py py-obj docutils literal notranslate"><span class="pre">dist</span></code> and <code class="xref py py-obj docutils literal notranslate"><span class="pre">arch</span></code> will be combined into a profile
+name <code class="xref py py-obj docutils literal notranslate"><span class="pre">dist.arch</span></code>. In the above example this results into two profile
+names:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>TW.x86_64
+Fedora34.x86_64
+</pre></div>
+</div>
+<p>These profile names plays a central role in the setup of the
+following <code class="file docutils literal notranslate"><span class="pre">cloud_builder.kiwi</span></code> file</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="understanding-cloud-builder-kiwi">
+<h2>Understanding <code class="file docutils literal notranslate"><span class="pre">cloud_builder.kiwi</span></code><a class="headerlink" href="#understanding-cloud-builder-kiwi" title="Permalink to this headline">¶</a></h2>
+</div>
 </div>
 
 

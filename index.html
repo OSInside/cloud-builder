@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Cloud Builder Documentation &mdash; Cloud Builder 0.1.10 documentation</title>
+  <title>Cloud Builder Documentation &mdash; Cloud Builder 0.1.11 documentation</title>
   
 
   
@@ -86,7 +86,12 @@
             
               <ul>
 <li class="toctree-l1"><a class="reference internal" href="infrastructure_setup.html">Infrastructure Setup</a></li>
-<li class="toctree-l1"><a class="reference internal" href="git_package_source_setup.html">Git Package Source Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="git_package_source_setup.html">Git Package Source Setup</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="git_package_source_setup.html#understanding-the-project-structure">Understanding the project structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="git_package_source_setup.html#understanding-cloud-builder-yml">Understanding <code class="file docutils literal notranslate"><span class="pre">cloud_builder.yml</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="git_package_source_setup.html#understanding-cloud-builder-kiwi">Understanding <code class="file docutils literal notranslate"><span class="pre">cloud_builder.kiwi</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="commands.html">Cloud Builder Services</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="commands/cb_fetch.html">cb-fetch</a></li>
 <li class="toctree-l2"><a class="reference internal" href="commands/cb_scheduler.html">cb-scheduler</a></li>
@@ -167,8 +172,8 @@
 <h1>Cloud Builder Documentation<a class="headerlink" href="#cloud-builder-documentation" title="Permalink to this headline">¶</a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Cloud Builder is a fresh and new project. Some parts are still in development
-and some parts are still missing.</p>
+<p>Cloud Builder in version 0.1.11 is a fresh and new project. Some parts
+are still in development and some parts are still missing.</p>
 </div>
 <div class="toctree-wrapper compound">
 <ul>
@@ -190,6 +195,9 @@ and some parts are still missing.</p>
 allows you to stand up a package building backend to build software
 packages through a messaging API. Primarily <strong>rpm</strong> packages but also
 other package formats like <strong>deb</strong>, <strong>pacman</strong> and alike are possible.</p>
+</div>
+<div class="section" id="why">
+<h2>Why<a class="headerlink" href="#why" title="Permalink to this headline">¶</a></h2>
 <p>If you don’t want a monolithic server but small services for
 dedicated tasks that can scale with the amount of tasks. If you
 like to easily integrate a packaging service with other services.
@@ -198,6 +206,9 @@ private network. If you like to build packages for an embedded
 distribution. If you already have parts of your IT in the cloud.
 If you like clean and test covered Python code. This project
 might be interesting for you.</p>
+</div>
+<div class="section" id="design-aspects">
+<h2>Design Aspects<a class="headerlink" href="#design-aspects" title="Permalink to this headline">¶</a></h2>
 <p>The  <a class="reference internal" href="commands.html#services"><span class="std std-ref">Cloud Builder Services</span></a> are designed to run in cloud environments and
 utilize message broker and VM instances cloud services to operate.
 In general the environment to run the Cloud Builder services is not restricted.
@@ -218,8 +229,10 @@ nice way. Especially The <em>Shared Queue</em> mode in combination
 with the topic partition setup is used to distribute build requests
 across the available runner instances.</p>
 </dd>
-<dt>Git:</dt><dd><p>The package sources must be stored in a git repository and the
-Cloud Builder services fetches information from there as needed</p>
+<dt>Git:</dt><dd><p>The package sources and all Cloud Builder metadata must be stored in a git
+repository and the Cloud Builder services fetches information from there
+as needed. The idea behind this is that package sources and metadata
+is treated like code and git is great in managing code.</p>
 </dd>
 </dl>
 <p>Learn how to setup the infrastructure to start with Cloud Builder
@@ -229,11 +242,14 @@ Cloud Builder services fetches information from there as needed</p>
 <h2>Contact<a class="headerlink" href="#contact" title="Permalink to this headline">¶</a></h2>
 <ul>
 <li><p><a class="reference external" href="https://matrix.org">Matrix</a></p>
-<p>An open network for secure, decentralized communication. Please find the
+<p>An open network for secure, decentralized communication.
+As this project uses appliance building technology and is also one
+of my crazy ideas, you can find help in the
 <code class="docutils literal notranslate"><span class="pre">#kiwi:matrix.org</span></code> room via
 <a class="reference external" href="https://matrix.to/#kiwi:matrix.org">Matrix</a> on the web
 or by using the supported
 <a class="reference external" href="https://matrix.org/docs/projects/clients-matrix">clients</a>.</p>
+<p>Remember to have fun :-)</p>
 </li>
 </ul>
 </div>

@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Infrastructure Setup &mdash; Cloud Builder 0.1.10 documentation</title>
+  <title>Infrastructure Setup &mdash; Cloud Builder 0.1.11 documentation</title>
   
 
   
@@ -87,7 +87,12 @@
             
               <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Infrastructure Setup</a></li>
-<li class="toctree-l1"><a class="reference internal" href="git_package_source_setup.html">Git Package Source Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="git_package_source_setup.html">Git Package Source Setup</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="git_package_source_setup.html#understanding-the-project-structure">Understanding the project structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="git_package_source_setup.html#understanding-cloud-builder-yml">Understanding <code class="file docutils literal notranslate"><span class="pre">cloud_builder.yml</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="git_package_source_setup.html#understanding-cloud-builder-kiwi">Understanding <code class="file docutils literal notranslate"><span class="pre">cloud_builder.kiwi</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="commands.html">Cloud Builder Services</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="commands/cb_fetch.html">cb-fetch</a></li>
 <li class="toctree-l2"><a class="reference internal" href="commands/cb_scheduler.html">cb-scheduler</a></li>
@@ -179,6 +184,27 @@ setup.</p>
 <div class="figure align-center" id="id2">
 <img alt="Cloud Builder Architecture" src="_images/cb-design.png" />
 <p class="caption"><span class="caption-text">Cloud Builder Architecture</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Don’t be scared about the complexity of the diagram above.
+The architecture as shown there shows a complete landscape
+of a build backend as it could be used to build a Linux
+distribution. The minimal infrastructure to build packages
+with Cloud Builder requires:</p>
+<ul class="simple">
+<li><p>A git repo with the package sources.
+There is the <a class="reference external" href="https://github.com/OSInside/cloud-builder-packages">cloud-builder-packages</a>
+example repo</p></li>
+<li><p>A Kafka message broker. I will focus on
+<a class="reference external" href="https://docs.aws.amazon.com/msk/latest/developerguide/before-you-begin.html">Amzon MSK</a></p></li>
+<li><p>A runner instance.</p></li>
+</ul>
+<p>As the idea of Cloud Builder is to come up with a scalable system that
+is configurable to the needs of the user, most of the services
+are options on top of the minimal infrastructure.</p>
+<p>In the next chapters I will describe the setup such that
+you get Cloud Builder running quickly.</p>
 </div>
 <p>Learn how to setup the git package source repository
 <a class="reference internal" href="git_package_source_setup.html#git-package-source-setup"><span class="std std-ref">Git Package Source Setup</span></a></p>
