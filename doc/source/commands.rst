@@ -16,6 +16,8 @@ Cloud Builder Services
    commands/cb_prepare
    commands/cb_run
    commands/cb_info
+   commands/cb_depsolver
+   commands/cb_collector
    commands/cb_ctl
 
 cb-fetch:
