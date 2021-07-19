@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>cb-scheduler &mdash; Cloud Builder 0.1.11 documentation</title>
+  <title>cb-scheduler &mdash; Cloud Builder 0.1.12 documentation</title>
   
 
   
@@ -93,13 +93,46 @@
 <li class="toctree-l2"><a class="reference internal" href="../git_package_source_setup.html#understanding-cloud-builder-kiwi">Understanding <code class="file docutils literal notranslate"><span class="pre">cloud_builder.kiwi</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="../kafka_broker_setup.html">Kafka Message Broker Setup</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../commands.html">Cloud Builder Services</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="cb_fetch.html">cb-fetch</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">cb-scheduler</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cb_prepare.html">cb-prepare</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cb_run.html">cb-run</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cb_info.html">cb-info</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cb_ctl.html">cb-ctl</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cb_fetch.html">cb-fetch</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="cb_fetch.html#synopsis">SYNOPSIS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cb_fetch.html#description">DESCRIPTION</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cb_fetch.html#options">OPTIONS</a></li>
+</ul>
+</li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">cb-scheduler</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#synopsis">SYNOPSIS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#description">DESCRIPTION</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#options">OPTIONS</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="cb_prepare.html">cb-prepare</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="cb_prepare.html#synopsis">SYNOPSIS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cb_prepare.html#description">DESCRIPTION</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cb_prepare.html#options">OPTIONS</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="cb_run.html">cb-run</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="cb_run.html#synopsis">SYNOPSIS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cb_run.html#description">DESCRIPTION</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cb_run.html#options">OPTIONS</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="cb_info.html">cb-info</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="cb_info.html#synopsis">SYNOPSIS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cb_info.html#description">DESCRIPTION</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cb_info.html#options">OPTIONS</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="cb_depsolver.html">cb-depsolver</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cb_collector.html">cb-collector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cb_ctl.html">cb-ctl</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="cb_ctl.html#synopsis">SYNOPSIS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cb_ctl.html#description">DESCRIPTION</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cb_ctl.html#options">OPTIONS</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -173,6 +206,88 @@
             
   <div class="section" id="cb-scheduler">
 <h1>cb-scheduler<a class="headerlink" href="#cb-scheduler" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="synopsis">
+<h2>SYNOPSIS<a class="headerlink" href="#synopsis" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>cb-scheduler -h <span class="p">|</span> --help
+cb-scheduler
+    <span class="o">[</span>--update-interval<span class="o">=</span>&lt;time_sec&gt;<span class="o">]</span>
+    <span class="o">[</span>--poll-timeout<span class="o">=</span>&lt;time_msec&gt;<span class="o">]</span>
+    <span class="o">[</span>--package-limit<span class="o">=</span>&lt;number&gt;<span class="o">]</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="description">
+<h2>DESCRIPTION<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
+<p>cb-scheduler - listens on incoming package build requests
+from the message broker on a regular schedule. Only if
+the max package to build limit is not exceeded, request
+messages from the broker are accepted. In case the request
+matches the runner capabilities e.g architecture it gets
+acknowledged and removed from the broker queue.</p>
+<p>A package can be build for different distribution targets
+and architectures. Each distribution target/arch needs to
+be configured as a profile in the .kiwi metadata and added
+as effective build target in the package configuration file:</p>
+<ul class="simple">
+<li><p>Defaults.get_cloud_builder_metadata_file_name()</p></li>
+</ul>
+<p>An example package config to build the xclock package
+for the Tumbleweed distribution for x86_64 and aarch64
+would look like the following:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">schema_version</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0.1</span>
+<span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">xclock</span>
+
+<span class="nt">distributions</span><span class="p">:</span>
+  <span class="p p-Indicator">-</span>
+    <span class="nt">dist</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">TW</span>
+    <span class="nt">arch</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">x86_64</span>
+    <span class="nt">runner_group</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">suse</span>
+
+  <span class="p p-Indicator">-</span>
+    <span class="nt">dist</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">TW</span>
+    <span class="nt">arch</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">aarch64</span>
+    <span class="nt">runner_group</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">suse</span>
+</pre></div>
+</div>
+<p>The above instructs the scheduler to create two buildroot
+environments, one for Tumbleweed(x86_64) and one for
+Tumbleweed(aarch64) and build the xclock package in each
+of these buildroots. To process this properly the scheduler
+creates a script which calls cb-prepare followed by cb-run
+with the corresponding parameters for each element of the
+distributions list. Each dist.arch build process is triggered
+by one build request. In the above example two requests
+to build all targets in the distributions list would be
+required.</p>
+<p>The dist and arch settings of a distribution are combined
+into profile names given to cb-prepare as parameter and used
+in KIWI to create the buildroot environment. From the above
+example this would lead to two profiles named:</p>
+<ul class="simple">
+<li><p>TW.x86_64</p></li>
+<li><p>TW.aarch64</p></li>
+</ul>
+<p>The .kiwi metadata file has to provide instructions
+such that the creation of a correct buildroot for these
+profiles is possible.</p>
+</div>
+<div class="section" id="options">
+<h2>OPTIONS<a class="headerlink" href="#options" title="Permalink to this headline">¶</a></h2>
+<dl class="option-list">
+<dt><kbd><span class="option">--update-interval=<var>&lt;time_sec&gt;</var></span></kbd></dt>
+<dd><p>Optional update interval to reconnect to the
+message broker. Default is 10sec</p>
+</dd>
+<dt><kbd><span class="option">--poll-timeout=<var>&lt;time_msec&gt;</var></span></kbd></dt>
+<dd><p>Optional message broker poll timeout to return if no
+requests are available. Default: 5000msec</p>
+</dd>
+<dt><kbd><span class="option">--package-limit=<var>&lt;number&gt;</var></span></kbd></dt>
+<dd><p>Max number of package builds this scheduler handles
+at the same time. Default: 10</p>
+</dd>
+</dl>
+</div>
 </div>
 
 

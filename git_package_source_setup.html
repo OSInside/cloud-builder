@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Git Package Source Setup &mdash; Cloud Builder 0.1.11 documentation</title>
+  <title>Git Package Source Setup &mdash; Cloud Builder 0.1.12 documentation</title>
   
 
   
@@ -42,7 +42,7 @@
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Cloud Builder Services" href="commands.html" />
+    <link rel="next" title="Kafka Message Broker Setup" href="kafka_broker_setup.html" />
     <link rel="prev" title="Infrastructure Setup" href="infrastructure_setup.html" /> 
 </head>
 
@@ -93,13 +93,46 @@
 <li class="toctree-l2"><a class="reference internal" href="#understanding-cloud-builder-kiwi">Understanding <code class="file docutils literal notranslate"><span class="pre">cloud_builder.kiwi</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="kafka_broker_setup.html">Kafka Message Broker Setup</a></li>
 <li class="toctree-l1"><a class="reference internal" href="commands.html">Cloud Builder Services</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="commands/cb_fetch.html">cb-fetch</a></li>
-<li class="toctree-l2"><a class="reference internal" href="commands/cb_scheduler.html">cb-scheduler</a></li>
-<li class="toctree-l2"><a class="reference internal" href="commands/cb_prepare.html">cb-prepare</a></li>
-<li class="toctree-l2"><a class="reference internal" href="commands/cb_run.html">cb-run</a></li>
-<li class="toctree-l2"><a class="reference internal" href="commands/cb_info.html">cb-info</a></li>
-<li class="toctree-l2"><a class="reference internal" href="commands/cb_ctl.html">cb-ctl</a></li>
+<li class="toctree-l2"><a class="reference internal" href="commands/cb_fetch.html">cb-fetch</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="commands/cb_fetch.html#synopsis">SYNOPSIS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="commands/cb_fetch.html#description">DESCRIPTION</a></li>
+<li class="toctree-l3"><a class="reference internal" href="commands/cb_fetch.html#options">OPTIONS</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="commands/cb_scheduler.html">cb-scheduler</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="commands/cb_scheduler.html#synopsis">SYNOPSIS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="commands/cb_scheduler.html#description">DESCRIPTION</a></li>
+<li class="toctree-l3"><a class="reference internal" href="commands/cb_scheduler.html#options">OPTIONS</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="commands/cb_prepare.html">cb-prepare</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="commands/cb_prepare.html#synopsis">SYNOPSIS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="commands/cb_prepare.html#description">DESCRIPTION</a></li>
+<li class="toctree-l3"><a class="reference internal" href="commands/cb_prepare.html#options">OPTIONS</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="commands/cb_run.html">cb-run</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="commands/cb_run.html#synopsis">SYNOPSIS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="commands/cb_run.html#description">DESCRIPTION</a></li>
+<li class="toctree-l3"><a class="reference internal" href="commands/cb_run.html#options">OPTIONS</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="commands/cb_info.html">cb-info</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="commands/cb_info.html#synopsis">SYNOPSIS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="commands/cb_info.html#description">DESCRIPTION</a></li>
+<li class="toctree-l3"><a class="reference internal" href="commands/cb_info.html#options">OPTIONS</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="commands/cb_depsolver.html">cb-depsolver</a></li>
+<li class="toctree-l2"><a class="reference internal" href="commands/cb_collector.html">cb-collector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="commands/cb_ctl.html">cb-ctl</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="commands/cb_ctl.html#synopsis">SYNOPSIS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="commands/cb_ctl.html#description">DESCRIPTION</a></li>
+<li class="toctree-l3"><a class="reference internal" href="commands/cb_ctl.html#options">OPTIONS</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -171,9 +204,9 @@
             
   <div class="section" id="git-package-source-setup">
 <span id="id1"></span><h1>Git Package Source Setup<a class="headerlink" href="#git-package-source-setup" title="Permalink to this headline">¶</a></h1>
-<p>Cloud Builder reads any information about a package from a given
-git repository. This includes the following types of
-information:</p>
+<p>Cloud Builder reads any information about a package and its metadata
+from a specified git repository. This includes the following
+types of information:</p>
 <dl>
 <dt>The package configuration files:</dt><dd><p>These are files like the software source tarball, the
 .spec file for rpm packages or any other sort of setup
@@ -197,15 +230,17 @@ environment within the package should be build. The buildroot
 is created using <a class="reference external" href="https://osinside.github.io/kiwi">KIWI</a></p>
 </dd>
 </dl>
-<p>To setup the git repository I suggest to start with the
+<p>Before creating the git repository, let’s clone the
 example <strong>cloud-builder-packages</strong> git repo from here:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ git clone https://github.com/OSInside/cloud-builder-packages.git
 </pre></div>
 </div>
 <div class="section" id="understanding-the-project-structure">
 <h2>Understanding the project structure<a class="headerlink" href="#understanding-the-project-structure" title="Permalink to this headline">¶</a></h2>
-<p>By convention the Cloud Builder package sources has to follow the structure
-you see in the git checkout. This means in general:</p>
+<p>By convention the Cloud Builder package sources need to follow a
+certain files/directory structure which is shwon in the
+git clone from above. In general the project structure
+is aligned to the following layout:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>projects
 ├── ...
 │
@@ -213,25 +248,27 @@ you see in the git checkout. This means in general:</p>
 │   └── SUB_PROJECT
 │       └── ...
 │
-└── PROJECT_B
-    └── PACKAGE
+└── MS
+    └── python-kiwi_boxed_plugin
         ├── cloud_builder.kiwi
         ├── cloud_builder.yml
-        └── PACKAGE.source_files...
+        ├── python-kiwi_boxed_plugin.changes
+        ├── python-kiwi_boxed_plugin.spec
+        ├── python-kiwi_boxed_plugin.tar.gz
+        └── python-kiwi_boxed_plugin-rpmlintrc
 </pre></div>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>In your own git you need to make sure that all projects
-are stored below a directory called <code class="docutils literal notranslate"><span class="pre">projects</span></code>. This is
-the only convention Cloud Builder expects to be respected. Below
-<code class="docutils literal notranslate"><span class="pre">projects</span></code> you can freely choose the structure to store
-package sources</p>
+<p>It’s important that all projects are stored below a
+directory called <code class="docutils literal notranslate"><span class="pre">projects</span></code>. This is the only convention
+Cloud Builder expects to be respected. Below <code class="docutils literal notranslate"><span class="pre">projects</span></code> any custom
+structure to store projects and package sources is allowed</p>
 </div>
 </div>
 <div class="section" id="understanding-cloud-builder-yml">
 <h2>Understanding <code class="file docutils literal notranslate"><span class="pre">cloud_builder.yml</span></code><a class="headerlink" href="#understanding-cloud-builder-yml" title="Permalink to this headline">¶</a></h2>
-<p>In general the <code class="file docutils literal notranslate"><span class="pre">cloud_builder.yml</span></code> contains information about
+<p>In general <code class="file docutils literal notranslate"><span class="pre">cloud_builder.yml</span></code> contains information about
 the target distribution for which the package should be build.
 A typical file looks like the following:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">schema_version</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0.1</span>
@@ -250,30 +287,35 @@ A typical file looks like the following:</p>
 </pre></div>
 </div>
 <dl>
-<dt>schema_version:</dt><dd><p>Cloud Builder validates any information send through the message broker and
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">schema_version</span></code>:</dt><dd><p>Cloud Builder validates any information send through the message broker and
 read by services via a Cerberus validated schema. Every schema comes
 with a version such that changes to the schema in the future becomes
 possible.</p>
 </dd>
-<dt>name:</dt><dd><p>Specifies the name of the package to connect the project file with
-the actual package. The name must match the name of the <strong>PACKAGE</strong>
-source directory</p>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">name</span></code>:</dt><dd><p>Specifies the name of the package to connect the project file with
+the actual package. The name must match the name of the package
+source directory.</p>
 </dd>
-<dt>distributions:</dt><dd><p>Contains the target distribution(s) for which the package should be
-build</p>
-<ul class="simple">
-<li><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">dist</span></code>: A custom name to identify the distribution. It’s good
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">distributions</span></code>:</dt><dd><p>Contains the target distribution(s) for which the package should be
+build.</p>
+<ul>
+<li><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">dist</span></code>:</p>
+<p>A custom name to identify the distribution. It’s good
 to choose a name which makes it easy to get an idea about the
-target</p></li>
-<li><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">arch</span></code>: An architecture name. The name must match one of the
-names known to Python’s <code class="xref py py-obj docutils literal notranslate"><span class="pre">platform.machine()</span></code> names</p></li>
-<li><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">runner_group</span></code>:
-The runner group specifies a name that matches with the runner_group
+target.</p>
+</li>
+<li><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">arch</span></code>:</p>
+<p>An architecture name. The name must match one of the
+names known to Python’s <code class="xref py py-obj docutils literal notranslate"><span class="pre">platform.machine()</span></code> names.</p>
+</li>
+<li><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">runner_group</span></code>:</p>
+<p>The runner group specifies a name that matches with the runner_group
 setup on the runner instance. A request to build the package will
 only be taken by runners of that group. That way a package for
 e.g Fedora can be connected to a runner which is based on Fedora.
 It’s possible to overcome incompatibilities between distributions
-like the rpm database that way.</p></li>
+like the rpm database that way.</p>
+</li>
 </ul>
 <p>The information for <code class="xref py py-obj docutils literal notranslate"><span class="pre">dist</span></code> and <code class="xref py py-obj docutils literal notranslate"><span class="pre">arch</span></code> will be combined into a profile
 name <code class="xref py py-obj docutils literal notranslate"><span class="pre">dist.arch</span></code>. In the above example this results into two profile
@@ -282,13 +324,136 @@ names:</p>
 Fedora34.x86_64
 </pre></div>
 </div>
-<p>These profile names plays a central role in the setup of the
-following <code class="file docutils literal notranslate"><span class="pre">cloud_builder.kiwi</span></code> file</p>
+<p>These profile names plays an important role in the setup of the
+following <code class="file docutils literal notranslate"><span class="pre">cloud_builder.kiwi</span></code> file.</p>
 </dd>
 </dl>
 </div>
 <div class="section" id="understanding-cloud-builder-kiwi">
 <h2>Understanding <code class="file docutils literal notranslate"><span class="pre">cloud_builder.kiwi</span></code><a class="headerlink" href="#understanding-cloud-builder-kiwi" title="Permalink to this headline">¶</a></h2>
+<p>The <code class="file docutils literal notranslate"><span class="pre">cloud_builder.kiwi</span></code> describes how the package buildroot
+system should be installed. When Cloud Builder builds a package it does it
+in two steps. First step is the creation of an execution environment
+(cb-prepare service) also named <strong>buildroot</strong>. The second step is to
+call the <a class="reference external" href="https://software.opensuse.org/package/build">build</a> tool
+via <strong>chroot</strong> inside of the execution environment (cb-run service).</p>
+<p>A typical KIWI file to create that execution environment looks
+like the following:</p>
+<div class="highlight-xml notranslate"><div class="highlight"><pre><span></span><span class="cp">&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;</span>
+
+<span class="nt">&lt;image</span> <span class="na">schemaversion=</span><span class="s">&quot;7.4&quot;</span> <span class="na">name=</span><span class="s">&quot;python-kiwi_boxed_plugin&quot;</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;description</span> <span class="na">type=</span><span class="s">&quot;system&quot;</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;author&gt;</span>Packager Name<span class="nt">&lt;/author&gt;</span>
+        <span class="nt">&lt;contact&gt;</span>packager@example.com<span class="nt">&lt;/contact&gt;</span>
+        <span class="nt">&lt;specification&gt;</span>python-kiwi_boxed_plugin build worker<span class="nt">&lt;/specification&gt;</span>
+    <span class="nt">&lt;/description&gt;</span>
+
+    <span class="nt">&lt;profiles&gt;</span>
+        <span class="nt">&lt;profile</span> <span class="na">name=</span><span class="s">&quot;TW.x86_64&quot;</span> <span class="na">description=</span><span class="s">&quot;For Tumbleweed (x86_64)&quot;</span><span class="nt">/&gt;</span>
+        <span class="nt">&lt;profile</span> <span class="na">name=</span><span class="s">&quot;Fedora34.x86_64&quot;</span> <span class="na">description=</span><span class="s">&quot;For Fedora34 (x86_64)&quot;</span><span class="nt">/&gt;</span>
+    <span class="nt">&lt;/profiles&gt;</span>
+
+    <span class="nt">&lt;preferences&gt;</span>
+        <span class="nt">&lt;version&gt;</span>0.2.14<span class="nt">&lt;/version&gt;</span>
+        <span class="nt">&lt;rpm-excludedocs&gt;</span>true<span class="nt">&lt;/rpm-excludedocs&gt;</span>
+        <span class="nt">&lt;type</span> <span class="na">image=</span><span class="s">&quot;tbz&quot;</span><span class="nt">/&gt;</span>
+    <span class="nt">&lt;/preferences&gt;</span>
+
+    <span class="nt">&lt;packages</span> <span class="na">type=</span><span class="s">&quot;bootstrap&quot;</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;package</span> <span class="na">name=</span><span class="s">&quot;build&quot;</span><span class="nt">/&gt;</span>
+        <span class="nt">&lt;package</span> <span class="na">name=</span><span class="s">&quot;rpm-build&quot;</span><span class="nt">/&gt;</span>
+        <span class="nt">&lt;package</span> <span class="na">name=</span><span class="s">&quot;rpm-devel&quot;</span><span class="nt">/&gt;</span>
+    <span class="nt">&lt;/packages&gt;</span>
+
+    <span class="nt">&lt;preferences</span> <span class="na">profiles=</span><span class="s">&quot;TW.x86_64&quot;</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;packagemanager&gt;</span>zypper<span class="nt">&lt;/packagemanager&gt;</span>
+    <span class="nt">&lt;/preferences&gt;</span>
+
+    <span class="nt">&lt;preferences</span> <span class="na">profiles=</span><span class="s">&quot;Fedora34.x86_64&quot;</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;packagemanager&gt;</span>dnf<span class="nt">&lt;/packagemanager&gt;</span>
+    <span class="nt">&lt;/preferences&gt;</span>
+
+    <span class="nt">&lt;repository</span> <span class="na">profiles=</span><span class="s">&quot;TW.x86_64&quot;</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;source</span> <span class="na">path=</span><span class="s">&quot;http://download.opensuse.org/tumbleweed/repo/oss&quot;</span><span class="nt">/&gt;</span>
+    <span class="nt">&lt;/repository&gt;</span>
+
+    <span class="nt">&lt;repository</span> <span class="na">profiles=</span><span class="s">&quot;Fedora34.x86_64&quot;</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;source</span> <span class="na">path=</span><span class="s">&quot;http://mirrors.eze.sysarmy.com/fedora/linux/releases/34/Everything/x86_64/os/&quot;</span><span class="nt">/&gt;</span>
+    <span class="nt">&lt;/repository&gt;</span>
+
+    <span class="nt">&lt;packages</span> <span class="na">type=</span><span class="s">&quot;bootstrap&quot;</span> <span class="na">profiles=</span><span class="s">&quot;TW.x86_64&quot;</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;package</span> <span class="na">name=</span><span class="s">&quot;python3-devel&quot;</span><span class="nt">/&gt;</span>
+        <span class="nt">&lt;package</span> <span class="na">name=</span><span class="s">&quot;python3-setuptools&quot;</span><span class="nt">/&gt;</span>
+        <span class="nt">&lt;package</span> <span class="na">name=</span><span class="s">&quot;fdupes&quot;</span><span class="nt">/&gt;</span>
+    <span class="nt">&lt;/packages&gt;</span>
+
+    <span class="nt">&lt;packages</span> <span class="na">type=</span><span class="s">&quot;bootstrap&quot;</span> <span class="na">profiles=</span><span class="s">&quot;Fedora34.x86_64&quot;</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;package</span> <span class="na">name=</span><span class="s">&quot;python3-devel&quot;</span><span class="nt">/&gt;</span>
+        <span class="nt">&lt;package</span> <span class="na">name=</span><span class="s">&quot;python3-setuptools&quot;</span><span class="nt">/&gt;</span>
+        <span class="nt">&lt;package</span> <span class="na">name=</span><span class="s">&quot;fdupes&quot;</span><span class="nt">/&gt;</span>
+        <span class="nt">&lt;package</span> <span class="na">name=</span><span class="s">&quot;bash&quot;</span><span class="nt">/&gt;</span>
+        <span class="nt">&lt;package</span> <span class="na">name=</span><span class="s">&quot;util-linux&quot;</span><span class="nt">/&gt;</span>
+        <span class="nt">&lt;package</span> <span class="na">name=</span><span class="s">&quot;make&quot;</span><span class="nt">/&gt;</span>
+    <span class="nt">&lt;/packages&gt;</span>
+<span class="nt">&lt;/image&gt;</span>
+</pre></div>
+</div>
+<ul>
+<li><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">&lt;description&gt;</span></code>:</p>
+<p>Some information about the author</p>
+</li>
+<li><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">&lt;profiles&gt;</span></code></p>
+<p>As mentioned in the explanation about <code class="file docutils literal notranslate"><span class="pre">cloud_builder.yml</span></code>
+the profile section connects the <code class="xref py py-obj docutils literal notranslate"><span class="pre">dist</span></code> and <code class="xref py py-obj docutils literal notranslate"><span class="pre">arch</span></code> value into
+a profile name here. When Cloud Builder calls KIWI to create the
+buildroot it passes the combined name as profile name
+to KIWI. That way it’s possible to distinguish different
+buildroots according to the <code class="xref py py-obj docutils literal notranslate"><span class="pre">dist</span></code> and <code class="xref py py-obj docutils literal notranslate"><span class="pre">arch</span></code> settings
+in <code class="file docutils literal notranslate"><span class="pre">cloud_builder.yml</span></code>.</p>
+</li>
+<li><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">&lt;preferences&gt;</span></code></p>
+<p>This section contains settings relevant for the package
+manager and has to define a type and version because the KIWI schema
+wants it. The type information is not used in the scope
+of Cloud Builder. Therefore the most simple type setup was used.
+For the version information the recommendation is to use
+the package version as it’s also present in the package
+source files.</p>
+</li>
+<li><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">&lt;packages</span> <span class="pre">type=&quot;bootstrap&quot;&gt;</span></code></p>
+<p>This section not connected to a specific profile applies always.
+In this example it includes all those packages which are needed
+in any buildroot. This is only possible if the package names
+are not different between the distribution targets. In this
+particular case the packages listed are the same for Fedora
+and SUSE.</p>
+</li>
+<li><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">&lt;preferences</span> <span class="pre">profiles=&quot;TW.x86_64&quot;&gt;</span></code></p></li>
+<li><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">&lt;preferences</span> <span class="pre">profiles=&quot;Fedora34.x86_64&quot;&gt;</span></code></p>
+<p>This section contains profile specific package manager settings</p>
+</li>
+<li><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">&lt;repository</span> <span class="pre">profiles=&quot;TW.x86_64&quot;&gt;</span></code></p></li>
+<li><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">&lt;repository</span> <span class="pre">profiles=&quot;Fedora34.x86_64&quot;</span></code></p>
+<p>This section contains profile specific repository settings from
+which packages are fetched to install the buildroot</p>
+</li>
+<li><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">&lt;packages</span> <span class="pre">type=&quot;bootstrap&quot;</span> <span class="pre">profiles=&quot;TW.x86_64&quot;&gt;</span></code></p></li>
+<li><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">&lt;packages</span> <span class="pre">type=&quot;bootstrap&quot;</span> <span class="pre">profiles=&quot;Fedora34.x86_64&quot;&gt;</span></code></p>
+<p>This section contains the profile specific packages list to
+meet the build dependencies of the package.</p>
+</li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>With the explanation on the git contents based on the
+example <code class="xref py py-obj docutils literal notranslate"><span class="pre">cloud-builder-packages</span></code> repo, the next step
+could be to create the project specific git repo and
+place the desired package and metadata source files.
+It would also be possible to continue with the example
+git repo and move to the real sources later.</p>
+</div>
+<p>Learn how to setup the message broker service
+<a class="reference internal" href="kafka_broker_setup.html#kafka-broker-setup"><span class="std std-ref">Kafka Message Broker Setup</span></a></p>
 </div>
 </div>
 
@@ -298,7 +463,7 @@ following <code class="file docutils literal notranslate"><span class="pre">clou
           </div>
           <footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="commands.html" class="btn btn-neutral float-right" title="Cloud Builder Services" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="kafka_broker_setup.html" class="btn btn-neutral float-right" title="Kafka Message Broker Setup" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
         <a href="infrastructure_setup.html" class="btn btn-neutral float-left" title="Infrastructure Setup" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 

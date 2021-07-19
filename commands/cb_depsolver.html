@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>cb-info &mdash; Cloud Builder 0.1.12 documentation</title>
+  <title>cb-depsolver &mdash; Cloud Builder 0.1.12 documentation</title>
   
 
   
@@ -42,8 +42,8 @@
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="cb-depsolver" href="cb_depsolver.html" />
-    <link rel="prev" title="cb-run" href="cb_run.html" /> 
+    <link rel="next" title="cb-collector" href="cb_collector.html" />
+    <link rel="prev" title="cb-info" href="cb_info.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -119,13 +119,13 @@
 <li class="toctree-l3"><a class="reference internal" href="cb_run.html#options">OPTIONS</a></li>
 </ul>
 </li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">cb-info</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#synopsis">SYNOPSIS</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#description">DESCRIPTION</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#options">OPTIONS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cb_info.html">cb-info</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="cb_info.html#synopsis">SYNOPSIS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cb_info.html#description">DESCRIPTION</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cb_info.html#options">OPTIONS</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="cb_depsolver.html">cb-depsolver</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">cb-depsolver</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cb_collector.html">cb-collector</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cb_ctl.html">cb-ctl</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="cb_ctl.html#synopsis">SYNOPSIS</a></li>
@@ -185,13 +185,13 @@
         
           <li><a href="../commands.html">Cloud Builder Services</a> &raquo;</li>
         
-      <li>cb-info</li>
+      <li>cb-depsolver</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
           
-            <a href="../_sources/commands/cb_info.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/commands/cb_depsolver.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -204,50 +204,9 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="cb-info">
-<h1>cb-info<a class="headerlink" href="#cb-info" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="synopsis">
-<h2>SYNOPSIS<a class="headerlink" href="#synopsis" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>cb-info -h <span class="p">|</span> --help
-cb-info
-    <span class="o">[</span>--update-interval<span class="o">=</span>&lt;time_sec&gt;<span class="o">]</span>
-    <span class="o">[</span>--poll-timeout<span class="o">=</span>&lt;time_msec&gt;<span class="o">]</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="description">
-<h2>DESCRIPTION<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
-<p>cb-info - lookup package information. The package
-builds on a runner contains a number of files like
-the following example:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>/var/tmp/CB/
-    ├── package@DIST.ARCH/
-    ├── package@DIST.ARCH.build.log
-    ├── package@DIST.ARCH.pid
-    ├── package@DIST.ARCH.prepare.log
-    ├── package@DIST.ARCH.result.yml
-    ├── package@DIST.ARCH.run.log
-    ├── package@DIST.ARCH.sh
-    └── package@DIST.ARCH.solver.json
-</pre></div>
-</div>
-<p>The local file information is used to construct
-a response record with information about the
-package build:</p>
-</div>
-<div class="section" id="options">
-<h2>OPTIONS<a class="headerlink" href="#options" title="Permalink to this headline">¶</a></h2>
-<dl class="option-list">
-<dt><kbd><span class="option">--update-interval=<var>&lt;time_sec&gt;</var></span></kbd></dt>
-<dd><p>Optional update interval to reconnect to the
-message broker. Default is 10sec</p>
-</dd>
-<dt><kbd><span class="option">--poll-timeout=<var>&lt;time_msec&gt;</var></span></kbd></dt>
-<dd><p>Optional message broker poll timeout to return if no
-requests are available. Default: 5000msec</p>
-</dd>
-</dl>
-</div>
+  <div class="section" id="cb-depsolver">
+<h1>cb-depsolver<a class="headerlink" href="#cb-depsolver" title="Permalink to this headline">¶</a></h1>
+<p>Not Implemented</p>
 </div>
 
 
@@ -256,8 +215,8 @@ requests are available. Default: 5000msec</p>
           </div>
           <footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="cb_depsolver.html" class="btn btn-neutral float-right" title="cb-depsolver" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-        <a href="cb_run.html" class="btn btn-neutral float-left" title="cb-run" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="cb_collector.html" class="btn btn-neutral float-right" title="cb-collector" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="cb_info.html" class="btn btn-neutral float-left" title="cb-info" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 
   <hr/>

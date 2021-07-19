@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>cb-prepare &mdash; Cloud Builder 0.1.11 documentation</title>
+  <title>cb-prepare &mdash; Cloud Builder 0.1.12 documentation</title>
   
 
   
@@ -93,13 +93,46 @@
 <li class="toctree-l2"><a class="reference internal" href="../git_package_source_setup.html#understanding-cloud-builder-kiwi">Understanding <code class="file docutils literal notranslate"><span class="pre">cloud_builder.kiwi</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="../kafka_broker_setup.html">Kafka Message Broker Setup</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../commands.html">Cloud Builder Services</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="cb_fetch.html">cb-fetch</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cb_scheduler.html">cb-scheduler</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">cb-prepare</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cb_run.html">cb-run</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cb_info.html">cb-info</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cb_ctl.html">cb-ctl</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cb_fetch.html">cb-fetch</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="cb_fetch.html#synopsis">SYNOPSIS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cb_fetch.html#description">DESCRIPTION</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cb_fetch.html#options">OPTIONS</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="cb_scheduler.html">cb-scheduler</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="cb_scheduler.html#synopsis">SYNOPSIS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cb_scheduler.html#description">DESCRIPTION</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cb_scheduler.html#options">OPTIONS</a></li>
+</ul>
+</li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">cb-prepare</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#synopsis">SYNOPSIS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#description">DESCRIPTION</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#options">OPTIONS</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="cb_run.html">cb-run</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="cb_run.html#synopsis">SYNOPSIS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cb_run.html#description">DESCRIPTION</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cb_run.html#options">OPTIONS</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="cb_info.html">cb-info</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="cb_info.html#synopsis">SYNOPSIS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cb_info.html#description">DESCRIPTION</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cb_info.html#options">OPTIONS</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="cb_depsolver.html">cb-depsolver</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cb_collector.html">cb-collector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cb_ctl.html">cb-ctl</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="cb_ctl.html#synopsis">SYNOPSIS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cb_ctl.html#description">DESCRIPTION</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cb_ctl.html#options">OPTIONS</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -173,6 +206,47 @@
             
   <div class="section" id="cb-prepare">
 <h1>cb-prepare<a class="headerlink" href="#cb-prepare" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="synopsis">
+<h2>SYNOPSIS<a class="headerlink" href="#synopsis" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>cb-prepare -h <span class="p">|</span> --help
+cb-prepare --root<span class="o">=</span>&lt;root_path&gt; --package<span class="o">=</span>&lt;package_path&gt; --profile<span class="o">=</span>&lt;dist&gt; --request-id<span class="o">=</span>&lt;UUID&gt;
+</pre></div>
+</div>
+</div>
+<div class="section" id="description">
+<h2>DESCRIPTION<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
+<p>cb-prepare - creates a chroot tree suitable to build a
+package inside of it, also known as buildroot. The KIWI
+appliance builder is used to create the buildroot
+according to a metadata definition file from:</p>
+<ul class="simple">
+<li><p>Defaults.get_cloud_builder_kiwi_file_name()</p></li>
+</ul>
+<p>which needs to be present as part of the package sources.</p>
+<p>The build utility from the open build service is called
+from within a simple run.sh shell script that is written
+inside of the buildroot after KIWI has successfully created
+it. After this point, the buildroot is completely prepared
+and can be used to run the actual package build.</p>
+</div>
+<div class="section" id="options">
+<h2>OPTIONS<a class="headerlink" href="#options" title="Permalink to this headline">¶</a></h2>
+<dl class="option-list">
+<dt><kbd><span class="option">--root=<var>&lt;root_path&gt;</var></span></kbd></dt>
+<dd><p>Base path to create chroot(s) for later cb_run</p>
+</dd>
+<dt><kbd><span class="option">--package=<var>&lt;package_path&gt;</var></span></kbd></dt>
+<dd><p>Path to the package</p>
+</dd>
+<dt><kbd><span class="option">--profile=<var>&lt;dist&gt;</var></span></kbd></dt>
+<dd><p>Distribution profile name as set int the .kiwi
+package buildroot metadata file</p>
+</dd>
+<dt><kbd><span class="option">--request-id=<var>&lt;UUID&gt;</var></span></kbd></dt>
+<dd><p>UUID for this prepare process</p>
+</dd>
+</dl>
+</div>
 </div>
 
 

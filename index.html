@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Cloud Builder Documentation &mdash; Cloud Builder 0.1.11 documentation</title>
+  <title>Cloud Builder Documentation &mdash; Cloud Builder 0.1.12 documentation</title>
   
 
   
@@ -92,13 +92,46 @@
 <li class="toctree-l2"><a class="reference internal" href="git_package_source_setup.html#understanding-cloud-builder-kiwi">Understanding <code class="file docutils literal notranslate"><span class="pre">cloud_builder.kiwi</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="kafka_broker_setup.html">Kafka Message Broker Setup</a></li>
 <li class="toctree-l1"><a class="reference internal" href="commands.html">Cloud Builder Services</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="commands/cb_fetch.html">cb-fetch</a></li>
-<li class="toctree-l2"><a class="reference internal" href="commands/cb_scheduler.html">cb-scheduler</a></li>
-<li class="toctree-l2"><a class="reference internal" href="commands/cb_prepare.html">cb-prepare</a></li>
-<li class="toctree-l2"><a class="reference internal" href="commands/cb_run.html">cb-run</a></li>
-<li class="toctree-l2"><a class="reference internal" href="commands/cb_info.html">cb-info</a></li>
-<li class="toctree-l2"><a class="reference internal" href="commands/cb_ctl.html">cb-ctl</a></li>
+<li class="toctree-l2"><a class="reference internal" href="commands/cb_fetch.html">cb-fetch</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="commands/cb_fetch.html#synopsis">SYNOPSIS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="commands/cb_fetch.html#description">DESCRIPTION</a></li>
+<li class="toctree-l3"><a class="reference internal" href="commands/cb_fetch.html#options">OPTIONS</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="commands/cb_scheduler.html">cb-scheduler</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="commands/cb_scheduler.html#synopsis">SYNOPSIS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="commands/cb_scheduler.html#description">DESCRIPTION</a></li>
+<li class="toctree-l3"><a class="reference internal" href="commands/cb_scheduler.html#options">OPTIONS</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="commands/cb_prepare.html">cb-prepare</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="commands/cb_prepare.html#synopsis">SYNOPSIS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="commands/cb_prepare.html#description">DESCRIPTION</a></li>
+<li class="toctree-l3"><a class="reference internal" href="commands/cb_prepare.html#options">OPTIONS</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="commands/cb_run.html">cb-run</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="commands/cb_run.html#synopsis">SYNOPSIS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="commands/cb_run.html#description">DESCRIPTION</a></li>
+<li class="toctree-l3"><a class="reference internal" href="commands/cb_run.html#options">OPTIONS</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="commands/cb_info.html">cb-info</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="commands/cb_info.html#synopsis">SYNOPSIS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="commands/cb_info.html#description">DESCRIPTION</a></li>
+<li class="toctree-l3"><a class="reference internal" href="commands/cb_info.html#options">OPTIONS</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="commands/cb_depsolver.html">cb-depsolver</a></li>
+<li class="toctree-l2"><a class="reference internal" href="commands/cb_collector.html">cb-collector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="commands/cb_ctl.html">cb-ctl</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="commands/cb_ctl.html#synopsis">SYNOPSIS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="commands/cb_ctl.html#description">DESCRIPTION</a></li>
+<li class="toctree-l3"><a class="reference internal" href="commands/cb_ctl.html#options">OPTIONS</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -172,13 +205,16 @@
 <h1>Cloud Builder Documentation<a class="headerlink" href="#cloud-builder-documentation" title="Permalink to this headline">¶</a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Cloud Builder in version 0.1.11 is a fresh and new project. Some parts
-are still in development and some parts are still missing.</p>
+<p>Cloud Builder in version 0.1.12 is a new project in its early days.
+Some parts are still in development and some parts are still
+missing. For details on the current state or the roadmap to
+v1.x.x just reach out.</p>
 </div>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="infrastructure_setup.html">Infrastructure Setup</a></li>
 <li class="toctree-l1"><a class="reference internal" href="git_package_source_setup.html">Git Package Source Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="kafka_broker_setup.html">Kafka Message Broker Setup</a></li>
 <li class="toctree-l1"><a class="reference internal" href="commands.html">Cloud Builder Services</a></li>
 </ul>
 </div>
@@ -192,29 +228,30 @@ are still in development and some parts are still missing.</p>
 <div class="section" id="building-software-packages-as-a-service">
 <h2>Building Software Packages as a Service<a class="headerlink" href="#building-software-packages-as-a-service" title="Permalink to this headline">¶</a></h2>
 <p>The Cloud Builder project provides a collection of services which
-allows you to stand up a package building backend to build software
+allows to stand up a package building backend to build software
 packages through a messaging API. Primarily <strong>rpm</strong> packages but also
 other package formats like <strong>deb</strong>, <strong>pacman</strong> and alike are possible.</p>
 </div>
 <div class="section" id="why">
 <h2>Why<a class="headerlink" href="#why" title="Permalink to this headline">¶</a></h2>
-<p>If you don’t want a monolithic server but small services for
-dedicated tasks that can scale with the amount of tasks. If you
-like to easily integrate a packaging service with other services.
-If you like to build your product packages in an isolated
-private network. If you like to build packages for an embedded
-distribution. If you already have parts of your IT in the cloud.
-If you like clean and test covered Python code. This project
-might be interesting for you.</p>
+<p>If small services for dedicated tasks that can scale with the
+amount of tasks and use cases is preferred over a monolithic server.
+If easy integration of packaging services with other services is
+a priority. If building in an isolated private network should be
+possible by utilizing cloud services. If build power, network
+bandwidth and storage capacity should be a scalable factor in
+the cloud. If managing package sources and build metadata
+should be done completely in git. If one ore more of this aspects
+are a matching criteria, this project might be interesting.</p>
 </div>
 <div class="section" id="design-aspects">
 <h2>Design Aspects<a class="headerlink" href="#design-aspects" title="Permalink to this headline">¶</a></h2>
-<p>The  <a class="reference internal" href="commands.html#services"><span class="std std-ref">Cloud Builder Services</span></a> are designed to run in cloud environments and
-utilize message broker and VM instances cloud services to operate.
-In general the environment to run the Cloud Builder services is not restricted.
-However, for the sake of this documentation and for my understanding
-of a production ready pipeline the following cloud and services
-will be used:</p>
+<p>The <a class="reference internal" href="commands.html#services"><span class="std std-ref">Cloud Builder Services</span></a> are designed to run in cloud environments and
+utilizes <em>message broker</em> and <em>VM instances</em> cloud services to operate.
+In general the environment to run the Cloud Builder services is not restricted
+to a specific framework. However, for the sake of this documentation
+and for my understanding of a production ready pipeline the following
+cloud and services will be used:</p>
 <dl class="simple">
 <dt>Amazon EC2:</dt><dd><p>To let Cloud Builder services run, instances in EC2 are used</p>
 </dd>

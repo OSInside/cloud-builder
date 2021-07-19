@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>cb-fetch &mdash; Cloud Builder 0.1.11 documentation</title>
+  <title>cb-fetch &mdash; Cloud Builder 0.1.12 documentation</title>
   
 
   
@@ -93,13 +93,46 @@
 <li class="toctree-l2"><a class="reference internal" href="../git_package_source_setup.html#understanding-cloud-builder-kiwi">Understanding <code class="file docutils literal notranslate"><span class="pre">cloud_builder.kiwi</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="../kafka_broker_setup.html">Kafka Message Broker Setup</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../commands.html">Cloud Builder Services</a><ul class="current">
-<li class="toctree-l2 current"><a class="current reference internal" href="#">cb-fetch</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cb_scheduler.html">cb-scheduler</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cb_prepare.html">cb-prepare</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cb_run.html">cb-run</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cb_info.html">cb-info</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cb_ctl.html">cb-ctl</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">cb-fetch</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#synopsis">SYNOPSIS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#description">DESCRIPTION</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#options">OPTIONS</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="cb_scheduler.html">cb-scheduler</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="cb_scheduler.html#synopsis">SYNOPSIS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cb_scheduler.html#description">DESCRIPTION</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cb_scheduler.html#options">OPTIONS</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="cb_prepare.html">cb-prepare</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="cb_prepare.html#synopsis">SYNOPSIS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cb_prepare.html#description">DESCRIPTION</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cb_prepare.html#options">OPTIONS</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="cb_run.html">cb-run</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="cb_run.html#synopsis">SYNOPSIS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cb_run.html#description">DESCRIPTION</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cb_run.html#options">OPTIONS</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="cb_info.html">cb-info</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="cb_info.html#synopsis">SYNOPSIS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cb_info.html#description">DESCRIPTION</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cb_info.html#options">OPTIONS</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="cb_depsolver.html">cb-depsolver</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cb_collector.html">cb-collector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cb_ctl.html">cb-ctl</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="cb_ctl.html#synopsis">SYNOPSIS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cb_ctl.html#description">DESCRIPTION</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cb_ctl.html#options">OPTIONS</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -173,6 +206,53 @@
             
   <div class="section" id="cb-fetch">
 <h1>cb-fetch<a class="headerlink" href="#cb-fetch" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="synopsis">
+<h2>SYNOPSIS<a class="headerlink" href="#synopsis" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>cb-fetch -h <span class="p">|</span> --help
+cb-fetch --project<span class="o">=</span>&lt;github_project&gt;
+    <span class="o">[</span>--update-interval<span class="o">=</span>&lt;time_sec&gt;<span class="o">]</span>
+    <span class="o">[</span>--single-shot<span class="o">]</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="description">
+<h2>DESCRIPTION<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
+<p>cb-fetch - fetches a git repository and manages content
+changes on a configurable schedule. In case of a change
+a rebuild request is send to the message broker</p>
+<p>The tree structure in the git repository has to respect
+a predefined layout like in the following example:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>projects
+├── ...
+├── PROJECT_A
+│   └── SUB_PROJECT
+│       └── ...
+└── PROJECT_B
+    └── PACKAGE
+        ├── _Defaults.get_cloud_builder_metadata_file_name<span class="o">()</span>_
+        ├── _Defaults.get_cloud_builder_kiwi_file_name<span class="o">()</span>_
+        ├── PACKAGE.changes
+        ├── PACKAGE.spec
+        └── PACKAGE.tar.xz
+</pre></div>
+</div>
+</div>
+<div class="section" id="options">
+<h2>OPTIONS<a class="headerlink" href="#options" title="Permalink to this headline">¶</a></h2>
+<dl class="option-list">
+<dt><kbd><span class="option">--project=<var>&lt;github_project&gt;</var></span></kbd></dt>
+<dd><p>git clone source URI to fetch project with
+packages managed to build in cloud builder</p>
+</dd>
+<dt><kbd><span class="option">--update-interval=<var>&lt;time_sec&gt;</var></span></kbd></dt>
+<dd><p>Optional update interval for the project
+Default is 30sec</p>
+</dd>
+<dt><kbd><span class="option">--single-shot</span></kbd></dt>
+<dd><p>Optional single shot run. Only clone the repo</p>
+</dd>
+</dl>
+</div>
 </div>
 
 
