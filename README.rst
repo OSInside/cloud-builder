@@ -11,4 +11,4 @@ allows you to stand up a package building backend to build software
 packages through a messaging API. Primarily **rpm** packages but also
 other package formats like **deb**, **pacman** and alike are possible.
 
-For more information see: [comming-soon]
+For more information see: https://osinside.github.io/cloud-builder
