@@ -4,14 +4,17 @@
 ===========================
 
 .. note::
-   {CB} in version |version| is a fresh and new project. Some parts
-   are still in development and some parts are still missing.
+   {CB} in version |version| is a new project in its early days.
+   Some parts are still in development and some parts are still
+   missing. For details on the current state or the roadmap to
+   v1.x.x just reach out.
 
 .. toctree::
    :maxdepth: 1
 
    infrastructure_setup
    git_package_source_setup
+   kafka_broker_setup
    commands
 
 .. sidebar:: Links
@@ -23,31 +26,32 @@ Building Software Packages as a Service
 ---------------------------------------
 
 The {CB} project provides a collection of services which
-allows you to stand up a package building backend to build software
+allows to stand up a package building backend to build software
 packages through a messaging API. Primarily **rpm** packages but also
 other package formats like **deb**, **pacman** and alike are possible.
 
 Why
 ---
 
-If you don't want a monolithic server but small services for
-dedicated tasks that can scale with the amount of tasks. If you
-like to easily integrate a packaging service with other services.
-If you like to build your product packages in an isolated
-private network. If you like to build packages for an embedded
-distribution. If you already have parts of your IT in the cloud.
-If you like clean and test covered Python code. This project
-might be interesting for you.
+If small services for dedicated tasks that can scale with the
+amount of tasks and use cases is preferred over a monolithic server.
+If easy integration of packaging services with other services is
+a priority. If building in an isolated private network should be
+possible by utilizing cloud services. If build power, network
+bandwidth and storage capacity should be a scalable factor in
+the cloud. If managing package sources and build metadata
+should be done completely in git. If one ore more of this aspects
+are a matching criteria, this project might be interesting.
 
 Design Aspects
 --------------
 
-The  :ref:`services` are designed to run in cloud environments and
-utilize message broker and VM instances cloud services to operate.
-In general the environment to run the {CB} services is not restricted.
-However, for the sake of this documentation and for my understanding
-of a production ready pipeline the following cloud and services
-will be used:
+The :ref:`services` are designed to run in cloud environments and
+utilizes *message broker* and *VM instances* cloud services to operate.
+In general the environment to run the {CB} services is not restricted
+to a specific framework. However, for the sake of this documentation
+and for my understanding of a production ready pipeline the following
+cloud and services will be used:
 
 Amazon EC2:
   To let {CB} services run, instances in EC2 are used
