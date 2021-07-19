@@ -12,8 +12,7 @@ The infrastructue setup before setting up the actual
    between {CB} services
 
 The following picture shows how the {CB} services play together
-and gives you a visual overview about the system which we want to
-setup.
+and provides a visual overview about the system.
 
 .. figure:: .images/cb-design.png
     :align: center
@@ -31,16 +30,13 @@ setup.
    * A git repo with the package sources.
      There is the `cloud-builder-packages <https://github.com/OSInside/cloud-builder-packages>`__
      example repo
-   * A Kafka message broker. I will focus on
+   * A Kafka message broker. The focus will be on
      `Amzon MSK <https://docs.aws.amazon.com/msk/latest/developerguide/before-you-begin.html>`__
    * A runner instance.
 
    As the idea of {CB} is to come up with a scalable system that
    is configurable to the needs of the user, most of the services
-   are options on top of the minimal infrastructure.
-
-   In the next chapters I will describe the setup such that
-   you get {CB} running quickly.
+   are optional on top of the minimal infrastructure.
 
 Learn how to setup the git package source repository
 :ref:`git-package-source-setup`
