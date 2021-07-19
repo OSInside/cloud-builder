@@ -84,15 +84,19 @@ def main() -> None:
 
     .. code:: yaml
 
+        schema_version: 0.1
         name: xclock
 
         distributions:
           -
             dist: TW
             arch: x86_64
+            runner_group: suse
+
           -
             dist: TW
             arch: aarch64
+            runner_group: suse
 
     The above instructs the scheduler to create two buildroot
     environments, one for Tumbleweed(x86_64) and one for

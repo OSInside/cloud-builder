@@ -58,14 +58,14 @@ def main() -> None:
     the following example:
 
     /var/tmp/CB/
-           ├── package.log
-           ├── package.pid
-           ├── package.sh
-           ├── package@DIST.ARCH/
-           ├── package@DIST.ARCH.build.log
-           ├── package@DIST.ARCH.prepare.log
-           ├── package@DIST.ARCH.result.yml
-           └── package@DIST.ARCH.solver.json
+       ├── package@DIST.ARCH/
+       ├── package@DIST.ARCH.build.log
+       ├── package@DIST.ARCH.pid
+       ├── package@DIST.ARCH.prepare.log
+       ├── package@DIST.ARCH.result.yml
+       ├── package@DIST.ARCH.run.log
+       ├── package@DIST.ARCH.sh
+       └── package@DIST.ARCH.solver.json
 
     The local file information is used to construct
     a response record with information about the
