@@ -197,3 +197,8 @@ Now that the control plane runs the following configurations are required:
 
       broker:
         host: BootstrapServersString
+
+Congrats, the control plane is now running, the kafka message broker
+is up and configured and `cb-ctl` would be ready for a first package
+build request. However, there are no runners which could work on such
+a request. Learn how to setup the {CB} runner(s) next: :ref:`runner-setup`
