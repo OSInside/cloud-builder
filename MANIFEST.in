@@ -1,5 +1,6 @@
 # Manifest describing source package contents
 
+graft completion
 graft cloud_builder/broker
 graft cloud_builder/config
 graft cloud_builder/info_request
