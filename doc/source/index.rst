@@ -15,6 +15,7 @@
    infrastructure_setup
    git_package_source_setup
    kafka_broker_setup
+   runner_setup
    commands
 
 .. sidebar:: Links
