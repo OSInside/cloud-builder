@@ -130,6 +130,7 @@ install -D -m 644 sysconfig/cloud_builder \
 %{_unitdir}/cb-fetch-once.service
 %{_unitdir}/cb-scheduler.service
 %{_unitdir}/cb-info.service
+%{_usr}/share/bash-completion/completions/cb-ctl
 %config %{_sysconfdir}/cloud_builder
 %{_bindir}/cb-fetch
 %{_bindir}/cb-prepare

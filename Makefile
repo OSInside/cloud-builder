@@ -20,6 +20,10 @@ install:
 		${buildroot}${docdir}/python-cloud_builder/LICENSE
 	install -m 644 README.rst \
 		${buildroot}${docdir}/python-cloud_builder/README
+	# completion
+	install -d -m 755 ${buildroot}usr/share/bash-completion/completions
+	install -m 755 completion/cb-ctl \
+		${buildroot}usr/share/bash-completion/completions/cb-ctl
 
 build: clean tox
 	# create setup.py variant for rpm build.
