@@ -83,7 +83,11 @@ def main() -> None:
 
     target_root = os.path.normpath(
         os.sep.join(
-            [args["--root"], f'{package_name}@{dist_profile}']
+            [
+                args["--root"],
+                Defaults.get_projects_path(args['--package']),
+                f'{package_name}@{dist_profile}'
+            ]
         )
     )
 

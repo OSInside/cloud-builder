@@ -182,7 +182,7 @@ class TestCBScheduler:
             'action': 'package source changed',
             'arch': 'x86_64',
             'dist': 'TW',
-            'package': 'vim',
+            'package': 'projects/MS/vim',
             'request_id': 'c8becd30-a5f6-43a6-a4f4-598ec1115b17',
             'schema_version': 0.1
         }
@@ -193,7 +193,9 @@ class TestCBScheduler:
             file_handle = mock_open.return_value.__enter__.return_value
             file_handle.read.return_value = '1234'
             reset_build_if_running(request, log, broker)
-            mock_open.assert_called_once_with('/var/tmp/CB/vim@TW.x86_64.pid')
+            mock_open.assert_called_once_with(
+                '/var/tmp/CB/projects/MS/vim@TW.x86_64.pid'
+            )
             mock_os_kill.assert_called_once_with(
                 1234, signal.SIGTERM
             )
@@ -362,7 +364,7 @@ class TestCBScheduler:
             'action': 'package source and its meta changed',
             'arch': 'x86_64',
             'dist': 'TW',
-            'package': 'vim',
+            'package': 'projects/MS/vim',
             'request_id': 'c8becd30-a5f6-43a6-a4f4-598ec1115b17',
             'schema_version': 0.1
         }
@@ -371,10 +373,10 @@ class TestCBScheduler:
 
             set -e
 
-            rm -f /var/tmp/CB/vim@TW.x86_64.log
+            rm -f /var/tmp/CB/projects/MS/vim@TW.x86_64.log
 
             if true; then
-                rm -rf /var/tmp/CB/vim@TW.x86_64
+                rm -rf /var/tmp/CB/projects/MS/vim@TW.x86_64
             fi
 
             function finish {
@@ -384,20 +386,20 @@ class TestCBScheduler:
             {
                 trap finish EXIT
                 cb-prepare --root /var/tmp/CB \\
-                    --package cloud_builder_sources/vim \\
+                    --package cloud_builder_sources/projects/MS/vim \\
                     --profile TW.x86_64 \\
                     --request-id c8becd30-a5f6-43a6-a4f4-598ec1115b17
-                cb-run --root /var/tmp/CB/vim@TW.x86_64 &> /var/tmp/CB/vim@TW.x86_64.build.log \\
+                cb-run --root /var/tmp/CB/projects/MS/vim@TW.x86_64 &> /var/tmp/CB/projects/MS/vim@TW.x86_64.build.log \\
                     --request-id c8becd30-a5f6-43a6-a4f4-598ec1115b17
-            } &>>/var/tmp/CB/vim@TW.x86_64.run.log &
+            } &>>/var/tmp/CB/projects/MS/vim@TW.x86_64.run.log &
 
-            echo $! > /var/tmp/CB/vim@TW.x86_64.pid
+            echo $! > /var/tmp/CB/projects/MS/vim@TW.x86_64.pid
         ''')
         with patch('builtins.open', create=True) as mock_open:
             mock_open.return_value = MagicMock(spec=io.IOBase)
             file_handle = mock_open.return_value.__enter__.return_value
             create_run_script(request, True)
             mock_open.assert_called_once_with(
-                '/var/tmp/CB/vim@TW.x86_64.sh', 'w'
+                '/var/tmp/CB/projects/MS/vim@TW.x86_64.sh', 'w'
             )
             file_handle.write.assert_called_once_with(script_code)
