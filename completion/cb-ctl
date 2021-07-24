@@ -8,19 +8,19 @@ function _cbctl {
                 return 0
                 ;;
             "--build-dependencies")
-                __comp_reply "--arch --dist --timeout"
+                __comp_reply "--project-path --arch --dist --timeout"
                 return 0
                 ;;
             "--build-log")
-                __comp_reply "--arch --dist --timeout"
+                __comp_reply "--project-path --arch --dist --timeout"
                 return 0
                 ;;
             "--build-info")
-                __comp_reply "--arch --dist --timeout"
+                __comp_reply "--project-path --arch --dist --timeout"
                 return 0
                 ;;
             "--get-binaries")
-                __comp_reply "--arch --dist --target-dir --timeout"
+                __comp_reply "--project-path --arch --dist --target-dir --timeout"
                 return 0
                 ;;
             "--watch")
