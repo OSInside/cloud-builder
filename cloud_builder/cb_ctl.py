@@ -19,13 +19,13 @@
 usage: cb-ctl -h | --help
        cb-ctl --build=<package> --project-path=<path> --arch=<name> --dist=<name> --runner-group=<name>
            [--clean]
-       cb-ctl --build-dependencies=<package> --arch=<name> --dist=<name>
+       cb-ctl --build-dependencies=<package> --project-path=<path> --arch=<name> --dist=<name>
            [--timeout=<time_sec>]
-       cb-ctl --build-log=<package> --arch=<name> --dist=<name>
+       cb-ctl --build-log=<package> --project-path=<path> --arch=<name> --dist=<name>
            [--timeout=<time_sec>]
-       cb-ctl --build-info=<package> --arch=<name> --dist=<name>
+       cb-ctl --build-info=<package> --project-path=<path> --arch=<name> --dist=<name>
            [--timeout=<time_sec>]
-       cb-ctl --get-binaries=<package> --arch=<name> --dist=<name> --target-dir=<dir>
+       cb-ctl --get-binaries=<package> --project-path=<path> --arch=<name> --dist=<name> --target-dir=<dir>
            [--timeout=<time_sec>]
        cb-ctl --watch
            [--filter-request-id=<uuid>]
@@ -151,6 +151,7 @@ def main() -> None:
         get_build_dependencies(
             broker,
             args['--build-dependencies'],
+            args['--project-path'],
             args['--arch'],
             args['--dist'],
             int(args['--timeout'] or 30),
@@ -160,6 +161,7 @@ def main() -> None:
         get_build_log(
             broker,
             args['--build-log'],
+            args['--project-path'],
             args['--arch'],
             args['--dist'],
             int(args['--timeout'] or 30),
@@ -169,6 +171,7 @@ def main() -> None:
         get_build_info(
             broker,
             args['--build-info'],
+            args['--project-path'],
             args['--arch'],
             args['--dist'],
             int(args['--timeout'] or 30)
@@ -177,6 +180,7 @@ def main() -> None:
         fetch_binaries(
             broker,
             args['--get-binaries'],
+            args['--project-path'],
             args['--arch'],
             args['--dist'],
             int(args['--timeout'] or 30),
@@ -219,9 +223,8 @@ def build_package(
     status_flags = Defaults.get_status_flags()
     package_request = CBPackageRequest()
     package_request.set_package_build_request(
-        os.path.join(
-            'projects', project_path, package,
-        ), arch, dist, runner_group,
+        _get_package_path(project_path, package),
+        arch, dist, runner_group,
         status_flags.package_and_meta_changed if clean_buildroot else
         status_flags.package_update_request
     )
@@ -231,42 +234,45 @@ def build_package(
 
 
 def get_build_dependencies(
-    broker: Any, package: str, arch: str, dist: str,
+    broker: Any, package: str, project_path: str, arch: str, dist: str,
     timeout_sec: int, config: Dict
 ) -> None:
     solver_data = _get_info_response_file(
-        broker, package, arch, dist, timeout_sec, config, 'solver_file'
+        broker, package, project_path, arch, dist,
+        timeout_sec, config, 'solver_file'
     )
     if solver_data:
         CBDisplay.print_json(json.loads(solver_data))
 
 
 def get_build_log(
-    broker: Any, package: str, arch: str, dist: str,
+    broker: Any, package: str, project_path: str, arch: str, dist: str,
     timeout_sec: int, config: Dict
 ) -> None:
     build_log_data = _get_info_response_file(
-        broker, package, arch, dist, timeout_sec, config, 'log_file'
+        broker, package, project_path, arch, dist,
+        timeout_sec, config, 'log_file'
     )
     if build_log_data:
         CBDisplay.print_raw(build_log_data)
 
 
 def get_build_info(
-    broker: Any, package: str, arch: str, dist: str, timeout_sec: int
+    broker: Any, package: str, project_path: str, arch: str, dist: str,
+    timeout_sec: int
 ) -> None:
     CBDisplay.print_json(
-        get_info(broker, package, arch, dist, timeout_sec)
+        get_info(broker, package, project_path, arch, dist, timeout_sec)
     )
 
 
 def fetch_binaries(
-    broker: Any, package: str, arch: str, dist: str,
+    broker: Any, package: str, project_path: str, arch: str, dist: str,
     timeout_sec: int, target_dir, config: Dict
 ) -> None:
     log = CBLogger.get_logger()
     info_response = get_info(
-        broker, package, arch, dist, timeout_sec
+        broker, package, project_path, arch, dist, timeout_sec
     )
     if info_response:
         runner_ip = info_response['source_ip']
@@ -312,18 +318,21 @@ def watch_filter_none() -> Callable:
 
 
 def get_info(
-    broker: Any, package: str, arch: str, dist: str, timeout_sec: int
+    broker: Any, package: str, project_path: str, arch: str, dist: str,
+    timeout_sec: int
 ) -> Dict:
-    request_id = _send_info_request(broker, package, arch, dist)
+    request_id = _send_info_request(
+        broker, _get_package_path(project_path, package), arch, dist
+    )
     return _info_reader(broker, request_id, timeout_sec)
 
 
 def _get_info_response_file(
-    broker: Any, package: str, arch: str, dist: str,
+    broker: Any, package: str, project_path: str, arch: str, dist: str,
     timeout_sec: int, config: Dict, response_file_name
 ) -> str:
     info_response = get_info(
-        broker, package, arch, dist, timeout_sec
+        broker, package, project_path, arch, dist, timeout_sec
     )
     if info_response:
         response_file = info_response[response_file_name]
@@ -375,10 +384,10 @@ def _response_reader(
 
 
 def _send_info_request(
-    broker: Any, package: str, arch: str, dist: str
+    broker: Any, package_path: str, arch: str, dist: str
 ) -> str:
     info_request = CBInfoRequest()
-    info_request.set_info_request(package, arch, dist)
+    info_request.set_info_request(package_path, arch, dist)
     broker.send_info_request(info_request)
     broker.close()
     return info_request.get_data()['request_id']
@@ -440,3 +449,9 @@ def _info_reader(broker: Any, request_id: str, timeout_sec: int) -> Dict:
 
 def _get_datetime_from_utc_timestamp(timestamp: str) -> datetime:
     return datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S.%f")
+
+
+def _get_package_path(project_path: str, package_name: str) -> str:
+    return os.path.join(
+        'projects', project_path, package_name,
+    )

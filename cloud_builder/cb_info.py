@@ -57,7 +57,7 @@ def main() -> None:
     builds on a runner contains a number of files like
     the following example:
 
-    /var/tmp/CB/
+    /var/tmp/CB/projects/PROJECT/
        ├── package@DIST.ARCH/
        ├── package@DIST.ARCH.build.log
        ├── package@DIST.ARCH.pid
