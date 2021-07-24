@@ -20,7 +20,7 @@ the following example:
 
 .. code:: bash
 
-   /var/tmp/CB/
+   /var/tmp/CB/projects/PROJECT/
        ├── package@DIST.ARCH/
        ├── package@DIST.ARCH.build.log
        ├── package@DIST.ARCH.pid
