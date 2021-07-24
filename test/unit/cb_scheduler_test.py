@@ -355,7 +355,8 @@ class TestCBScheduler:
         broker.acknowledge.assert_called_once_with()
 
     @patch('cloud_builder.cb_scheduler.Defaults')
-    def test_create_run_script(self, mock_Defaults):
+    @patch('cloud_builder.cb_scheduler.Path.create')
+    def test_create_run_script(self, mock_Path_create, mock_Defaults):
         mock_Defaults.get_runner_project_dir.return_value = \
             'cloud_builder_sources'
         mock_Defaults.get_runner_package_root.return_value = \
@@ -399,6 +400,7 @@ class TestCBScheduler:
             mock_open.return_value = MagicMock(spec=io.IOBase)
             file_handle = mock_open.return_value.__enter__.return_value
             create_run_script(request, True)
+            mock_Path_create.assert_called_once_with('/var/tmp/CB/projects/MS')
             mock_open.assert_called_once_with(
                 '/var/tmp/CB/projects/MS/vim@TW.x86_64.sh', 'w'
             )

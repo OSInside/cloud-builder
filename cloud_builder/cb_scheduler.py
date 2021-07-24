@@ -449,6 +449,7 @@ def create_run_script(request: Dict, buildroot_rebuild: bool) -> str:
         request_id=request['request_id']
     )
     package_run_script = f'{target_root}.sh'
+    Path.create(os.path.dirname(package_run_script))
     with open(package_run_script, 'w') as script:
         script.write(run_script)
     return package_run_script
