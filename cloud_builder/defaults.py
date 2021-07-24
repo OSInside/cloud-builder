@@ -183,6 +183,21 @@ class Defaults:
         return f'{os.environ.get("HOME")}/cloud_builder_sources'
 
     @staticmethod
+    def get_projects_path(package_source: str) -> str:
+        """
+        Return project path from given package source path
+
+        :return: directory path name
+
+        :rtype: str
+        """
+        return os.path.dirname(
+            package_source.replace(
+                Defaults.get_runner_project_dir(), ''
+            ).lstrip(os.sep)
+        )
+
+    @staticmethod
     def get_broker_config() -> str:
         """
         Location of broker credentials and setup instructions

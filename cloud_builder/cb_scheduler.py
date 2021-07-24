@@ -256,7 +256,7 @@ def reset_build_if_running(
     :param CBMessageBroker broker: instance of CBMessageBroker
     """
     package_root = os.path.join(
-        Defaults.get_runner_package_root(), os.path.basename(request['package'])
+        Defaults.get_runner_package_root(), request['package']
     )
     dist_profile = f'{request["dist"]}.{request["arch"]}'
     target_root = f'{package_root}@{dist_profile}'
@@ -410,7 +410,7 @@ def create_run_script(request: Dict, buildroot_rebuild: bool) -> str:
         Defaults.get_runner_project_dir(), request['package']
     )
     package_root = os.path.join(
-        Defaults.get_runner_package_root(), os.path.basename(request['package'])
+        Defaults.get_runner_package_root(), request['package']
     )
     dist_profile = f'{request["dist"]}.{request["arch"]}'
     target_root = f'{package_root}@{dist_profile}'

@@ -53,3 +53,10 @@ class TestDefaults:
     def test_get_cloud_builder_kiwi_file_name(self):
         assert Defaults.get_cloud_builder_kiwi_file_name() == \
             'cloud_builder.kiwi'
+
+    def test_get_projects_path(self):
+        with patch.dict('os.environ', {'HOME': 'root'}):
+            assert Defaults.get_projects_path(
+                '/root/cloud_builder_sources/'
+                'projects/MS/python-kiwi_boxed_plugin'
+            ) == 'projects/MS'
