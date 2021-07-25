@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Runner Setup &mdash; Cloud Builder 0.1.15 documentation</title>
+  <title>Runner Setup &mdash; Cloud Builder 0.1.16 documentation</title>
   
 
   
@@ -249,17 +249,31 @@ $ <span class="k">for</span> runner <span class="k">in</span> <span class="si">$
 <li><p><strong>Install Cloud Builder on the runners</strong></p>
 <p>Login to each of the created Leap runner instances and install
 Cloud Builder as follows:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ sudo zypper addrepo https://download.opensuse.org/repositories/Virtualization:/Appliances:/Staging/openSUSE_Leap_15.3 cloud-builder
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ ssh -i PathToPkeyMatchingMySSHKeyPairName <span class="se">\</span>
+      ec2-user@InstanceIP
+
+$ sudo zypper addrepo https://download.opensuse.org/repositories/Virtualization:/Appliances:/Staging/openSUSE_Leap_15.3 cloud-builder
 $ sudo zypper install python3-cloud_builder
 </pre></div>
 </div>
 <p>Login to each of the created Fedora runner instances and install
 Cloud Builder as follows:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ sudo dnf config-manager <span class="se">\</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ ssh -i PathToPkeyMatchingMySSHKeyPairName <span class="se">\</span>
+      fedora@InstanceIP
+
+$ sudo dnf config-manager <span class="se">\</span>
       --add-repo https://download.opensuse.org/repositories/Virtualization:/Appliances:/Staging/Fedora_34 <span class="se">\</span>
       --enable
 $ sudo dnf install python3-cloud_builder
 </pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>As shown above access to the runners is performaed via <code class="xref py py-obj docutils literal notranslate"><span class="pre">ssh</span></code>
+The username to access Fedora machines in the cloud is set
+to <code class="xref py py-obj docutils literal notranslate"><span class="pre">fedora</span></code>. For Leap machines it is set set to <code class="xref py py-obj docutils literal notranslate"><span class="pre">ec2-user</span></code>.
+This information is explained once and applies to all
+following steps too.</p>
 </div>
 </li>
 <li><p><strong>Setup broker connection and runner group on the runners</strong></p>

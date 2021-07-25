@@ -49,6 +49,9 @@ created and configured as follows:
 
    .. code:: bash
 
+      $ ssh -i PathToPkeyMatchingMySSHKeyPairName \
+            ec2-user@InstanceIP
+
       $ sudo zypper addrepo https://download.opensuse.org/repositories/Virtualization:/Appliances:/Staging/openSUSE_Leap_15.3 cloud-builder
       $ sudo zypper install python3-cloud_builder
 
@@ -57,10 +60,21 @@ created and configured as follows:
 
    .. code:: bash
 
+      $ ssh -i PathToPkeyMatchingMySSHKeyPairName \
+            fedora@InstanceIP
+
       $ sudo dnf config-manager \
             --add-repo https://download.opensuse.org/repositories/Virtualization:/Appliances:/Staging/Fedora_34 \
             --enable
       $ sudo dnf install python3-cloud_builder
+
+   .. note::
+
+      As shown above access to the runners is performaed via `ssh`
+      The username to access Fedora machines in the cloud is set
+      to `fedora`. For Leap machines it is set set to `ec2-user`.
+      This information is explained once and applies to all
+      following steps too.
 
 3. **Setup broker connection and runner group on the runners**
 
