@@ -92,6 +92,9 @@ created and configured as follows:
       broker:
         host: BootstrapServersString
 
+   See the '**Configure** `cb-ctl`' list item in the :ref:`control-plane-setup`
+   for details how to obtain the broker credentials.
+
    * Add the following content on the Leap runners only
 
      .. code:: yaml

@@ -103,6 +103,8 @@ production environment.
       $ wget https://archive.apache.org/dist/kafka/2.2.1/kafka_2.12-2.2.1.tgz
       $ tar -xzf kafka_2.12-2.2.1.tgz
 
+.. _control-plane-setup:
+
 Control Plane Setup
 -------------------
 
