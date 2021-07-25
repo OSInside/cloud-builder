@@ -2,3 +2,151 @@
 
 Runner Setup
 ============
+
+A runner instance for {CB} is a machine that actually builds
+packages. The produced binaries stays on that machine and can
+be fetched on demand for further processing. The runner must
+be configured for a specific runner group. The runner group
+name matches the name of the message broker queue/topic name such
+that only package build requests for this runner group are
+handled by the associated runner(s). There must be at least
+one runner for each runner group. If there are more runners
+the produced build requests will be evenly distributed across
+the available runners. This is how {CB} scales with the
+amount of packages to build.
+
+In the example setup of the control plane, the runner group
+message topics `suse` and `fedora` were created. In addition
+each of the runner groups was expected to serve 2 runners.
+On the basis of this build power 4 runner instances must be
+created and configured as follows:
+
+1. **Start runner instances**
+
+   For the `fedora` runner group the Fedora34 distribution
+   is used. For the `suse` runner group the Leap15.3 distribution
+   is used.
+
+   .. code:: bash
+
+      $ leap_15_3_ami=ami-0b4f49bedf96b14c9
+      $ fedora_34_ami=ami-0b2a401a8b3f4edd3
+
+      $ for runner in ${leap_15_3_ami} ${fedora_34_ami}; do
+            aws ec2 run-instances \
+                --image-id ${runner} \
+                --count 2 \
+                --instance-type t2.micro \
+                --key-name MySSHKeyPairName \
+                --security-group-ids sg-MyGroup \
+                --subnet-id subnet-MySubNet;
+        done
+
+2. **Install {CB} on the runners**
+
+   Login to each of the created Leap runner instances and install
+   {CB} as follows:
+
+   .. code:: bash
+
+      $ sudo zypper addrepo https://download.opensuse.org/repositories/Virtualization:/Appliances:/Staging/openSUSE_Leap_15.3 cloud-builder
+      $ sudo zypper install python3-cloud_builder
+
+   Login to each of the created Fedora runner instances and install
+   {CB} as follows:
+
+   .. code:: bash
+
+      $ sudo dnf config-manager \
+            --add-repo https://download.opensuse.org/repositories/Virtualization:/Appliances:/Staging/Fedora_34 \
+            --enable
+      $ sudo dnf install python3-cloud_builder
+
+3. **Setup broker connection and runner group on the runners**
+
+   Login to each of the created runner instances and create
+   the file :file:`/etc/cloud_builder_broker.yml` as follows:
+
+   .. code:: bash
+
+      sudo vi /etc/cloud_builder_broker.yml
+
+   Place the following content:
+
+   .. code:: yaml
+
+      broker:
+        host: BootstrapServersString
+
+   * Add the following content on the Leap runners only
+
+     .. code:: yaml
+
+        runner:
+          group: suse
+
+   * Place the following content on the Fedora runners only
+
+     .. code:: yaml
+
+        runner:
+          group: fedora
+
+4. **Setup git package source connection**
+
+   Login to each of the created runner instances and edit
+   the file :file:`/etc/cloud_builder` as follows:
+
+   .. code:: bash
+
+      CB_PROJECT="https://github.com/OSInside/cloud-builder-packages.git"
+      CB_PACKAGE_LIMIT=10
+
+   The above settings are the default after install of {CB}.
+   The used CB_PROJECT git repository is the {CB} provided example git
+   repo containing some arbitrary package sources. It only serves the
+   purpose to let users test and run {CB}. For production
+   change this value to your git project
+
+   .. note:: CB_PACKAGE_LIMIT
+
+      Every runner comes with a package build limit. This is the number
+      of simultaneously allowed build processes. If the limit is hit
+      the runner closes its connection to the message broker until the
+      number is below the maximum. For Apache kafka the close of the
+      connection of a consumer will cause a rebalance of all other still
+      connected consumers. This is an expensive operation and should be
+      avoided. The {CB} set maximum of 10 package builds at the same time
+      is relatively conservative. It depends on the selected instance
+      type/memory and disk space to select an appropriate value. If in
+      doubt give it a try with the default setting, but keep in mind
+      about this value, especially for production use.
+
+5. **Start** `cb-fetch-once` **service**
+
+   Login to each of the created runner instances and fetch
+   the package source git once as follows:
+
+   .. code:: bash
+
+      $ sudo systemctl start cb-fetch-once
+
+   This will clone the configured CB_PROJECT git repo once on the
+   system. The `cb-scheduler` service cares for the repo update via
+   `git pull` on demand
+
+6. **Start** `cb-scheduler` **and** `cb-info` **services**
+
+   Login to each of the created runner instances and start
+   the scheduler and info services as follows:
+
+   .. code:: bash
+
+      $ sudo systemctl start cb-scheduler
+      $ sudo systemctl start cb-info
+
+Congrats, the {CB} package build backend is now running and can
+build packages for Fedore/RHEL and SUSE/SLES based packages.
+There are two runners available for each of these vendors.
+
+Learn how to build the first package next: :ref:`request_package_build`

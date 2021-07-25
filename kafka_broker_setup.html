@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Kafka Message Broker Setup &mdash; Cloud Builder 0.1.14 documentation</title>
+  <title>Kafka Message Broker Setup &mdash; Cloud Builder 0.1.15 documentation</title>
   
 
   
@@ -99,6 +99,7 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="runner_setup.html">Runner Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="request_package_build.html">Request a Package Build</a></li>
 <li class="toctree-l1"><a class="reference internal" href="commands.html">Cloud Builder Services</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="commands/cb_fetch.html">cb-fetch</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="commands/cb_fetch.html#synopsis">SYNOPSIS</a></li>
@@ -269,8 +270,9 @@ will not apply.</p>
 is packaged for Leap and Fedora. Thus the control plane could
 also be based on Fedora. The following launches for Leap.</p>
 <p>Replace the camel case parameter values with your own.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ aws ec2 run-instances <span class="se">\</span>
-    --image-id ami-0b4f49bedf96b14c9 <span class="se">\</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ <span class="nv">leap_15_3_ami</span><span class="o">=</span>ami-0b4f49bedf96b14c9
+$ aws ec2 run-instances <span class="se">\</span>
+    --image-id <span class="si">${</span><span class="nv">leap_15_3_ami</span><span class="si">}</span> <span class="se">\</span>
     --count <span class="m">1</span> <span class="se">\</span>
     --instance-type t2.micro <span class="se">\</span>
     --key-name MySSHKeyPairName <span class="se">\</span>
@@ -365,7 +367,7 @@ $ <span class="k">for</span> topic <span class="k">in</span> fedora suse<span cl
 </pre></div>
 </div>
 </li>
-<li><p><strong>Configure `cb-ctl`</strong></p>
+<li><p><strong>Configure</strong> <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-ctl</span></code></p>
 <p>Last step is the configuration of Cloud Builder to allow access to the
 Kafka service.</p>
 <ul class="simple">
@@ -375,7 +377,7 @@ Kafka service.</p>
 </ul>
 <p>In the pop up window under the headline <code class="xref py py-obj docutils literal notranslate"><span class="pre">Bootstrap</span> <span class="pre">servers</span></code>
 Copy and preserve this information temporarily</p>
-<p>Create the <code class="file docutils literal notranslate"><span class="pre">/etc/cloud_builder_broker.yml</span></code> as follows:</p>
+<p>Create the file <code class="file docutils literal notranslate"><span class="pre">/etc/cloud_builder_broker.yml</span></code> as follows:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo vi /etc/cloud_builder_broker.yml
 </pre></div>
 </div>

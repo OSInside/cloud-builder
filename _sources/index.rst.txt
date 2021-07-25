@@ -16,6 +16,7 @@
    git_package_source_setup
    kafka_broker_setup
    runner_setup
+   request_package_build
    commands
 
 .. sidebar:: Links

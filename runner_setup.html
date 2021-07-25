@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Runner Setup &mdash; Cloud Builder 0.1.14 documentation</title>
+  <title>Runner Setup &mdash; Cloud Builder 0.1.15 documentation</title>
   
 
   
@@ -42,7 +42,7 @@
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Cloud Builder Services" href="commands.html" />
+    <link rel="next" title="Request a Package Build" href="request_package_build.html" />
     <link rel="prev" title="Kafka Message Broker Setup" href="kafka_broker_setup.html" /> 
 </head>
 
@@ -99,6 +99,7 @@
 </ul>
 </li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Runner Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="request_package_build.html">Request a Package Build</a></li>
 <li class="toctree-l1"><a class="reference internal" href="commands.html">Cloud Builder Services</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="commands/cb_fetch.html">cb-fetch</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="commands/cb_fetch.html#synopsis">SYNOPSIS</a></li>
@@ -209,6 +210,135 @@
             
   <div class="section" id="runner-setup">
 <span id="id1"></span><h1>Runner Setup<a class="headerlink" href="#runner-setup" title="Permalink to this headline">¶</a></h1>
+<p>A runner instance for Cloud Builder is a machine that actually builds
+packages. The produced binaries stays on that machine and can
+be fetched on demand for further processing. The runner must
+be configured for a specific runner group. The runner group
+name matches the name of the message broker queue/topic name such
+that only package build requests for this runner group are
+handled by the associated runner(s). There must be at least
+one runner for each runner group. If there are more runners
+the produced build requests will be evenly distributed across
+the available runners. This is how Cloud Builder scales with the
+amount of packages to build.</p>
+<p>In the example setup of the control plane, the runner group
+message topics <code class="xref py py-obj docutils literal notranslate"><span class="pre">suse</span></code> and <code class="xref py py-obj docutils literal notranslate"><span class="pre">fedora</span></code> were created. In addition
+each of the runner groups was expected to serve 2 runners.
+On the basis of this build power 4 runner instances must be
+created and configured as follows:</p>
+<ol class="arabic">
+<li><p><strong>Start runner instances</strong></p>
+<p>For the <code class="xref py py-obj docutils literal notranslate"><span class="pre">fedora</span></code> runner group the Fedora34 distribution
+is used. For the <code class="xref py py-obj docutils literal notranslate"><span class="pre">suse</span></code> runner group the Leap15.3 distribution
+is used.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ <span class="nv">leap_15_3_ami</span><span class="o">=</span>ami-0b4f49bedf96b14c9
+$ <span class="nv">fedora_34_ami</span><span class="o">=</span>ami-0b2a401a8b3f4edd3
+
+$ <span class="k">for</span> runner <span class="k">in</span> <span class="si">${</span><span class="nv">leap_15_3_ami</span><span class="si">}</span> <span class="si">${</span><span class="nv">fedora_34_ami</span><span class="si">}</span><span class="p">;</span> <span class="k">do</span>
+      aws ec2 run-instances <span class="se">\</span>
+          --image-id <span class="si">${</span><span class="nv">runner</span><span class="si">}</span> <span class="se">\</span>
+          --count <span class="m">2</span> <span class="se">\</span>
+          --instance-type t2.micro <span class="se">\</span>
+          --key-name MySSHKeyPairName <span class="se">\</span>
+          --security-group-ids sg-MyGroup <span class="se">\</span>
+          --subnet-id subnet-MySubNet<span class="p">;</span>
+  <span class="k">done</span>
+</pre></div>
+</div>
+</li>
+<li><p><strong>Install Cloud Builder on the runners</strong></p>
+<p>Login to each of the created Leap runner instances and install
+Cloud Builder as follows:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ sudo zypper addrepo https://download.opensuse.org/repositories/Virtualization:/Appliances:/Staging/openSUSE_Leap_15.3 cloud-builder
+$ sudo zypper install python3-cloud_builder
+</pre></div>
+</div>
+<p>Login to each of the created Fedora runner instances and install
+Cloud Builder as follows:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ sudo dnf config-manager <span class="se">\</span>
+      --add-repo https://download.opensuse.org/repositories/Virtualization:/Appliances:/Staging/Fedora_34 <span class="se">\</span>
+      --enable
+$ sudo dnf install python3-cloud_builder
+</pre></div>
+</div>
+</li>
+<li><p><strong>Setup broker connection and runner group on the runners</strong></p>
+<p>Login to each of the created runner instances and create
+the file <code class="file docutils literal notranslate"><span class="pre">/etc/cloud_builder_broker.yml</span></code> as follows:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo vi /etc/cloud_builder_broker.yml
+</pre></div>
+</div>
+<p>Place the following content:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">broker</span><span class="p">:</span>
+  <span class="nt">host</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">BootstrapServersString</span>
+</pre></div>
+</div>
+<ul>
+<li><p>Add the following content on the Leap runners only</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">runner</span><span class="p">:</span>
+  <span class="nt">group</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">suse</span>
+</pre></div>
+</div>
+</li>
+<li><p>Place the following content on the Fedora runners only</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">runner</span><span class="p">:</span>
+  <span class="nt">group</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">fedora</span>
+</pre></div>
+</div>
+</li>
+</ul>
+</li>
+<li><p><strong>Setup git package source connection</strong></p>
+<p>Login to each of the created runner instances and edit
+the file <code class="file docutils literal notranslate"><span class="pre">/etc/cloud_builder</span></code> as follows:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">CB_PROJECT</span><span class="o">=</span><span class="s2">&quot;https://github.com/OSInside/cloud-builder-packages.git&quot;</span>
+<span class="nv">CB_PACKAGE_LIMIT</span><span class="o">=</span><span class="m">10</span>
+</pre></div>
+</div>
+<p>The above settings are the default after install of Cloud Builder.
+The used CB_PROJECT git repository is the Cloud Builder provided example git
+repo containing some arbitrary package sources. It only serves the
+purpose to let users test and run Cloud Builder. For production
+change this value to your git project</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>CB_PACKAGE_LIMIT</p>
+<p>Every runner comes with a package build limit. This is the number
+of simultaneously allowed build processes. If the limit is hit
+the runner closes its connection to the message broker until the
+number is below the maximum. For Apache kafka the close of the
+connection of a consumer will cause a rebalance of all other still
+connected consumers. This is an expensive operation and should be
+avoided. The Cloud Builder set maximum of 10 package builds at the same time
+is relatively conservative. It depends on the selected instance
+type/memory and disk space to select an appropriate value. If in
+doubt give it a try with the default setting, but keep in mind
+about this value, especially for production use.</p>
+</div>
+</li>
+<li><p><strong>Start</strong> <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-fetch-once</span></code> <strong>service</strong></p>
+<p>Login to each of the created runner instances and fetch
+the package source git once as follows:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ sudo systemctl start cb-fetch-once
+</pre></div>
+</div>
+<p>This will clone the configured CB_PROJECT git repo once on the
+system. The <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-scheduler</span></code> service cares for the repo update via
+<code class="xref py py-obj docutils literal notranslate"><span class="pre">git</span> <span class="pre">pull</span></code> on demand</p>
+</li>
+<li><p><strong>Start</strong> <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-scheduler</span></code> <strong>and</strong> <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-info</span></code> <strong>services</strong></p>
+<p>Login to each of the created runner instances and start
+the scheduler and info services as follows:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ sudo systemctl start cb-scheduler
+$ sudo systemctl start cb-info
+</pre></div>
+</div>
+</li>
+</ol>
+<p>Congrats, the Cloud Builder package build backend is now running and can
+build packages for Fedore/RHEL and SUSE/SLES based packages.
+There are two runners available for each of these vendors.</p>
+<p>Learn how to build the first package next: <a class="reference internal" href="request_package_build.html#request-package-build"><span class="std std-ref">Request a Package Build</span></a></p>
 </div>
 
 
@@ -217,7 +347,7 @@
           </div>
           <footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="commands.html" class="btn btn-neutral float-right" title="Cloud Builder Services" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="request_package_build.html" class="btn btn-neutral float-right" title="Request a Package Build" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
         <a href="kafka_broker_setup.html" class="btn btn-neutral float-left" title="Kafka Message Broker Setup" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 

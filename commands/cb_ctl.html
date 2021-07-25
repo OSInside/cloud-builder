@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>cb-ctl &mdash; Cloud Builder 0.1.14 documentation</title>
+  <title>cb-ctl &mdash; Cloud Builder 0.1.15 documentation</title>
   
 
   
@@ -98,6 +98,7 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../runner_setup.html">Runner Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../request_package_build.html">Request a Package Build</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../commands.html">Cloud Builder Services</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="cb_fetch.html">cb-fetch</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="cb_fetch.html#synopsis">SYNOPSIS</a></li>
@@ -215,13 +216,13 @@
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>cb-ctl -h <span class="p">|</span> --help
 cb-ctl --build<span class="o">=</span>&lt;package&gt; --project-path<span class="o">=</span>&lt;path&gt; --arch<span class="o">=</span>&lt;name&gt; --dist<span class="o">=</span>&lt;name&gt; --runner-group<span class="o">=</span>&lt;name&gt;
     <span class="o">[</span>--clean<span class="o">]</span>
-cb-ctl --build-dependencies<span class="o">=</span>&lt;package&gt; --arch<span class="o">=</span>&lt;name&gt; --dist<span class="o">=</span>&lt;name&gt;
+cb-ctl --build-dependencies<span class="o">=</span>&lt;package&gt; --project-path<span class="o">=</span>&lt;path&gt; --arch<span class="o">=</span>&lt;name&gt; --dist<span class="o">=</span>&lt;name&gt;
     <span class="o">[</span>--timeout<span class="o">=</span>&lt;time_sec&gt;<span class="o">]</span>
-cb-ctl --build-log<span class="o">=</span>&lt;package&gt; --arch<span class="o">=</span>&lt;name&gt; --dist<span class="o">=</span>&lt;name&gt;
+cb-ctl --build-log<span class="o">=</span>&lt;package&gt; --project-path<span class="o">=</span>&lt;path&gt; --arch<span class="o">=</span>&lt;name&gt; --dist<span class="o">=</span>&lt;name&gt;
     <span class="o">[</span>--timeout<span class="o">=</span>&lt;time_sec&gt;<span class="o">]</span>
-cb-ctl --build-info<span class="o">=</span>&lt;package&gt; --arch<span class="o">=</span>&lt;name&gt; --dist<span class="o">=</span>&lt;name&gt;
+cb-ctl --build-info<span class="o">=</span>&lt;package&gt; --project-path<span class="o">=</span>&lt;path&gt; --arch<span class="o">=</span>&lt;name&gt; --dist<span class="o">=</span>&lt;name&gt;
     <span class="o">[</span>--timeout<span class="o">=</span>&lt;time_sec&gt;<span class="o">]</span>
-cb-ctl --get-binaries<span class="o">=</span>&lt;package&gt; --arch<span class="o">=</span>&lt;name&gt; --dist<span class="o">=</span>&lt;name&gt; --target-dir<span class="o">=</span>&lt;dir&gt;
+cb-ctl --get-binaries<span class="o">=</span>&lt;package&gt; --project-path<span class="o">=</span>&lt;path&gt; --arch<span class="o">=</span>&lt;name&gt; --dist<span class="o">=</span>&lt;name&gt; --target-dir<span class="o">=</span>&lt;dir&gt;
     <span class="o">[</span>--timeout<span class="o">=</span>&lt;time_sec&gt;<span class="o">]</span>
 cb-ctl --watch
     <span class="o">[</span>--filter-request-id<span class="o">=</span>&lt;uuid&gt;<span class="o">]</span>
