@@ -72,8 +72,9 @@ production environment.
 
    .. code:: bash
 
+      $ leap_15_3_ami=ami-0b4f49bedf96b14c9
       $ aws ec2 run-instances \
-          --image-id ami-0b4f49bedf96b14c9 \
+          --image-id ${leap_15_3_ami} \
           --count 1 \
           --instance-type t2.micro \
           --key-name MySSHKeyPairName \
@@ -173,7 +174,7 @@ Now that the control plane runs the following configurations are required:
                 --topic ${topic};
         done
 
-5. **Configure `cb-ctl`**
+5. **Configure** `cb-ctl`
 
    Last step is the configuration of {CB} to allow access to the
    Kafka service.
@@ -185,11 +186,11 @@ Now that the control plane runs the following configurations are required:
    In the pop up window under the headline `Bootstrap servers`
    Copy and preserve this information temporarily
 
-   Create the :file:`/etc/cloud_builder_broker.yml` as follows:
+   Create the file :file:`/etc/cloud_builder_broker.yml` as follows:
 
    .. code:: bash
 
-       sudo vi /etc/cloud_builder_broker.yml
+      sudo vi /etc/cloud_builder_broker.yml
 
    Place the following content:
 

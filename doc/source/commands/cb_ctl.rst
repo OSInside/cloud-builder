@@ -9,13 +9,13 @@ SYNOPSIS
    cb-ctl -h | --help
    cb-ctl --build=<package> --project-path=<path> --arch=<name> --dist=<name> --runner-group=<name>
        [--clean]
-   cb-ctl --build-dependencies=<package> --arch=<name> --dist=<name>
+   cb-ctl --build-dependencies=<package> --project-path=<path> --arch=<name> --dist=<name>
        [--timeout=<time_sec>]
-   cb-ctl --build-log=<package> --arch=<name> --dist=<name>
+   cb-ctl --build-log=<package> --project-path=<path> --arch=<name> --dist=<name>
        [--timeout=<time_sec>]
-   cb-ctl --build-info=<package> --arch=<name> --dist=<name>
+   cb-ctl --build-info=<package> --project-path=<path> --arch=<name> --dist=<name>
        [--timeout=<time_sec>]
-   cb-ctl --get-binaries=<package> --arch=<name> --dist=<name> --target-dir=<dir>
+   cb-ctl --get-binaries=<package> --project-path=<path> --arch=<name> --dist=<name> --target-dir=<dir>
        [--timeout=<time_sec>]
    cb-ctl --watch
        [--filter-request-id=<uuid>]
