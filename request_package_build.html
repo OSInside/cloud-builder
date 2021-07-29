@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Request a Package Build &mdash; Cloud Builder 0.1.17 documentation</title>
+  <title>Request a Package Build &mdash; Cloud Builder 0.1.18 documentation</title>
   
 
   
@@ -42,7 +42,7 @@
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Cloud Builder Services" href="commands.html" />
+    <link rel="next" title="Auto Rebuild on Package Source Change" href="auto_rebuild_on_source_change.html" />
     <link rel="prev" title="Runner Setup" href="runner_setup.html" /> 
 </head>
 
@@ -100,7 +100,10 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="runner_setup.html">Runner Setup</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Request a Package Build</a></li>
-<li class="toctree-l1"><a class="reference internal" href="commands.html">Cloud Builder Services</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="auto_rebuild_on_source_change.html">Auto Rebuild on Package Source Change</a></li>
+<li class="toctree-l1"><a class="reference internal" href="auto_rebuild_on_build_dependencies.html">Auto Rebuild on Package Build Dependency Changes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="collect_and_build_project_repos.html">Collect and Build Project Repos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="commands.html">Overview Cloud Builder Services</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="commands/cb_fetch.html">cb-fetch</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="commands/cb_fetch.html#synopsis">SYNOPSIS</a></li>
 <li class="toctree-l3"><a class="reference internal" href="commands/cb_fetch.html#description">DESCRIPTION</a></li>
@@ -210,6 +213,130 @@
             
   <div class="section" id="request-a-package-build">
 <span id="request-package-build"></span><h1>Request a Package Build<a class="headerlink" href="#request-a-package-build" title="Permalink to this headline">¶</a></h1>
+<p>At this point the Cloud Builder backend is running and uses
+<code class="xref py py-obj docutils literal notranslate"><span class="pre">https://github.com/OSInside/cloud-builder-packages</span></code>
+as the package source Git repository.</p>
+<p>As a first example let’s build the <code class="xref py py-obj docutils literal notranslate"><span class="pre">xclock</span></code> package from
+the <code class="xref py py-obj docutils literal notranslate"><span class="pre">MS</span></code> project as follows:</p>
+<ol class="arabic">
+<li><p><strong>Login to the control plane</strong></p>
+<p>See <a class="reference internal" href="kafka_broker_setup.html#control-plane-setup"><span class="std std-ref">Control Plane Setup</span></a> for details</p>
+</li>
+<li><p><strong>Create a package build request via</strong> <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-ctl</span></code></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ cb-ctl --build xclock --project MS <span class="se">\</span>
+    --arch x86_64 --dist TW --runner-group suse
+</pre></div>
+</div>
+<p>This will return with an information like the following:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="o">[</span> INFO    <span class="o">]</span>: <span class="m">09</span>:31:15 <span class="p">|</span> Message successfully sent to: suse
+<span class="o">{</span>
+    <span class="s2">&quot;action&quot;</span>: <span class="s2">&quot;fetch service update request scheduled&quot;</span>,
+    <span class="s2">&quot;arch&quot;</span>: <span class="s2">&quot;x86_64&quot;</span>,
+    <span class="s2">&quot;dist&quot;</span>: <span class="s2">&quot;TW&quot;</span>,
+    <span class="s2">&quot;package&quot;</span>: <span class="s2">&quot;projects/MS/xclock&quot;</span>,
+    <span class="s2">&quot;request_id&quot;</span>: <span class="s2">&quot;b88becf6-f04f-11eb-8cff-06be1098538e&quot;</span>,
+    <span class="s2">&quot;runner_group&quot;</span>: <span class="s2">&quot;suse&quot;</span>,
+    <span class="s2">&quot;schema_version&quot;</span>: <span class="m">0</span>.1
+<span class="o">}</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Any request to Cloud Builder services are identified through a reques_id
+in UUID format. It is recommended to filter output by that id.
+Otherwise all information available according to the configured
+retention time of the desired topic in Kafka will be returned.</p>
+</div>
+</li>
+<li><p><strong>Watch how the request runs through the Cloud Builder services</strong></p>
+<p>Each Cloud Builder service logs information into the global response
+queue. For reading the contents of this queue the <code class="xref py py-obj docutils literal notranslate"><span class="pre">--watch</span></code>
+option is used as follows:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ cb-ctl --watch <span class="se">\</span>
+    --filter-request-id b88becf6-f04f-11eb-8cff-06be1098538e <span class="se">\</span>
+    --timeout <span class="m">5</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Please be aware that any conversation with the Cloud Builder services
+are based on sending a message to the message broker followed
+by a subsequent lookup of information from the message broker.
+This polling of information always ends after a configurable
+timeout of inactivity. By default the timeout value is set to
+a safe long delay. Usually you set the timeout to a much smaller
+value to avoid boring wait periods.</p>
+</div>
+<p>A typical output from the above command could look like this</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="o">{</span>
+    <span class="s2">&quot;arch&quot;</span>: <span class="s2">&quot;x86_64&quot;</span>,
+    <span class="s2">&quot;dist&quot;</span>: <span class="s2">&quot;TW&quot;</span>,
+    <span class="s2">&quot;identity&quot;</span>: <span class="s2">&quot;CBScheduler:18.193.45.127:6432:(system)&quot;</span>,
+    <span class="s2">&quot;message&quot;</span>: <span class="s2">&quot;Accept package build request&quot;</span>,
+    <span class="s2">&quot;package&quot;</span>: <span class="s2">&quot;projects/MS/xclock&quot;</span>,
+    <span class="s2">&quot;request_id&quot;</span>: <span class="s2">&quot;b88becf6-f04f-11eb-8cff-06be1098538e&quot;</span>,
+    <span class="s2">&quot;response_code&quot;</span>: <span class="s2">&quot;package request accepted&quot;</span>,
+    <span class="s2">&quot;schema_version&quot;</span>: <span class="m">0</span>.1
+<span class="o">}</span>
+<span class="o">{</span>
+    <span class="s2">&quot;build_root&quot;</span>: <span class="s2">&quot;/var/tmp/CB/projects/MS/xclock@TW.x86_64&quot;</span>,
+    <span class="s2">&quot;exit_code&quot;</span>: <span class="m">0</span>,
+    <span class="s2">&quot;identity&quot;</span>: <span class="s2">&quot;CBPrepare:18.193.45.127:6455:xclock&quot;</span>,
+    <span class="s2">&quot;log_file&quot;</span>: <span class="s2">&quot;/var/tmp/CB/projects/MS/xclock@TW.x86_64.prepare.log&quot;</span>,
+    <span class="s2">&quot;message&quot;</span>: <span class="s2">&quot;Buildroot ready for package build&quot;</span>,
+    <span class="s2">&quot;package&quot;</span>: <span class="s2">&quot;xclock&quot;</span>,
+    <span class="s2">&quot;request_id&quot;</span>: <span class="s2">&quot;b88becf6-f04f-11eb-8cff-06be1098538e&quot;</span>,
+    <span class="s2">&quot;response_code&quot;</span>: <span class="s2">&quot;build root setup succeeded&quot;</span>,
+    <span class="s2">&quot;schema_version&quot;</span>: <span class="m">0</span>.1,
+    <span class="s2">&quot;solver_file&quot;</span>: <span class="s2">&quot;/var/tmp/CB/projects/MS/xclock@TW.x86_64.solver.json&quot;</span>
+<span class="o">}</span>
+<span class="o">{</span>
+    <span class="s2">&quot;binary_packages&quot;</span>: <span class="o">[</span>
+        <span class="s2">&quot;/var/tmp/CB/projects/MS/xclock@TW.x86_64/home/abuild/rpmbuild/RPMS/x86_64/xclock-1.0.9-0.x86_64.rpm&quot;</span>,
+        <span class="s2">&quot;/var/tmp/CB/projects/MS/xclock@TW.x86_64/home/abuild/rpmbuild/SRPMS/xclock-1.0.9-0.src.rpm&quot;</span>
+    <span class="o">]</span>,
+    <span class="s2">&quot;exit_code&quot;</span>: <span class="m">0</span>,
+    <span class="s2">&quot;identity&quot;</span>: <span class="s2">&quot;CBRun:18.193.45.127:6566:projects/MS/xclock&quot;</span>,
+    <span class="s2">&quot;log_file&quot;</span>: <span class="s2">&quot;/var/tmp/CB/projects/MS/xclock@TW.x86_64.build.log&quot;</span>,
+    <span class="s2">&quot;message&quot;</span>: <span class="s2">&quot;Package build finished&quot;</span>,
+    <span class="s2">&quot;package&quot;</span>: <span class="s2">&quot;projects/MS/xclock&quot;</span>,
+    <span class="s2">&quot;prepare_log_file&quot;</span>: <span class="s2">&quot;/var/tmp/CB/projects/MS/xclock@TW.x86_64.prepare.log&quot;</span>,
+    <span class="s2">&quot;request_id&quot;</span>: <span class="s2">&quot;b88becf6-f04f-11eb-8cff-06be1098538e&quot;</span>,
+    <span class="s2">&quot;response_code&quot;</span>: <span class="s2">&quot;package build succeeded&quot;</span>,
+    <span class="s2">&quot;schema_version&quot;</span>: <span class="m">0</span>.1,
+    <span class="s2">&quot;solver_file&quot;</span>: <span class="s2">&quot;/var/tmp/CB/projects/MS/xclock@TW.x86_64.solver.json&quot;</span>
+<span class="o">}</span>
+</pre></div>
+</div>
+<p>As you can see from this information there are the three Cloud Builder
+services <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-scheduler</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-prepare</span></code> and <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-run</span></code> that worked
+on your package and built it.</p>
+</li>
+<li><p><strong>Fetch package binaries</strong></p>
+<p>For fetching the built binaries <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-ctl</span></code> needs to be called
+as follows:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>cb-ctl --get-binaries xclock --project-path MS <span class="se">\</span>
+    --arch x86_64 --dist TW --timeout <span class="m">5</span> <span class="se">\</span>
+    --target-dir my-xclock
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The above call actually created a request to the info request
+queue which will be read by any runner. It can happen that
+different runners has built the same package. The current
+implementation fetches the latest built binaries available
+in the backend.</p>
+<p>This behavior is intentional and applies to all <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-ctl</span></code> commands
+which fetches information from the system that are not connected
+to a specific <code class="xref py py-obj docutils literal notranslate"><span class="pre">request_id</span></code></p>
+</div>
+</li>
+</ol>
+<p>Congrats, you should have picked out the first useful data from
+Cloud Builder. Learn how to automate certain parts of the system like it is
+explained in <a class="reference internal" href="auto_rebuild_on_source_change.html#auto-rebuild-on-source-change"><span class="std std-ref">Auto Rebuild on Package Source Change</span></a> or
+<a class="reference internal" href="auto_rebuild_on_build_dependencies.html#auto-rebuild-on-build-dependencies"><span class="std std-ref">Auto Rebuild on Package Build Dependency Changes</span></a></p>
 </div>
 
 
@@ -218,7 +345,7 @@
           </div>
           <footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="commands.html" class="btn btn-neutral float-right" title="Cloud Builder Services" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="auto_rebuild_on_source_change.html" class="btn btn-neutral float-right" title="Auto Rebuild on Package Source Change" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
         <a href="runner_setup.html" class="btn btn-neutral float-left" title="Runner Setup" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 

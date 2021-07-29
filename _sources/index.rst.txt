@@ -17,6 +17,9 @@
    kafka_broker_setup
    runner_setup
    request_package_build
+   auto_rebuild_on_source_change
+   auto_rebuild_on_build_dependencies
+   collect_and_build_project_repos
    commands
 
 .. sidebar:: Links

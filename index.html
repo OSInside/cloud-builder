@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Cloud Builder Documentation &mdash; Cloud Builder 0.1.17 documentation</title>
+  <title>Cloud Builder Documentation &mdash; Cloud Builder 0.1.18 documentation</title>
   
 
   
@@ -99,7 +99,10 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="runner_setup.html">Runner Setup</a></li>
 <li class="toctree-l1"><a class="reference internal" href="request_package_build.html">Request a Package Build</a></li>
-<li class="toctree-l1"><a class="reference internal" href="commands.html">Cloud Builder Services</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="auto_rebuild_on_source_change.html">Auto Rebuild on Package Source Change</a></li>
+<li class="toctree-l1"><a class="reference internal" href="auto_rebuild_on_build_dependencies.html">Auto Rebuild on Package Build Dependency Changes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="collect_and_build_project_repos.html">Collect and Build Project Repos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="commands.html">Overview Cloud Builder Services</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="commands/cb_fetch.html">cb-fetch</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="commands/cb_fetch.html#synopsis">SYNOPSIS</a></li>
 <li class="toctree-l3"><a class="reference internal" href="commands/cb_fetch.html#description">DESCRIPTION</a></li>
@@ -211,7 +214,7 @@
 <h1>Cloud Builder Documentation<a class="headerlink" href="#cloud-builder-documentation" title="Permalink to this headline">¶</a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Cloud Builder in version 0.1.17 is a new project in its early days.
+<p>Cloud Builder in version 0.1.18 is a new project in its early days.
 Some parts are still in development and some parts are still
 missing. For details on the current state or the roadmap to
 v1.x.x just reach out.</p>
@@ -223,7 +226,10 @@ v1.x.x just reach out.</p>
 <li class="toctree-l1"><a class="reference internal" href="kafka_broker_setup.html">Kafka Message Broker Setup</a></li>
 <li class="toctree-l1"><a class="reference internal" href="runner_setup.html">Runner Setup</a></li>
 <li class="toctree-l1"><a class="reference internal" href="request_package_build.html">Request a Package Build</a></li>
-<li class="toctree-l1"><a class="reference internal" href="commands.html">Cloud Builder Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="auto_rebuild_on_source_change.html">Auto Rebuild on Package Source Change</a></li>
+<li class="toctree-l1"><a class="reference internal" href="auto_rebuild_on_build_dependencies.html">Auto Rebuild on Package Build Dependency Changes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="collect_and_build_project_repos.html">Collect and Build Project Repos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="commands.html">Overview Cloud Builder Services</a></li>
 </ul>
 </div>
 <div class="sidebar">
@@ -254,7 +260,7 @@ are a matching criteria, this project might be interesting.</p>
 </div>
 <div class="section" id="design-aspects">
 <h2>Design Aspects<a class="headerlink" href="#design-aspects" title="Permalink to this headline">¶</a></h2>
-<p>The <a class="reference internal" href="commands.html#services"><span class="std std-ref">Cloud Builder Services</span></a> are designed to run in cloud environments and
+<p>The <a class="reference internal" href="commands.html#services"><span class="std std-ref">Overview Cloud Builder Services</span></a> are designed to run in cloud environments and
 utilizes <em>message broker</em> and <em>VM instances</em> cloud services to operate.
 In general the environment to run the Cloud Builder services is not restricted
 to a specific framework. However, for the sake of this documentation
