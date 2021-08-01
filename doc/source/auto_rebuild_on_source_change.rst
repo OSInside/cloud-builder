@@ -61,7 +61,7 @@ on the {CB} info response messages as follows:
        --timeout 200
 
 In case cb-fetch created a new package build request, information
-like the following example shows will be retrieved:
+like in the following example will be provided:
 
 .. code:: bash
 
