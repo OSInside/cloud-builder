@@ -29,6 +29,7 @@ usage: cb-ctl -h | --help
            [--timeout=<time_sec>]
        cb-ctl --watch
            [--filter-request-id=<uuid>]
+           [--filter-service-name=<name>]
            [--timeout=<time_sec>]
 
 options:
@@ -78,6 +79,15 @@ options:
 
     --filter-request-id=<uuid>
         Filter messages by given request UUID
+
+    --filter-service-name=<name>
+        Filter messages by given service name. Allowed
+        service names are:
+        * cb-fetch
+        * cb-info
+        * cb-run
+        * cb-prepare
+        * cb-scheduler
 
     --timeout=<time_sec>
         Wait time_sec seconds of inactivity on the message
@@ -195,6 +205,12 @@ def main() -> None:
                     args['--filter-request-id']
                 )
             )
+        elif args['--filter-service-name']:
+            _response_reader(
+                broker, timeout, watch_filter_service_name(
+                    args['--filter-service-name']
+                )
+            )
         else:
             _response_reader(
                 broker, timeout, watch_filter_none()
@@ -289,6 +305,29 @@ def fetch_binaries(
                     target_dir
                 ]
             )
+
+
+def watch_filter_service_name(service_name: str) -> Callable:
+    """
+    Create callback closure for _response_reader and
+    filter responses by given service name
+
+    :param str service_name:
+        one of cb-fetch, cb-info, cb-run, cb-prepare, cb-scheduler
+
+    :rtype: Callable
+    """
+    def func(response: Dict) -> None:
+        service_id = {
+            'cb-fetch': 'CBFetch',
+            'cb-info': 'CBInfo',
+            'cb-run': 'CBRun',
+            'cb-prepare': 'CBPrepare',
+            'cb-scheduler': 'CBScheduler'
+        }
+        if response['identity'].startswith(service_id[service_name]):
+            CBDisplay.print_json(response)
+    return func
 
 
 def watch_filter_request_id(request_id: str) -> Callable:
