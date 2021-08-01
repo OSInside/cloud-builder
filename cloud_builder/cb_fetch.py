@@ -124,7 +124,9 @@ def update_project() -> None:
                     os.path.basename(changed_file)
                 )
             else:
-                changed_packages[package_dir] = []
+                changed_packages[package_dir] = [
+                    os.path.basename(changed_file)
+                ]
     Command.run(
         ['git', '-C', Defaults.get_runner_project_dir(), 'pull']
     )
@@ -134,7 +136,9 @@ def update_project() -> None:
     for package_source_path in sorted(changed_packages.keys()):
         log = CBCloudLogger('CBFetch', os.path.basename(package_source_path))
         package_config = CBPackageMetaData.get_package_config(
-            package_source_path, log, CBIdentity.get_request_id()
+            os.path.join(
+                Defaults.get_runner_project_dir(), package_source_path
+            ), log, CBIdentity.get_request_id()
         )
         if package_config:
             status_flags = Defaults.get_status_flags()

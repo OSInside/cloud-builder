@@ -19,6 +19,7 @@ SYNOPSIS
        [--timeout=<time_sec>]
    cb-ctl --watch
        [--filter-request-id=<uuid>]
+       [--filter-service-name=<name>]
        [--timeout=<time_sec>]
 
 DESCRIPTION
@@ -89,6 +90,17 @@ OPTIONS
 --filter-request-id=<uuid>
 
   Filter messages by given request UUID
+
+--filter-service-name=<name>
+
+  Filter messages by given service name. Allowed
+  service names are:
+
+  * cb-fetch
+  * cb-info
+  * cb-run
+  * cb-prepare
+  * cb-scheduler
 
 --timeout=<time_sec>
 

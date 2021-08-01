@@ -228,7 +228,8 @@ def build_package(
     )
     status_flags = Defaults.get_status_flags()
     if request['action'] == status_flags.package_changed or \
-       request['action'] == status_flags.package_and_meta_changed:
+       request['action'] == status_flags.package_and_meta_changed or \
+       request['action'] == status_flags.package_update_request:
         log.info('Update project git source repo prior build')
         Command.run(
             ['git', '-C', Defaults.get_runner_project_dir(), 'pull']

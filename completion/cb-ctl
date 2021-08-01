@@ -24,7 +24,7 @@ function _cbctl {
                 return 0
                 ;;
             "--watch")
-                __comp_reply "--filter-request-id --timeout"
+                __comp_reply "--filter-request-id --filter-service-name --timeout"
                 return 0
                 ;;
         esac
