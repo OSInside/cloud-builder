@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>cb-ctl &mdash; Cloud Builder 0.1.18 documentation</title>
+  <title>cb-ctl &mdash; Cloud Builder 0.1.19 documentation</title>
   
 
   
@@ -229,6 +229,7 @@ cb-ctl --get-binaries<span class="o">=</span>&lt;package&gt; --project-path<span
     <span class="o">[</span>--timeout<span class="o">=</span>&lt;time_sec&gt;<span class="o">]</span>
 cb-ctl --watch
     <span class="o">[</span>--filter-request-id<span class="o">=</span>&lt;uuid&gt;<span class="o">]</span>
+    <span class="o">[</span>--filter-service-name<span class="o">=</span>&lt;name&gt;<span class="o">]</span>
     <span class="o">[</span>--timeout<span class="o">=</span>&lt;time_sec&gt;<span class="o">]</span>
 </pre></div>
 </div>
@@ -286,6 +287,17 @@ See the above structure example</p>
 </dd>
 <dt><kbd><span class="option">--filter-request-id=<var>&lt;uuid&gt;</var></span></kbd></dt>
 <dd><p>Filter messages by given request UUID</p>
+</dd>
+<dt><kbd><span class="option">--filter-service-name=<var>&lt;name&gt;</var></span></kbd></dt>
+<dd><p>Filter messages by given service name. Allowed
+service names are:</p>
+<ul class="simple">
+<li><p>cb-fetch</p></li>
+<li><p>cb-info</p></li>
+<li><p>cb-run</p></li>
+<li><p>cb-prepare</p></li>
+<li><p>cb-scheduler</p></li>
+</ul>
 </dd>
 <dt><kbd><span class="option">--timeout=<var>&lt;time_sec&gt;</var></span></kbd></dt>
 <dd><p>Wait time_sec seconds of inactivity on the message
