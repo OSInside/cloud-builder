@@ -51,12 +51,12 @@ are a matching criteria, this project might be interesting.
 Design Aspects
 --------------
 
-The :ref:`services` are designed to run in cloud environments and
-utilizes *message broker* and *VM instances* cloud services to operate.
-In general the environment to run the {CB} services is not restricted
-to a specific framework. However, for the sake of this documentation
-and for my understanding of a production ready pipeline the following
-cloud and services will be used:
+The {CB} services introduced in :ref:`services` are designed to run in
+cloud environments and utilizes *message broker* and *VM instances* cloud
+services to operate. In general the environment to run the {CB} services is
+not restricted to a specific framework. However, for the sake of this
+documentation and for my understanding of a production ready pipeline the
+following cloud and services will be used:
 
 Amazon EC2:
   To let {CB} services run, instances in EC2 are used
@@ -64,8 +64,8 @@ Amazon EC2:
 Amazon MSK:
   {CB} services uses the Apacke Kafka message broker to communicate
   for request and response information. From a {CB} implementation
-  perspective other brokers like RabbitMQ could be easily added via
-  a new interface class. However, it depends on the broker features
+  perspective other brokers could be easily added via a new interface
+  class. However, it depends on the broker features
   if it makes sense to use this message broker together with {CB}.
   Apacke Kafka was choosen because it allows for the
   *Publish/Subscribe* mode and for the *Shared Queue* mode in a
@@ -77,7 +77,9 @@ Git:
   The package sources and all {CB} metadata must be stored in a git
   repository and the {CB} services fetches information from there
   as needed. The idea behind this is that package sources and metadata
-  is treated like code and git is great in managing code.
+  is treated like code and git is great in managing code. The history
+  in Git allows to track any information about changes in the life
+  time of a package.
 
 Learn how to setup the infrastructure to start with {CB}
 :ref:`infrastructure-setup`
