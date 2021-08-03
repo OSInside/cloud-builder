@@ -241,8 +241,8 @@ def build_package(
     package_request.set_package_build_request(
         _get_package_path(project_path, package),
         arch, dist, runner_group,
-        status_flags.package_and_meta_changed if clean_buildroot else
-        status_flags.package_update_request
+        status_flags.package_rebuild_clean if clean_buildroot else
+        status_flags.package_rebuild
     )
     broker.send_package_request(package_request)
     CBDisplay.print_json(package_request.get_data())
