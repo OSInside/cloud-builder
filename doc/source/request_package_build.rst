@@ -27,7 +27,7 @@ the `MS` project as follows:
 
       [ INFO    ]: 09:31:15 | Message successfully sent to: suse
       {
-          "action": "fetch service update request scheduled",
+          "action": "package rebuild requested",
           "arch": "x86_64",
           "dist": "TW",
           "package": "projects/MS/xclock",

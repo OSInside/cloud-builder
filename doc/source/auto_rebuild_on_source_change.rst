@@ -72,7 +72,7 @@ like in the following example will be provided:
        "message": "Package update request scheduled",
        "package": "projects/MS/xclock",
        "request_id": "d309d5d2-f2e0-11eb-9538-06be1098538e",
-       "response_code": "fetch service update request scheduled",
+       "response_code": "package rebuild due to source change",
        "schema_version": 0.1
    }
 
