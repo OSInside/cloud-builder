@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Cloud Builder Documentation &mdash; Cloud Builder 0.1.20 documentation</title>
+  <title>Cloud Builder Documentation &mdash; Cloud Builder 0.1.21 documentation</title>
   
 
   
@@ -214,7 +214,7 @@
 <h1>Cloud Builder Documentation<a class="headerlink" href="#cloud-builder-documentation" title="Permalink to this headline">¶</a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Cloud Builder in version 0.1.20 is a new project in its early days.
+<p>Cloud Builder in version 0.1.21 is a new project in its early days.
 Some parts are still in development and some parts are still
 missing. For details on the current state or the roadmap to
 v1.x.x just reach out.</p>
@@ -260,19 +260,19 @@ are a matching criteria, this project might be interesting.</p>
 </div>
 <div class="section" id="design-aspects">
 <h2>Design Aspects<a class="headerlink" href="#design-aspects" title="Permalink to this headline">¶</a></h2>
-<p>The <a class="reference internal" href="commands.html#services"><span class="std std-ref">Overview Cloud Builder Services</span></a> are designed to run in cloud environments and
-utilizes <em>message broker</em> and <em>VM instances</em> cloud services to operate.
-In general the environment to run the Cloud Builder services is not restricted
-to a specific framework. However, for the sake of this documentation
-and for my understanding of a production ready pipeline the following
-cloud and services will be used:</p>
+<p>The Cloud Builder services introduced in <a class="reference internal" href="commands.html#services"><span class="std std-ref">Overview Cloud Builder Services</span></a> are designed to run in
+cloud environments and utilizes <em>message broker</em> and <em>VM instances</em> cloud
+services to operate. In general the environment to run the Cloud Builder services is
+not restricted to a specific framework. However, for the sake of this
+documentation and for my understanding of a production ready pipeline the
+following cloud and services will be used:</p>
 <dl class="simple">
 <dt>Amazon EC2:</dt><dd><p>To let Cloud Builder services run, instances in EC2 are used</p>
 </dd>
 <dt>Amazon MSK:</dt><dd><p>Cloud Builder services uses the Apacke Kafka message broker to communicate
 for request and response information. From a Cloud Builder implementation
-perspective other brokers like RabbitMQ could be easily added via
-a new interface class. However, it depends on the broker features
+perspective other brokers could be easily added via a new interface
+class. However, it depends on the broker features
 if it makes sense to use this message broker together with Cloud Builder.
 Apacke Kafka was choosen because it allows for the
 <em>Publish/Subscribe</em> mode and for the <em>Shared Queue</em> mode in a
@@ -283,7 +283,9 @@ across the available runner instances.</p>
 <dt>Git:</dt><dd><p>The package sources and all Cloud Builder metadata must be stored in a git
 repository and the Cloud Builder services fetches information from there
 as needed. The idea behind this is that package sources and metadata
-is treated like code and git is great in managing code.</p>
+is treated like code and git is great in managing code. The history
+in Git allows to track any information about changes in the life
+time of a package.</p>
 </dd>
 </dl>
 <p>Learn how to setup the infrastructure to start with Cloud Builder

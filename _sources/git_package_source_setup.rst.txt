@@ -41,8 +41,8 @@ Understanding the project structure
 -----------------------------------
 
 By convention the {CB} package sources need to follow a
-certain files/directory structure which is shwon in the
-git clone from above. In general the project structure
+certain files/directory structure which is provided in the
+reference `git clone` from above. In general the project structure
 is aligned to the following layout:
 
 .. code:: bash
