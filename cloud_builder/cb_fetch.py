@@ -142,12 +142,12 @@ def update_project() -> None:
         )
         if package_config:
             status_flags = Defaults.get_status_flags()
-            request_action = status_flags.package_changed
+            request_action = status_flags.package_source_rebuild
             buildroot_config = Defaults.get_cloud_builder_kiwi_file_name()
             if buildroot_config in changed_packages[package_source_path]:
                 # buildroot setup is part of changes list. This
                 # triggers a new build of the package buildroot
-                request_action = status_flags.package_and_meta_changed
+                request_action = status_flags.package_source_rebuild_clean
             for target in package_config.get('distributions') or []:
                 package_request = CBPackageRequest()
                 package_request.set_package_build_request(
@@ -161,7 +161,7 @@ def update_project() -> None:
                 )
                 response.set_package_update_request_response(
                     message='Package update request scheduled',
-                    response_code=status_flags.package_update_request,
+                    response_code=request_action,
                     package=request['package'],
                     arch=request['arch'],
                     dist=request['dist']

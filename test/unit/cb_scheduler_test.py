@@ -134,13 +134,13 @@ class TestCBScheduler:
         broker = Mock()
         mock_CBCloudLogger.return_value = log
         status_flags = Mock(
-            package_and_meta_changed='package source and its meta changed'
+            package_rebuild_clean='package rebuild on new buildroot'
         )
         mock_Defaults.get_status_flags.return_value = status_flags
         mock_Defaults.get_runner_project_dir.return_value = \
             'cloud_builder_sources'
         request = {
-            'action': status_flags.package_and_meta_changed,
+            'action': status_flags.package_rebuild_clean,
             'arch': 'x86_64',
             'dist': 'TW',
             'package': 'vim',

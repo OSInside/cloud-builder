@@ -227,16 +227,18 @@ def build_package(
         request, log, broker
     )
     status_flags = Defaults.get_status_flags()
-    if request['action'] == status_flags.package_changed or \
-       request['action'] == status_flags.package_and_meta_changed or \
-       request['action'] == status_flags.package_update_request:
+    if request['action'] == status_flags.package_rebuild or \
+       request['action'] == status_flags.package_rebuild_clean or \
+       request['action'] == status_flags.package_source_rebuild or \
+       request['action'] == status_flags.package_source_rebuild_clean:
         log.info('Update project git source repo prior build')
         Command.run(
             ['git', '-C', Defaults.get_runner_project_dir(), 'pull']
         )
 
     buildroot_rebuild = False
-    if request['action'] == status_flags.package_and_meta_changed:
+    if request['action'] == status_flags.package_source_rebuild_clean or \
+       request['action'] == status_flags.package_rebuild_clean:
         buildroot_rebuild = True
 
     log.info('Starting build process')
