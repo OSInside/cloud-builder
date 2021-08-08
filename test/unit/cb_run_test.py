@@ -25,7 +25,7 @@ class TestCBRun:
     ):
         sys.argv = [
             sys.argv[0],
-            '--root', '/var/tmp/CB/project/package@dist.arch',
+            '--root', '/var/tmp/CB/projects/package@dist.arch',
             '--request-id', 'uuid'
         ]
         log = Mock()
@@ -37,28 +37,28 @@ class TestCBRun:
         main()
         mock_Privileges_check_for_root_permissions.assert_called_once_with()
         mock_os_system.assert_called_once_with(
-            'chroot /var/tmp/CB/project/package@dist.arch bash /run.sh'
+            'chroot /var/tmp/CB/projects/package@dist.arch bash /run.sh'
         )
         mock_Command_run.assert_called_once_with(
             [
                 'find',
-                '/var/tmp/CB/project/package@dist.arch/home/abuild',
+                '/var/tmp/CB/projects/package@dist.arch/home/abuild',
                 '-name', '*.rpm'
             ]
         )
         response.set_package_build_response.assert_called_once_with(
             message='Package build finished',
             response_code='package build succeeded',
-            package='project/package',
-            prepare_log_file='/var/tmp/CB/project/package@dist.arch.prepare.log',
-            log_file='/var/tmp/CB/project/package@dist.arch.build.log',
-            solver_file='/var/tmp/CB/project/package@dist.arch.solver.json',
+            package='projects/package',
+            prepare_log_file='/var/tmp/CB/projects/package@dist.arch.prepare.log',
+            log_file='/var/tmp/CB/projects/package@dist.arch.build.log',
+            solver_file='/var/tmp/CB/projects/package@dist.arch.solver.json',
             binary_packages=['binaries'],
             exit_code=0
         )
         log.response.assert_called_once_with(
             response, mock_CBMessageBroker.new.return_value,
-            '/var/tmp/CB/project/package@dist.arch.result.yml'
+            '/var/tmp/CB/projects/package@dist.arch.result.yml'
         )
 
     @patch('cloud_builder.cb_run.Privileges.check_for_root_permissions')
@@ -74,7 +74,7 @@ class TestCBRun:
     ):
         sys.argv = [
             sys.argv[0],
-            '--root', '/var/tmp/CB/project/package@dist.arch',
+            '--root', '/var/tmp/CB/projects/package@dist.arch',
             '--request-id', 'uuid'
         ]
         response = Mock()
@@ -85,10 +85,10 @@ class TestCBRun:
         response.set_package_build_response.assert_called_once_with(
             message='Package build finished',
             response_code='package build failed',
-            package='project/package',
-            prepare_log_file='/var/tmp/CB/project/package@dist.arch.prepare.log',
-            log_file='/var/tmp/CB/project/package@dist.arch.build.log',
-            solver_file='/var/tmp/CB/project/package@dist.arch.solver.json',
+            package='projects/package',
+            prepare_log_file='/var/tmp/CB/projects/package@dist.arch.prepare.log',
+            log_file='/var/tmp/CB/projects/package@dist.arch.build.log',
+            solver_file='/var/tmp/CB/projects/package@dist.arch.solver.json',
             binary_packages=[],
             exit_code=0xff
         )
