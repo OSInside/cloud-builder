@@ -107,6 +107,9 @@ def main() -> None:
     if exit_code != 0:
         status = status_flags.package_build_failed
     else:
+        # NOTE: currently we are looking for rpm results only
+        # on support of building other package formats the
+        # following code needs to be updated
         status = status_flags.package_build_succeeded
         find_call = Command.run(
             [
