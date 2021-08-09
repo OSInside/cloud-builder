@@ -140,7 +140,7 @@ class TestCBInfo:
     def test_get_result_modification_time(self):
         assert format(
             get_result_modification_time('../data/ref_timestamp')
-        ) == '2021-08-08 16:44:56.537219'
+        ) == '2021-08-09 13:53:51.558574'
 
     def test_get_package_status(self):
         status_flags = Defaults.get_status_flags()
