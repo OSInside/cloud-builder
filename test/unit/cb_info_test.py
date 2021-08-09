@@ -137,10 +137,15 @@ class TestCBInfo:
         )
         log.info_response.assert_called_once_with(response, broker)
 
-    def test_get_result_modification_time(self):
-        assert format(
-            get_result_modification_time('../data/ref_timestamp')
-        ) == '2021-08-09 13:53:51.558574'
+    @patch('cloud_builder.cb_info.datetime')
+    @patch('os.path.getmtime')
+    def test_get_result_modification_time(
+        self, mock_os_path_getmtime, mock_datetime
+    ):
+        get_result_modification_time('filename')
+        mock_datetime.utcfromtimestamp.assert_called_once_with(
+            mock_os_path_getmtime.return_value
+        )
 
     def test_get_package_status(self):
         status_flags = Defaults.get_status_flags()
