@@ -1,41 +1,57 @@
-function _cbctl {
-    local cur prev
-    _get_comp_words_by_ref cur prev
-    for comp in $prev;do
-        case "$comp" in
-            "--build")
-                __comp_reply "--project-path --arch --dist --runner-group --clean"
-                return 0
-                ;;
-            "--build-dependencies")
-                __comp_reply "--project-path --arch --dist --timeout"
-                return 0
-                ;;
-            "--build-log")
-                __comp_reply "--project-path --arch --dist --timeout"
-                return 0
-                ;;
-            "--build-info")
-                __comp_reply "--project-path --arch --dist --timeout"
-                return 0
-                ;;
-            "--get-binaries")
-                __comp_reply "--project-path --arch --dist --target-dir --timeout"
-                return 0
-                ;;
-            "--watch")
-                __comp_reply "--filter-request-id --filter-service-name --timeout"
-                return 0
-                ;;
-        esac
+#!/bin/bash
+
+function getCBCommand {
+    for item in ${COMP_LINE}; do
+        if [[ $item =~ ^-.* ]];then
+            echo "${item}"
+            return
+        fi
     done
+}
+
+function _cbctl {
+    local cur prev cword cmd
+    _init_completion || return
+    _get_comp_words_by_ref cur prev
+
+    if [ "${cword}" -gt 1 ];then
+        cmd=$(getCBCommand)
+        for comp in $prev $cmd;do
+            case "$comp" in
+                "--build")
+                    __comp_reply "--project-path --arch --dist --runner-group --clean"
+                    return 0
+                    ;;
+                "--build-dependencies")
+                    __comp_reply "--project-path --arch --dist --timeout"
+                    return 0
+                    ;;
+                "--build-log")
+                    __comp_reply "--project-path --arch --dist --timeout"
+                    return 0
+                    ;;
+                "--build-info")
+                    __comp_reply "--project-path --arch --dist --timeout"
+                    return 0
+                    ;;
+                "--get-binaries")
+                    __comp_reply "--project-path --arch --dist --target-dir --timeout"
+                    return 0
+                    ;;
+                "--watch")
+                    __comp_reply "--filter-request-id --filter-service-name --timeout"
+                    return 0
+                    ;;
+            esac
+        done
+    fi
     __comp_reply "--help --version --build --build-dependencies --build-log --build-info --get-binaries --watch"
     return 0
 }
 
 function __comp_reply {
-    word_list=$@
-    COMPREPLY=($(compgen -W "$word_list" -- ${cur}))
+    word_list=$*
+    readarray -t COMPREPLY < <(compgen -W "$word_list" -- "${cur}")
 }
 
 complete -o bashdefault -o default -o filenames -F _cbctl cb-ctl
