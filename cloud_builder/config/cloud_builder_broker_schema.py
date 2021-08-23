@@ -24,6 +24,27 @@ cloud_builder_broker_schema = {
                 'required': True,
                 'type': 'string',
                 'nullable': False
+            },
+            'tls': {
+                'required': False,
+                'type': 'dict',
+                'schema': {
+                    'ssl_cafile': {
+                        'required': True,
+                        'type': 'string',
+                        'nullable': False
+                    },
+                    'ssl_certfile': {
+                        'required': True,
+                        'type': 'string',
+                        'nullable': False
+                    },
+                    'ssl_keyfile': {
+                        'required': True,
+                        'type': 'string',
+                        'nullable': False
+                    }
+                }
             }
         }
     },

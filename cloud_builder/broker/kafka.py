@@ -60,6 +60,11 @@ class CBMessageBrokerKafka(CBMessageBrokerBase):
                 )
             )
         self.kafka_host = self.config['broker']['host']
+        self.tls = self.config['broker'].get('tls')
+        if self.tls:
+            self.kafka_ca = self.tls['ssl_cafile']
+            self.kafka_cert = self.tls['ssl_certfile']
+            self.kafka_key = self.tls['ssl_keyfile']
         self.consumer: KafkaConsumer = None
         self.producer: KafkaProducer = None
 
@@ -204,9 +209,15 @@ class CBMessageBrokerKafka(CBMessageBrokerBase):
         """
         if not self.producer:
             try:
-                self.producer = KafkaProducer(
-                    bootstrap_servers=self.kafka_host
-                )
+                producer_setup = {
+                    'bootstrap_servers': self.kafka_host
+                }
+                if self.tls:
+                    producer_setup['security_protocol'] = 'SSL'
+                    producer_setup['ssl_cafile'] = self.kafka_ca
+                    producer_setup['ssl_certfile'] = self.kafka_cert
+                    producer_setup['ssl_keyfile'] = self.kafka_key
+                self.producer = KafkaProducer(**producer_setup)
             except Exception as issue:
                 raise CBKafkaProducerException(
                     f'Creating kafka producer failed with: {issue!r}'
@@ -224,15 +235,20 @@ class CBMessageBrokerKafka(CBMessageBrokerBase):
         """
         if not self.consumer:
             try:
-                self.consumer = KafkaConsumer(
-                    topic,
-                    auto_offset_reset='earliest',
-                    enable_auto_commit=False,
-                    max_poll_records=1,
-                    bootstrap_servers=self.kafka_host,
-                    client_id=client,
-                    group_id=group
-                )
+                consumer_setup = {
+                    'auto_offset_reset': 'earliest',
+                    'enable_auto_commit': False,
+                    'max_poll_records': 1,
+                    'bootstrap_servers': self.kafka_host,
+                    'client_id': client,
+                    'group_id': group
+                }
+                if self.tls:
+                    consumer_setup['security_protocol'] = 'SSL'
+                    consumer_setup['ssl_cafile'] = self.kafka_ca
+                    consumer_setup['ssl_certfile'] = self.kafka_cert
+                    consumer_setup['ssl_keyfile'] = self.kafka_key
+                self.consumer = KafkaConsumer(topic, **consumer_setup)
             except Exception as issue:
                 raise CBKafkaConsumerException(
                     f'Creating kafka consumer failed with: {issue!r}'

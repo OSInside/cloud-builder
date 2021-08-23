@@ -91,6 +91,13 @@ class TestCBMessageBrokerKafka:
             'cb-info-response', yaml.dump(response.get_data()).encode()
         )
         producer.flush.assert_called_once_with()
+        mock_KafkaProducer.assert_called_once_with(
+            bootstrap_servers='URI:9092',
+            security_protocol='SSL',
+            ssl_cafile='ca_file',
+            ssl_certfile='cert_file',
+            ssl_keyfile='key_file'
+        )
 
     def test_acknowledge(self):
         self.kafka.consumer = Mock()
@@ -119,6 +126,19 @@ class TestCBMessageBrokerKafka:
             return_value=mock_poll_result
         )
         assert self.kafka.read('topic') == [ConsumerRecord]
+        mock_KafkaConsumer.assert_called_once_with(
+            'topic',
+            auto_offset_reset='earliest',
+            enable_auto_commit=False,
+            max_poll_records=1,
+            bootstrap_servers='URI:9092',
+            client_id='cb-client',
+            group_id='cb-group',
+            security_protocol='SSL',
+            ssl_cafile='ca_file',
+            ssl_certfile='cert_file',
+            ssl_keyfile='key_file'
+        )
 
     def test_on_send_success(self):
         record_metadata = Mock()
