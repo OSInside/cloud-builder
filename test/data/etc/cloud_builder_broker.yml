@@ -1,4 +1,8 @@
 broker:
   host: URI:9092
+  tls:
+    ssl_cafile: ca_file
+    ssl_certfile: cert_file
+    ssl_keyfile: key_file
 runner:
   group: 'fedora'
