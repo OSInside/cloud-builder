@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Auto Rebuild on Package Build Dependency Changes &mdash; Cloud Builder 0.1.23 documentation</title>
+  <title>Auto Rebuild on Package Build Dependency Changes &mdash; Cloud Builder 0.1.24 documentation</title>
   
 
   
@@ -216,6 +216,28 @@
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>I need to implement the cb-depsolver service first</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Design Idea</p>
+<ol class="arabic simple">
+<li><p>Use libsatsolver via the libsolv python binding as
+implemented in the KIWI API and command
+<code class="xref py py-obj docutils literal notranslate"><span class="pre">kiwi</span> <span class="pre">image</span> <span class="pre">info</span> <span class="pre">--description</span> <span class="pre">cloud_builder.kiwi</span> <span class="pre">--resolve-package-list</span></code>
+Solving over the <code class="xref py py-obj docutils literal notranslate"><span class="pre">cloud_builder.kiwi</span></code> file provides the dependency
+tree for all package build required packages (BuildRequires).</p></li>
+<li><p>Create a shasum over the dependency result from step 1</p></li>
+<li><p>Compare the shasum from the solver result with a former solver
+result and send a package build request to the message broker
+if there was a change</p></li>
+<li><p>Periodically run the solver operations over all packages.
+This is a CPU intensive task.</p></li>
+</ol>
+<p>The detection of a dependency change via the shasum is the simplest
+solution. Maybe there could be a more fine grained detection
+mechanism. The dependency result would contain all information
+to apply for other ways to detect a dependency change that should
+trigger a rebuild</p>
 </div>
 </div>
 

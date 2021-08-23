@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Collect and Build Project Repos &mdash; Cloud Builder 0.1.23 documentation</title>
+  <title>Collect and Build Project Repos &mdash; Cloud Builder 0.1.24 documentation</title>
   
 
   
@@ -216,6 +216,24 @@
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>I need to implement the cb-collector service first</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Design Idea</p>
+<ol class="arabic simple">
+<li><p>Send info request for each package in a project for all
+dists and archs as configured in <code class="xref py py-obj docutils literal notranslate"><span class="pre">cloud_builder.yml</span></code></p></li>
+<li><p>Fetch the package(s) and build up the same tree as the
+package is organized in the git</p></li>
+<li><p>After fetching all packages from a project create
+a repo from it using e.g <code class="xref py py-obj docutils literal notranslate"><span class="pre">createrepo</span></code> for rpm packages</p></li>
+</ol>
+<p>Periodically run this for each project in a threading
+daemon concept</p>
+<ul class="simple">
+<li><p>Setup an apache server to serve the repo structure</p></li>
+<li><p>Attach a volume to the instance to store the repos</p></li>
+</ul>
 </div>
 </div>
 
