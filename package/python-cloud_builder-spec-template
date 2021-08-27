@@ -71,6 +71,8 @@ cluster in cloud(VM) or container clusters.
 Summary:        CB - Cloud Builder
 Group:          Development/Languages/Python
 Requires:       git
+Requires:       rsync
+Requires:       createrepo_c
 Requires:       python%{python3_pkgversion}-docopt
 Requires:       python%{python3_pkgversion}-kiwi >= 9.21.21
 Requires:       python%{python3_pkgversion}-requests
@@ -105,6 +107,9 @@ python3 setup.py install --prefix=%{_prefix} --root=%{buildroot} %{?is_deb:--ins
 make buildroot=%{buildroot}/ docdir=%{_defaultdocdir}/ install
 
 # Install systemd services
+install -D -m 644 systemd/cb-collect.service \
+    %{buildroot}%{_unitdir}/cb-collect.service
+
 install -D -m 644 systemd/cb-fetch.service \
     %{buildroot}%{_unitdir}/cb-fetch.service
 
@@ -118,7 +123,7 @@ install -D -m 644 systemd/cb-info.service \
     %{buildroot}%{_unitdir}/cb-info.service
 
 # Install config file
-install -D -m 644 sysconfig/cloud_builder \
+install -D -m 644 etc/cloud_builder \
     %{buildroot}%{_sysconfdir}/cloud_builder
 
 %files -n python%{python3_pkgversion}-cloud_builder
@@ -130,6 +135,7 @@ install -D -m 644 sysconfig/cloud_builder \
 %{_unitdir}/cb-fetch-once.service
 %{_unitdir}/cb-scheduler.service
 %{_unitdir}/cb-info.service
+%{_unitdir}/cb-collect.service
 %{_usr}/share/bash-completion/completions/cb-ctl
 %config %{_sysconfdir}/cloud_builder
 %{_bindir}/cb-fetch
@@ -138,5 +144,6 @@ install -D -m 644 sysconfig/cloud_builder \
 %{_bindir}/cb-scheduler
 %{_bindir}/cb-info
 %{_bindir}/cb-ctl
+%{_bindir}/cb-collect
 
 %changelog

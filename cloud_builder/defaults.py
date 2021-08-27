@@ -147,6 +147,17 @@ class Defaults:
         return '/var/tmp/CB'
 
     @staticmethod
+    def get_repo_root() -> str:
+        """
+        Return root path to serve repos
+
+        :return: directory path name
+
+        :rtype: str
+        """
+        return '/srv/www/projects'
+
+    @staticmethod
     def get_status_flags() -> status_flags:
         """
         Return named tuple to represent status information

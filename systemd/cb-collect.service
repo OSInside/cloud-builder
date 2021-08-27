@@ -1,0 +1,13 @@
+[Unit]
+Description=CB Project Collect Service
+After=syslog.target
+Requires=network-online.target
+
+[Service]
+EnvironmentFile=-/etc/cloud_builder
+Type=simple
+Restart=on-failure
+ExecStart=/bin/bash -c 'sudo cb-collect --project ${CB_PROJECT} --timeout ${CB_COLLECT_TIMEOUT} --ssh-pkey ${CB_SSH_PKEY} --ssh-user ${CB_SSH_USER}'
+
+[Install]
+WantedBy=multi-user.target
