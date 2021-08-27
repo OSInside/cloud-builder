@@ -1,0 +1,49 @@
+## Path           : System/Management
+## Description    : Cloud Builder global settings
+## Type           : string
+## Default        : ""
+#
+# Cloud Builder compatible github project with package sources
+#
+CB_PROJECT="https://github.com/OSInside/cloud-builder-packages.git"
+
+## Type:        integer
+## Default:     30
+#
+# Cloud Builder update intervall for package sources
+#
+CB_UPDATE=30
+
+## Type:        integer
+## Default:     10
+#
+# Cloud Builder package limit
+# Build up to CB_PACKAGE_LIMIT packages at the same time
+#
+CB_PACKAGE_LIMIT=10
+
+## Type:        integer
+## Default:     30
+#
+# Cloud Builder package collector wait N seconds of
+# inactivity on the info message broker service before
+# retry to ask for package results
+#
+CB_COLLECT_TIMEOUT=5
+
+## Type           : string
+## Default        : ""
+#
+# Path to the SSH private key used for connecting the
+# runners such that non interactive access to the runners
+# is possible. Sensitive information, please protect from
+# third party access
+#
+CB_SSH_PKEY=""
+
+## Type           : string
+## Default        : ""
+#
+# Name of SSH user to use for accessing runners
+#
+CB_SSH_USER="cb-collect"

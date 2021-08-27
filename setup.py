@@ -39,7 +39,8 @@ config = {
             'cb-run=cloud_builder.cb_run:main',
             'cb-prepare=cloud_builder.cb_prepare:main',
             'cb-fetch=cloud_builder.cb_fetch:main',
-            'cb-scheduler=cloud_builder.cb_scheduler:main'
+            'cb-scheduler=cloud_builder.cb_scheduler:main',
+            'cb-collect=cloud_builder.cb_collect:main'
         ]
     },
     'include_package_data': True,

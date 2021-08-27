@@ -10,7 +10,7 @@ graft cloud_builder/package_request
 graft cloud_builder/response
 graft cloud_builder/utils
 graft systemd
-graft sysconfig
+graft etc
 graft package
 
 include Makefile
