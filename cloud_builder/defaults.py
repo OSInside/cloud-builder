@@ -35,7 +35,8 @@ status_flags = NamedTuple(
         ('package_not_existing', str),
         ('package_metadata_not_existing', str),
         ('package_target_not_configured', str),
-        ('invalid_metadata', str)
+        ('invalid_metadata', str),
+        ('package_local', str)
     ]
 )
 
@@ -170,7 +171,8 @@ class Defaults:
             package_not_existing='package does not exist',
             package_metadata_not_existing='package metadata does not exist',
             invalid_metadata='invalid package metadata',
-            package_target_not_configured='package target not configured'
+            package_target_not_configured='package target not configured',
+            package_local='package build on localhost requested'
         )
 
     @staticmethod

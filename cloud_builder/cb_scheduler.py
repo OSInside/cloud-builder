@@ -202,15 +202,13 @@ def handle_build_requests(poll_timeout: int, running_limit: int) -> None:
                         package_source_path, request, log, broker
                     )
                     if package_config:
-                        build_package(request, broker, package_config)
+                        build_package(request, broker)
     finally:
         log.info('Closing message broker connection')
         broker.close()
 
 
-def build_package(
-    request: Dict, broker: CBMessageBroker, package_config: Dict
-) -> None:
+def build_package(request: Dict, broker: CBMessageBroker) -> None:
     """
     Update the package sources and run the script which
     utilizes cb-prepare/cb-run to build the package for
@@ -218,7 +216,6 @@ def build_package(
 
     :param dict request: yaml dict request record
     :param CBMessageBroker broker: instance of CBMessageBroker
-    :param dict package_config: yaml dict package metadata
     """
     log = CBCloudLogger(
         'CBScheduler', os.path.basename(request['package'])
@@ -397,60 +394,96 @@ def is_request_valid(
     return package_config
 
 
-def create_run_script(request: Dict, buildroot_rebuild: bool) -> str:
+def create_run_script(
+    request: Dict, buildroot_rebuild: bool, local_build: bool = False
+) -> str:
     """
     Create script to call cb-prepare followed by cb-run
     for each configured distribution/arch
 
     :param dict request: yaml dict request record
     :param bool buildroot_rebuild: rebuild buildroot True|False
+    :param bool local_build:
+        create script for build on localhost. This keeps
+        the script in the foreground and prints all information
+        to stdout instead of writing log files
 
     :return: file path name for script
 
     :rtype: str
     """
-    package_source_path = os.path.join(
-        Defaults.get_runner_project_dir(), request['package']
-    )
-    package_root = os.path.join(
-        Defaults.get_runner_package_root(), request['package']
-    )
     dist_profile = f'{request["dist"]}.{request["arch"]}'
-    target_root = f'{package_root}@{dist_profile}'
-    run_script = dedent('''
-        #!/bin/bash
+    if local_build:
+        package_source_path = request['package']
+        package_root = request['package']
+        target_root = f'{package_root}@{dist_profile}'
+        run_script = dedent('''
+            #!/bin/bash
 
-        set -e
+            set -e
 
-        rm -f {target_root}.log
+            if {buildroot_rebuild}; then
+                rm -rf {target_root}
+            fi
 
-        if {buildroot_rebuild}; then
-            rm -rf {target_root}
-        fi
-
-        function finish {{
-            kill $(jobs -p) &>/dev/null
-        }}
-
-        {{
-            trap finish EXIT
             cb-prepare --root {runner_root} \\
                 --package {package_source_path} \\
                 --profile {dist_profile} \\
-                --request-id {request_id}
-            cb-run --root {target_root} &> {target_root}.build.log \\
-                --request-id {request_id}
-        }} &>>{target_root}.run.log &
+                --request-id {request_id} \\
+                --local
+            cb-run --root {target_root} \\
+                --request-id {request_id} \\
+                --local
+        ''').format(
+            buildroot_rebuild='true' if buildroot_rebuild else 'false',
+            runner_root=package_root,
+            package_source_path=package_source_path,
+            dist_profile=dist_profile,
+            target_root=target_root,
+            request_id=request['request_id']
+        )
+    else:
+        package_source_path = os.path.join(
+            Defaults.get_runner_project_dir(), request['package']
+        )
+        package_root = os.path.join(
+            Defaults.get_runner_package_root(), request['package']
+        )
+        target_root = f'{package_root}@{dist_profile}'
+        run_script = dedent('''
+            #!/bin/bash
 
-        echo $! > {target_root}.pid
-    ''').format(
-        buildroot_rebuild='true' if buildroot_rebuild else 'false',
-        runner_root=Defaults.get_runner_package_root(),
-        package_source_path=package_source_path,
-        dist_profile=dist_profile,
-        target_root=target_root,
-        request_id=request['request_id']
-    )
+            set -e
+
+            rm -f {target_root}.log
+
+            if {buildroot_rebuild}; then
+                rm -rf {target_root}
+            fi
+
+            function finish {{
+                kill $(jobs -p) &>/dev/null
+            }}
+
+            {{
+                trap finish EXIT
+                cb-prepare --root {runner_root} \\
+                    --package {package_source_path} \\
+                    --profile {dist_profile} \\
+                    --request-id {request_id}
+                cb-run --root {target_root} &> {target_root}.build.log \\
+                    --request-id {request_id}
+            }} &>>{target_root}.run.log &
+
+            echo $! > {target_root}.pid
+        ''').format(
+            buildroot_rebuild='true' if buildroot_rebuild else 'false',
+            runner_root=Defaults.get_runner_package_root(),
+            package_source_path=package_source_path,
+            dist_profile=dist_profile,
+            target_root=target_root,
+            request_id=request['request_id']
+        )
     package_run_script = f'{target_root}.sh'
     Path.create(os.path.dirname(package_run_script))
     with open(package_run_script, 'w') as script:
