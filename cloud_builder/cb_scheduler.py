@@ -202,15 +202,13 @@ def handle_build_requests(poll_timeout: int, running_limit: int) -> None:
                         package_source_path, request, log, broker
                     )
                     if package_config:
-                        build_package(request, broker, package_config)
+                        build_package(request, broker)
     finally:
         log.info('Closing message broker connection')
         broker.close()
 
 
-def build_package(
-    request: Dict, broker: CBMessageBroker, package_config: Dict
-) -> None:
+def build_package(request: Dict, broker: CBMessageBroker) -> None:
     """
     Update the package sources and run the script which
     utilizes cb-prepare/cb-run to build the package for
@@ -218,7 +216,6 @@ def build_package(
 
     :param dict request: yaml dict request record
     :param CBMessageBroker broker: instance of CBMessageBroker
-    :param dict package_config: yaml dict package metadata
     """
     log = CBCloudLogger(
         'CBScheduler', os.path.basename(request['package'])

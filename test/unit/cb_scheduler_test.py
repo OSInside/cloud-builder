@@ -116,7 +116,7 @@ class TestCBScheduler:
         handle_build_requests(5000, 10)
 
         mock_build_package.assert_called_once_with(
-            request, broker, package_config
+            request, broker
         )
 
         broker.close.assert_called_once_with()
@@ -147,10 +147,7 @@ class TestCBScheduler:
             'request_id': 'c8becd30-a5f6-43a6-a4f4-598ec1115b17',
             'schema_version': 0.1
         }
-        package_config = {
-            'name': 'vim', 'distributions': []
-        }
-        build_package(request, broker, package_config)
+        build_package(request, broker)
         mock_reset_build_if_running.assert_called_once_with(
             request, log, broker
         )
