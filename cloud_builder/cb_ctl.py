@@ -17,6 +17,8 @@
 #
 """
 usage: cb-ctl -h | --help
+       cb-ctl --build-local --dist=<name>
+           [--clean]
        cb-ctl --build=<package> --project-path=<path> --arch=<name> --dist=<name> --runner-group=<name>
            [--clean]
        cb-ctl --build-dependencies=<package> --project-path=<path> --arch=<name> --dist=<name>
@@ -45,6 +47,11 @@ options:
 
         Please note, the root directory is by convention
         a fixed name set to 'projects'
+
+    --build-local
+        Build package from local checkout. The package
+        sources will be looked up from the current working
+        directory
 
     --project-path=<path>
         Project path that points to the package in the git.
@@ -98,9 +105,11 @@ options:
         before building the package
 """
 import os
+import sys
 import yaml
 import json
 import logging
+import platform
 from docopt import docopt
 from datetime import datetime
 from cerberus import Validator
@@ -112,18 +121,22 @@ from cloud_builder.version import __version__
 from cloud_builder.defaults import Defaults
 from cloud_builder.broker import CBMessageBroker
 from cloud_builder.package_request.package_request import CBPackageRequest
+from cloud_builder.package_metadata.package_metadata import CBPackageMetaData
 from cloud_builder.info_request.info_request import CBInfoRequest
 from cloud_builder.utils.display import CBDisplay
 from cloud_builder.config.cbctl_schema import cbctl_config_schema
 from cloud_builder.logger import CBLogger
+from cloud_builder.cb_scheduler import create_run_script
 
 from cloud_builder.exceptions import (
     exception_handler,
     CBConfigFileNotFoundError,
-    CBConfigFileValidationError
+    CBConfigFileValidationError,
+    CBPackageMetadataError
 )
 
 from kiwi.command import Command
+from kiwi.privileges import Privileges
 from kiwi.path import Path
 
 
@@ -141,15 +154,9 @@ def main() -> None:
         options_first=True
     )
 
-    config = get_config()
-
-    broker = CBMessageBroker.new(
-        'kafka', config_file=Defaults.get_broker_config()
-    )
-
     if args['--build']:
         build_package(
-            broker,
+            get_broker(),
             args['--build'],
             args['--project-path'],
             args['--arch'],
@@ -157,29 +164,34 @@ def main() -> None:
             args['--runner-group'],
             bool(args['--clean'])
         )
+    elif args['--build-local']:
+        build_package_local(
+            args['--dist'],
+            bool(args['--clean'])
+        )
     elif args['--build-dependencies']:
         get_build_dependencies(
-            broker,
+            get_broker(),
             args['--build-dependencies'],
             args['--project-path'],
             args['--arch'],
             args['--dist'],
             int(args['--timeout'] or 30),
-            config
+            get_config()
         )
     elif args['--build-log']:
         get_build_log(
-            broker,
+            get_broker(),
             args['--build-log'],
             args['--project-path'],
             args['--arch'],
             args['--dist'],
             int(args['--timeout'] or 30),
-            config
+            get_config()
         )
     elif args['--build-info']:
         get_build_info(
-            broker,
+            get_broker(),
             args['--build-info'],
             args['--project-path'],
             args['--arch'],
@@ -188,33 +200,39 @@ def main() -> None:
         )
     elif args['--get-binaries']:
         fetch_binaries(
-            broker,
+            get_broker(),
             args['--get-binaries'],
             args['--project-path'],
             args['--arch'],
             args['--dist'],
             int(args['--timeout'] or 30),
             args['--target-dir'],
-            config
+            get_config()
         )
     elif args['--watch']:
         timeout = int(args['--timeout'] or 30)
         if args['--filter-request-id']:
             _response_reader(
-                broker, timeout, watch_filter_request_id(
+                get_broker(), timeout, watch_filter_request_id(
                     args['--filter-request-id']
                 )
             )
         elif args['--filter-service-name']:
             _response_reader(
-                broker, timeout, watch_filter_service_name(
+                get_broker(), timeout, watch_filter_service_name(
                     args['--filter-service-name']
                 )
             )
         else:
             _response_reader(
-                broker, timeout, watch_filter_none()
+                get_broker(), timeout, watch_filter_none()
             )
+
+
+def get_broker() -> Any:
+    return CBMessageBroker.new(
+        'kafka', config_file=Defaults.get_broker_config()
+    )
 
 
 def get_config() -> Dict:
@@ -247,6 +265,38 @@ def build_package(
     broker.send_package_request(package_request)
     CBDisplay.print_json(package_request.get_data())
     broker.close()
+
+
+def build_package_local(dist: str, clean_buildroot: bool) -> None:
+    Privileges.check_for_root_permissions()
+
+    status_flags = Defaults.get_status_flags()
+    package_source_path = os.getcwd()
+    package_request = CBPackageRequest()
+    package_request.set_package_build_request(
+        package=package_source_path,
+        arch=platform.machine(),
+        dist=dist,
+        runner_group='local',
+        action=status_flags.package_local
+    )
+    package_config = CBPackageMetaData.get_package_config(
+        package_source_path
+    )
+    if not package_config:
+        raise CBPackageMetadataError(
+            f'No package metadata found in {package_source_path}'
+        )
+    package_build_run = [
+        'bash', create_run_script(
+            package_request.get_data(), clean_buildroot,
+            local_build=True
+        )
+    ]
+    exit_code = os.WEXITSTATUS(
+        os.system(' '.join(package_build_run))
+    )
+    sys.exit(exit_code)
 
 
 def get_build_dependencies(

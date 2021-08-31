@@ -18,6 +18,7 @@
 """
 usage: cb-run -h | --help
        cb-run --root=<root_path> --request-id=<UUID>
+           [--local]
 
 options:
     --root=<root_path>
@@ -27,8 +28,13 @@ options:
 
     --request-id=<UUID>
         UUID for this build process
+
+    --local
+        Operate locally:
+        * do not send results to the message broker
 """
 import os
+import sys
 from docopt import docopt
 from cloud_builder.version import __version__
 from cloud_builder.exceptions import exception_handler
@@ -121,21 +127,23 @@ def main() -> None:
         )
         if find_call.output:
             packages = find_call.output.strip().split(os.linesep)
+            log.info(format(packages))
 
-    response = CBResponse(args['--request-id'], log.get_id())
-    response.set_package_build_response(
-        message='Package build finished',
-        response_code=status,
-        package=package_name,
-        prepare_log_file=prepare_log_file,
-        log_file=build_log_file,
-        solver_file=solver_json_file,
-        binary_packages=packages,
-        exit_code=exit_code
-    )
-    broker = CBMessageBroker.new(
-        'kafka', config_file=Defaults.get_broker_config()
-    )
-    log.response(
-        response, broker, build_result_file
-    )
+    if not args['--local']:
+        response = CBResponse(args['--request-id'], log.get_id())
+        response.set_package_build_response(
+            message='Package build finished',
+            response_code=status,
+            package=package_name,
+            prepare_log_file=prepare_log_file,
+            log_file=build_log_file,
+            solver_file=solver_json_file,
+            binary_packages=packages,
+            exit_code=exit_code
+        )
+        broker = CBMessageBroker.new(
+            'kafka', config_file=Defaults.get_broker_config()
+        )
+        log.response(response, broker, build_result_file)
+
+    sys.exit(exit_code)
