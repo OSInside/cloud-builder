@@ -18,9 +18,10 @@ class TestCBRun:
     @patch('cloud_builder.cb_run.CBCloudLogger')
     @patch('cloud_builder.cb_run.CBMessageBroker')
     @patch('os.system')
+    @patch('sys.exit')
     def test_main_normal_runtime(
-        self, mock_os_system, mock_CBMessageBroker, mock_CBCloudLogger,
-        mock_CBResponse, mock_Command_run,
+        self, mock_sys_exit, mock_os_system, mock_CBMessageBroker,
+        mock_CBCloudLogger, mock_CBResponse, mock_Command_run,
         mock_Privileges_check_for_root_permissions
     ):
         sys.argv = [
@@ -50,7 +51,8 @@ class TestCBRun:
             message='Package build finished',
             response_code='package build succeeded',
             package='projects/package',
-            prepare_log_file='/var/tmp/CB/projects/package@dist.arch.prepare.log',
+            prepare_log_file='/var/tmp/CB/projects/'
+            'package@dist.arch.prepare.log',
             log_file='/var/tmp/CB/projects/package@dist.arch.build.log',
             solver_file='/var/tmp/CB/projects/package@dist.arch.solver.json',
             binary_packages=['binaries'],
@@ -67,9 +69,10 @@ class TestCBRun:
     @patch('cloud_builder.cb_run.CBCloudLogger')
     @patch('cloud_builder.cb_run.CBMessageBroker')
     @patch('os.system')
+    @patch('sys.exit')
     def test_main_run_package_build_failed(
-        self, mock_os_system, mock_CBMessageBroker, mock_CBCloudLogger,
-        mock_CBResponse, mock_Command_run,
+        self, mock_sys_exit, mock_os_system, mock_CBMessageBroker,
+        mock_CBCloudLogger, mock_CBResponse, mock_Command_run,
         mock_Privileges_check_for_root_permissions
     ):
         sys.argv = [
@@ -86,7 +89,8 @@ class TestCBRun:
             message='Package build finished',
             response_code='package build failed',
             package='projects/package',
-            prepare_log_file='/var/tmp/CB/projects/package@dist.arch.prepare.log',
+            prepare_log_file='/var/tmp/CB/projects/'
+            'package@dist.arch.prepare.log',
             log_file='/var/tmp/CB/projects/package@dist.arch.build.log',
             solver_file='/var/tmp/CB/projects/package@dist.arch.solver.json',
             binary_packages=[],

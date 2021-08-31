@@ -28,6 +28,7 @@ flake8
 mypy
 types-PyYAML
 types-requests
+types-mock
 
 # for building documentation
 sphinx

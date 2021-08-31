@@ -34,7 +34,7 @@ class CBPackageMetaData:
     """
     @staticmethod
     def get_package_config(
-        package_path: str, log: CBCloudLogger, request_id: str,
+        package_path: str, log: CBCloudLogger = None, request_id: str = '',
         filename: str = None
     ) -> Dict:
         """
@@ -64,33 +64,36 @@ class CBPackageMetaData:
                         config_data, package_metadata_schema
                     )
                     if validator.errors:
-                        broker = CBMessageBroker.new(
-                            'kafka', config_file=Defaults.get_broker_config()
-                        )
-                        status_flags = Defaults.get_status_flags()
-                        response = CBResponse(request_id, log.get_id())
-                        response.set_package_invalid_metadata_response(
-                            message='ValidationError in {0!r}: {1!r}'.format(
-                                config_file, validator.errors
-                            ),
-                            response_code=status_flags.invalid_metadata,
-                            package=package_path
-                        )
-                        log.response(response, broker)
+                        if log:
+                            CBPackageMetaData._send_log_response(
+                                'ValidationError in {0!r}: {1!r}'.format(
+                                    config_file, validator.errors
+                                ), package_path, request_id, log
+                            )
                         config_data = {}
                 except Exception as issue:
-                    broker = CBMessageBroker.new(
-                        'kafka', config_file=Defaults.get_broker_config()
-                    )
-                    status_flags = Defaults.get_status_flags()
-                    response = CBResponse(request_id, log.get_id())
-                    response.set_package_invalid_metadata_response(
-                        message='YAMLError in {0!r}: {1!r}'.format(
-                            config_file, issue
-                        ),
-                        response_code=status_flags.invalid_metadata,
-                        package=package_path
-                    )
-                    log.response(response, broker)
+                    if log:
+                        CBPackageMetaData._send_log_response(
+                            'YAMLError in {0!r}: {1!r}'.format(
+                                config_file, issue
+                            ), package_path, request_id, log
+                        )
                     config_data = {}
         return config_data
+
+    @staticmethod
+    def _send_log_response(
+        message: str, package_path: str, request_id: str,
+        log: CBCloudLogger
+    ) -> None:
+        broker = CBMessageBroker.new(
+            'kafka', config_file=Defaults.get_broker_config()
+        )
+        status_flags = Defaults.get_status_flags()
+        response = CBResponse(request_id, log.get_id())
+        response.set_package_invalid_metadata_response(
+            message=message,
+            response_code=status_flags.invalid_metadata,
+            package=package_path
+        )
+        log.response(response, broker)
