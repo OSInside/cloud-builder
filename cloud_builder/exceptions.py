@@ -123,3 +123,9 @@ class CBSchedulerIntervalError(CBError):
     Exception raised if the update interval for the BlockingScheduler
     is smaller than the poll timeout of the message broker
     """
+
+
+class CBPackageMetadataError(CBError):
+    """
+    Exception raised if no package metadata could be read
+    """

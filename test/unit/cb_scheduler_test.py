@@ -351,9 +351,49 @@ class TestCBScheduler:
         log.response.assert_called_once_with(response, broker)
         broker.acknowledge.assert_called_once_with()
 
+    @patch('cloud_builder.cb_scheduler.Path.create')
+    def test_create_run_script_for_local_build(self, mock_Path_create):
+        request = {
+            'action': 'package build on localhost requested',
+            'arch': 'x86_64',
+            'dist': 'TW',
+            'package': 'projects/MS/vim',
+            'request_id': 'c8becd30-a5f6-43a6-a4f4-598ec1115b17',
+            'schema_version': 0.1
+        }
+        script_code = dedent('''
+            #!/bin/bash
+
+            set -e
+
+            if true; then
+                rm -rf projects/MS/vim@TW.x86_64
+            fi
+
+            cb-prepare --root projects/MS/vim \\
+                --package projects/MS/vim \\
+                --profile TW.x86_64 \\
+                --request-id c8becd30-a5f6-43a6-a4f4-598ec1115b17 \\
+                --local
+            cb-run --root projects/MS/vim@TW.x86_64 \\
+                --request-id c8becd30-a5f6-43a6-a4f4-598ec1115b17 \\
+                --local
+        ''')
+        with patch('builtins.open', create=True) as mock_open:
+            mock_open.return_value = MagicMock(spec=io.IOBase)
+            file_handle = mock_open.return_value.__enter__.return_value
+            create_run_script(request, True, True)
+            mock_Path_create.assert_called_once_with('projects/MS')
+            mock_open.assert_called_once_with(
+                'projects/MS/vim@TW.x86_64.sh', 'w'
+            )
+            file_handle.write.assert_called_once_with(script_code)
+
     @patch('cloud_builder.cb_scheduler.Defaults')
     @patch('cloud_builder.cb_scheduler.Path.create')
-    def test_create_run_script(self, mock_Path_create, mock_Defaults):
+    def test_create_run_script_for_runner_build(
+        self, mock_Path_create, mock_Defaults
+    ):
         mock_Defaults.get_runner_project_dir.return_value = \
             'cloud_builder_sources'
         mock_Defaults.get_runner_package_root.return_value = \

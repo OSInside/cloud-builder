@@ -18,6 +18,7 @@
 """
 usage: cb-prepare -h | --help
        cb-prepare --root=<root_path> --package=<package_path> --profile=<dist> --request-id=<UUID>
+           [--local]
 
 options:
     --root=<root_path>
@@ -32,8 +33,15 @@ options:
 
     --request-id=<UUID>
         UUID for this prepare process
+
+    --local
+        Operate locally:
+        * do not send results to the message broker
+        * do not create dependency graph
+        * run operations in debug mode
 """
 import os
+import sys
 from docopt import docopt
 from textwrap import dedent
 from cloud_builder.version import __version__
@@ -81,67 +89,82 @@ def main() -> None:
     dist_profile = args['--profile']
     package_name = os.path.basename(args['--package'])
 
-    target_root = os.path.normpath(
-        os.sep.join(
-            [
-                args["--root"],
-                Defaults.get_projects_path(args['--package']),
-                f'{package_name}@{dist_profile}'
-            ]
+    if args['--local']:
+        # In local (not on runner) mode we take the given package
+        # path to construct the target_root for building the package
+        target_root = ''.join(
+            [args['--package'], f'@{dist_profile}']
         )
-    )
+    else:
+        # In non local (runner mode) the target root is constructed
+        # to point to the given base root directory
+        target_root = os.path.join(
+            args["--root"],
+            Defaults.get_projects_path(args['--package']),
+            f'{package_name}@{dist_profile}'
+        )
 
     # Solve buildroot packages and create solver json
     prepare_log_file = f'{target_root}.prepare.log'
-    solver_json_file = f'{target_root}.solver.json'
-    log.info(
-        'Solving buildroot package list for {0}. For details see: {1}'.format(
-            target_root, solver_json_file
+    if not args['--local']:
+        solver_json_file = f'{target_root}.solver.json'
+        log.info(
+            'Solving buildroot package list for {0}. Details in: {1}'.format(
+                target_root, solver_json_file
+            )
         )
-    )
-    Path.wipe(prepare_log_file)
-    kiwi_solve = Command.run(
-        [
-            Path.which(
-                'kiwi-ng', alternative_lookup_paths=['/usr/local/bin']
-            ),
-            '--logfile', prepare_log_file,
-            '--profile', dist_profile,
-            'image', 'info',
-            '--description', args['--package'],
-            '--resolve-package-list'
-        ], raise_on_error=False
-    )
-    if kiwi_solve.output:
-        with open(solver_json_file, 'w') as solve_log:
-            process_line = False
-            for line in kiwi_solve.output.split(os.linesep):
-                if line.startswith('{'):
-                    process_line = True
-                if process_line:
-                    solve_log.write(line)
-                    solve_log.write(os.linesep)
+        Path.wipe(prepare_log_file)
+        kiwi_solve = Command.run(
+            [
+                Path.which(
+                    'kiwi-ng', alternative_lookup_paths=['/usr/local/bin']
+                ),
+                '--logfile', prepare_log_file,
+                '--profile', dist_profile,
+                'image', 'info',
+                '--description', args['--package'],
+                '--resolve-package-list'
+            ], raise_on_error=False
+        )
+        if kiwi_solve.output:
+            with open(solver_json_file, 'w') as solve_log:
+                process_line = False
+                for line in kiwi_solve.output.split(os.linesep):
+                    if line.startswith('{'):
+                        process_line = True
+                    if process_line:
+                        solve_log.write(line)
+                        solve_log.write(os.linesep)
 
     # Install buildroot
     log.info(
-        'Creating buildroot {0}. For details see: {1}'.format(
+        'Creating buildroot {0}. Details in: {1}'.format(
             target_root, prepare_log_file
         )
     )
-    kiwi_run = Command.run(
+    kiwi_run_caller_options = [
+        Path.which(
+            'kiwi-ng', alternative_lookup_paths=['/usr/local/bin']
+        ),
+        '--profile', dist_profile
+    ]
+    if args['--local']:
+        kiwi_run_caller_options.append('--debug')
+    else:
+        kiwi_run_caller_options.extend(
+            ['--logfile', prepare_log_file]
+        )
+    kiwi_run_caller_options.extend(
         [
-            Path.which(
-                'kiwi-ng', alternative_lookup_paths=['/usr/local/bin']
-            ),
-            '--logfile', prepare_log_file,
-            '--profile', dist_profile,
             'system', 'prepare',
             '--description', args['--package'],
             '--allow-existing-root',
             '--root', target_root
-        ], raise_on_error=False
+        ]
     )
-    exit_code = kiwi_run.returncode
+    exit_code = os.WEXITSTATUS(
+        os.system(' '.join(kiwi_run_caller_options))
+    )
 
     # Sync package sources and build script into buildroot
     if exit_code != 0:
@@ -187,17 +210,20 @@ def main() -> None:
             message = format(issue)
 
     # Send result response to the message broker
-    response = CBResponse(args['--request-id'], log.get_id())
-    response.set_package_buildroot_response(
-        message=message,
-        response_code=status,
-        package=package_name,
-        log_file=prepare_log_file,
-        solver_file=solver_json_file,
-        build_root=target_root,
-        exit_code=exit_code
-    )
-    broker = CBMessageBroker.new(
-        'kafka', config_file=Defaults.get_broker_config()
-    )
-    log.response(response, broker)
+    if not args['--local']:
+        response = CBResponse(args['--request-id'], log.get_id())
+        response.set_package_buildroot_response(
+            message=message,
+            response_code=status,
+            package=package_name,
+            log_file=prepare_log_file,
+            solver_file=solver_json_file,
+            build_root=target_root,
+            exit_code=exit_code
+        )
+        broker = CBMessageBroker.new(
+            'kafka', config_file=Defaults.get_broker_config()
+        )
+        log.response(response, broker)
+
+    sys.exit(exit_code)
