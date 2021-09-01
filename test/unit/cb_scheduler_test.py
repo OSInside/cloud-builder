@@ -370,7 +370,7 @@ class TestCBScheduler:
                 rm -rf projects/MS/vim@TW.x86_64
             fi
 
-            cb-prepare --root projects/MS/vim \\
+            cb-prepare --root projects/MS/vim@TW.x86_64 \\
                 --package projects/MS/vim \\
                 --profile TW.x86_64 \\
                 --request-id c8becd30-a5f6-43a6-a4f4-598ec1115b17 \\
@@ -423,7 +423,7 @@ class TestCBScheduler:
 
             {
                 trap finish EXIT
-                cb-prepare --root /var/tmp/CB \\
+                cb-prepare --root /var/tmp/CB/projects/MS/vim@TW.x86_64 \\
                     --package cloud_builder_sources/projects/MS/vim \\
                     --profile TW.x86_64 \\
                     --request-id c8becd30-a5f6-43a6-a4f4-598ec1115b17

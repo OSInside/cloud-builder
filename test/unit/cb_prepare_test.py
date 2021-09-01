@@ -31,7 +31,7 @@ class TestCBPrepare:
     ):
         sys.argv = [
             sys.argv[0],
-            '--root', '/var/tmp/CB',
+            '--root', '/var/tmp/CB/projects/package@dist.arch',
             '--package', 'ROOT_HOME/cloud_builder_sources/projects/package',
             '--profile', 'dist.arch',
             '--request-id', 'uuid'
@@ -140,7 +140,8 @@ class TestCBPrepare:
     ):
         sys.argv = [
             sys.argv[0],
-            '--root', '/var/tmp/CB',
+            '--root',
+            '/some/abs/path/cloud_builder_sources/projects/package@dist.arch',
             '--package',
             '/some/abs/path/cloud_builder_sources/projects/package',
             '--profile', 'dist.arch',
@@ -187,7 +188,7 @@ class TestCBPrepare:
     ):
         sys.argv = [
             sys.argv[0],
-            '--root', '/var/tmp/CB',
+            '--root', '/var/tmp/CB/projects/package@dist.arch',
             '--package', 'ROOT_HOME/cloud_builder_sources/projects/package',
             '--profile', 'dist.arch',
             '--request-id', 'uuid'
