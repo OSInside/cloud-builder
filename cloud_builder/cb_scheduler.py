@@ -259,8 +259,8 @@ def reset_build_if_running(
         Defaults.get_runner_package_root(), request['package']
     )
     dist_profile = f'{request["dist"]}.{request["arch"]}'
-    target_root = f'{package_root}@{dist_profile}'
-    package_run_pid = f'{target_root}.pid'
+    build_root = f'{package_root}@{dist_profile}'
+    package_run_pid = f'{build_root}.pid'
     if os.path.isfile(package_run_pid):
         with open(package_run_pid) as pid_fd:
             build_pid = int(pid_fd.read().strip())
@@ -415,31 +415,30 @@ def create_run_script(
     dist_profile = f'{request["dist"]}.{request["arch"]}'
     if local_build:
         package_source_path = request['package']
-        package_root = request['package']
-        target_root = f'{package_root}@{dist_profile}'
+        package_root = package_source_path
+        build_root = f'{package_root}@{dist_profile}'
         run_script = dedent('''
             #!/bin/bash
 
             set -e
 
             if {buildroot_rebuild}; then
-                rm -rf {target_root}
+                rm -rf {build_root}
             fi
 
-            cb-prepare --root {runner_root} \\
+            cb-prepare --root {build_root} \\
                 --package {package_source_path} \\
                 --profile {dist_profile} \\
                 --request-id {request_id} \\
                 --local
-            cb-run --root {target_root} \\
+            cb-run --root {build_root} \\
                 --request-id {request_id} \\
                 --local
         ''').format(
             buildroot_rebuild='true' if buildroot_rebuild else 'false',
-            runner_root=package_root,
             package_source_path=package_source_path,
             dist_profile=dist_profile,
-            target_root=target_root,
+            build_root=build_root,
             request_id=request['request_id']
         )
     else:
@@ -449,16 +448,16 @@ def create_run_script(
         package_root = os.path.join(
             Defaults.get_runner_package_root(), request['package']
         )
-        target_root = f'{package_root}@{dist_profile}'
+        build_root = f'{package_root}@{dist_profile}'
         run_script = dedent('''
             #!/bin/bash
 
             set -e
 
-            rm -f {target_root}.log
+            rm -f {build_root}.log
 
             if {buildroot_rebuild}; then
-                rm -rf {target_root}
+                rm -rf {build_root}
             fi
 
             function finish {{
@@ -467,24 +466,23 @@ def create_run_script(
 
             {{
                 trap finish EXIT
-                cb-prepare --root {runner_root} \\
+                cb-prepare --root {build_root} \\
                     --package {package_source_path} \\
                     --profile {dist_profile} \\
                     --request-id {request_id}
-                cb-run --root {target_root} &> {target_root}.build.log \\
+                cb-run --root {build_root} &> {build_root}.build.log \\
                     --request-id {request_id}
-            }} &>>{target_root}.run.log &
+            }} &>>{build_root}.run.log &
 
-            echo $! > {target_root}.pid
+            echo $! > {build_root}.pid
         ''').format(
             buildroot_rebuild='true' if buildroot_rebuild else 'false',
-            runner_root=Defaults.get_runner_package_root(),
             package_source_path=package_source_path,
             dist_profile=dist_profile,
-            target_root=target_root,
+            build_root=build_root,
             request_id=request['request_id']
         )
-    package_run_script = f'{target_root}.sh'
+    package_run_script = f'{build_root}.sh'
     Path.create(os.path.dirname(package_run_script))
     with open(package_run_script, 'w') as script:
         script.write(run_script)

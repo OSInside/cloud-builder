@@ -87,30 +87,16 @@ def main() -> None:
     status_flags = Defaults.get_status_flags()
 
     dist_profile = args['--profile']
+    build_root = args['--root']
     package_name = os.path.basename(args['--package'])
 
-    if args['--local']:
-        # In local (not on runner) mode we take the given package
-        # path to construct the target_root for building the package
-        target_root = ''.join(
-            [args['--package'], f'@{dist_profile}']
-        )
-    else:
-        # In non local (runner mode) the target root is constructed
-        # to point to the given base root directory
-        target_root = os.path.join(
-            args["--root"],
-            Defaults.get_projects_path(args['--package']),
-            f'{package_name}@{dist_profile}'
-        )
-
     # Solve buildroot packages and create solver json
-    prepare_log_file = f'{target_root}.prepare.log'
+    prepare_log_file = f'{build_root}.prepare.log'
     if not args['--local']:
-        solver_json_file = f'{target_root}.solver.json'
+        solver_json_file = f'{build_root}.solver.json'
         log.info(
             'Solving buildroot package list for {0}. Details in: {1}'.format(
-                target_root, solver_json_file
+                build_root, solver_json_file
             )
         )
         Path.wipe(prepare_log_file)
@@ -139,7 +125,7 @@ def main() -> None:
     # Install buildroot
     log.info(
         'Creating buildroot {0}. Details in: {1}'.format(
-            target_root, prepare_log_file
+            build_root, prepare_log_file
         )
     )
     kiwi_run_caller_options = [
@@ -159,7 +145,7 @@ def main() -> None:
             'system', 'prepare',
             '--description', args['--package'],
             '--allow-existing-root',
-            '--root', target_root
+            '--root', build_root
         ]
     )
     exit_code = os.WEXITSTATUS(
@@ -174,7 +160,7 @@ def main() -> None:
         try:
             data = DataSync(
                 f'{args["--package"]}/',
-                f'{target_root}/{package_name}/'
+                f'{build_root}/{package_name}/'
             )
             data.sync_data(
                 options=['-a', '-x']
@@ -198,7 +184,7 @@ def main() -> None:
                 pushd {0}
                 build --no-init --root /
             ''')
-            with open(f'{target_root}/run.sh', 'w') as script:
+            with open(f'{build_root}/run.sh', 'w') as script:
                 script.write(
                     run_script.format(package_name)
                 )
@@ -218,7 +204,7 @@ def main() -> None:
             package=package_name,
             log_file=prepare_log_file,
             solver_file=solver_json_file,
-            build_root=target_root,
+            build_root=build_root,
             exit_code=exit_code
         )
         broker = CBMessageBroker.new(
