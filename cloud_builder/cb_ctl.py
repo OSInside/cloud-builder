@@ -23,6 +23,7 @@ usage: cb-ctl -h | --help
            [--clean]
        cb-ctl --build-dependencies=<package> --project-path=<path> --arch=<name> --dist=<name>
            [--timeout=<time_sec>]
+       cb-ctl --build-dependencies-local --dist=<name>
        cb-ctl --build-log=<package> --project-path=<path> --arch=<name> --dist=<name>
            [--timeout=<time_sec>]
        cb-ctl --build-info=<package> --project-path=<path> --arch=<name> --dist=<name>
@@ -68,6 +69,9 @@ options:
 
     --build-dependencies=<package>
         Provide latest build root dependency information
+
+    --build-dependencies-local
+        Calculate build dependencies now and on the local system
 
     --build-log=<package>
         Provide latest raw package build log
@@ -127,6 +131,7 @@ from cloud_builder.utils.display import CBDisplay
 from cloud_builder.config.cbctl_schema import cbctl_config_schema
 from cloud_builder.logger import CBLogger
 from cloud_builder.cb_scheduler import create_run_script
+from cloud_builder.cb_prepare import resolve_build_dependencies
 
 from cloud_builder.exceptions import (
     exception_handler,
@@ -178,6 +183,10 @@ def main() -> None:
             args['--dist'],
             int(args['--timeout'] or 30),
             get_config()
+        )
+    elif args['--build-dependencies-local']:
+        get_build_dependencies_local(
+            args['--dist']
         )
     elif args['--build-log']:
         get_build_log(
@@ -280,13 +289,9 @@ def build_package_local(dist: str, clean_buildroot: bool) -> None:
         runner_group='local',
         action=status_flags.package_local
     )
-    package_config = CBPackageMetaData.get_package_config(
-        package_source_path
-    )
-    if not package_config:
-        raise CBPackageMetadataError(
-            f'No package metadata found in {package_source_path}'
-        )
+
+    _check_package_config_from_working_directory()
+
     package_build_run = [
         'bash', create_run_script(
             package_request.get_data(), clean_buildroot,
@@ -309,6 +314,23 @@ def get_build_dependencies(
     )
     if solver_data:
         CBDisplay.print_json(json.loads(solver_data))
+
+
+def get_build_dependencies_local(dist: str) -> None:
+    Privileges.check_for_root_permissions()
+
+    package_source_path = _check_package_config_from_working_directory()
+    solver_result = resolve_build_dependencies(
+        package_source_path, f'{dist}.{platform.machine()}'
+    )
+    if solver_result['solver_data']:
+        CBDisplay.print_json(
+            solver_result['solver_data']
+        )
+    else:
+        CBDisplay.print_raw(
+            solver_result['solver_log']
+        )
 
 
 def get_build_log(
@@ -544,3 +566,15 @@ def _get_package_path(project_path: str, package_name: str) -> str:
     return os.path.join(
         'projects', project_path, package_name,
     )
+
+
+def _check_package_config_from_working_directory() -> str:
+    package_source_path = os.getcwd()
+    package_config = CBPackageMetaData.get_package_config(
+        package_source_path
+    )
+    if not package_config:
+        raise CBPackageMetadataError(
+            f'No package metadata found in {package_source_path}'
+        )
+    return package_source_path
