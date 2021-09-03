@@ -41,7 +41,9 @@ class TestCBPrepare:
         mock_CBCloudLogger.return_value = log
         mock_CBResponse.return_value = response
         mock_Command_run.return_value.returncode = 0
-        mock_Command_run.return_value.output = '{\nsolver_data\n}'
+        mock_Command_run.return_value.output = \
+            'stdout-data\n{"resolved-packages": {"zypper":{"key":"val"}}}'
+        mock_Command_run.return_value.error = 'stderr-data'
         mock_Path.which.return_value = 'kiwi-ng'
         run_script = dedent('''
             #!/bin/bash
@@ -70,14 +72,9 @@ class TestCBPrepare:
                 main()
 
         mock_Privileges_check_for_root_permissions.assert_called_once_with()
-        mock_Path.wipe.assert_called_once_with(
-            '/var/tmp/CB/projects/package@dist.arch.prepare.log'
-        )
         mock_Command_run.assert_called_once_with(
             [
-                'kiwi-ng', '--logfile',
-                '/var/tmp/CB/projects/package@dist.arch.prepare.log',
-                '--profile', 'dist.arch',
+                'kiwi-ng', '--profile', 'dist.arch',
                 'image', 'info', '--description',
                 'ROOT_HOME/cloud_builder_sources/projects/package',
                 '--resolve-package-list'
@@ -101,16 +98,13 @@ class TestCBPrepare:
             options=['-a', '-x']
         )
         assert mock_open.call_args_list == [
+            call('/var/tmp/CB/projects/package@dist.arch.prepare.log', 'w'),
             call('/var/tmp/CB/projects/package@dist.arch.solver.json', 'w'),
             call('/var/tmp/CB/projects/package@dist.arch/run.sh', 'w')
         ]
         assert file_handle.write.call_args_list == [
-            call('{'),
-            call('\n'),
-            call('solver_data'),
-            call('\n'),
-            call('}'),
-            call('\n'),
+            call('stdout-data\nstderr-data'),
+            call('{\n    "resolved-packages": {\n        "zypper": {\n            "key": "val"\n        }\n    }\n}'),
             call(run_script)
         ]
         response.set_package_buildroot_response.assert_called_once_with(

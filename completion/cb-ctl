@@ -30,6 +30,10 @@ function _cbctl {
                     __comp_reply "--project-path --arch --dist --timeout"
                     return 0
                     ;;
+                "--build-dependencies-local")
+                    __comp_reply "--dist"
+                    return 0
+                    ;;
                 "--build-log")
                     __comp_reply "--project-path --arch --dist --timeout"
                     return 0

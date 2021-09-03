@@ -42,14 +42,18 @@ options:
 """
 import os
 import sys
+import json
 from docopt import docopt
 from textwrap import dedent
+from typing import Dict
+
 from cloud_builder.version import __version__
 from cloud_builder.cloud_logger import CBCloudLogger
 from cloud_builder.broker import CBMessageBroker
 from cloud_builder.response.response import CBResponse
 from cloud_builder.exceptions import exception_handler
 from cloud_builder.defaults import Defaults
+
 from kiwi.command import Command
 from kiwi.utils.sync import DataSync
 from kiwi.privileges import Privileges
@@ -99,28 +103,15 @@ def main() -> None:
                 build_root, solver_json_file
             )
         )
-        Path.wipe(prepare_log_file)
-        kiwi_solve = Command.run(
-            [
-                Path.which(
-                    'kiwi-ng', alternative_lookup_paths=['/usr/local/bin']
-                ),
-                '--logfile', prepare_log_file,
-                '--profile', dist_profile,
-                'image', 'info',
-                '--description', args['--package'],
-                '--resolve-package-list'
-            ], raise_on_error=False
+        solver_result = resolve_build_dependencies(
+            args['--package'], dist_profile, prepare_log_file
         )
-        if kiwi_solve.output:
-            with open(solver_json_file, 'w') as solve_log:
-                process_line = False
-                for line in kiwi_solve.output.split(os.linesep):
-                    if line.startswith('{'):
-                        process_line = True
-                    if process_line:
-                        solve_log.write(line)
-                        solve_log.write(os.linesep)
+        with open(solver_json_file, 'w') as solve_result:
+            solve_result.write(
+                json.dumps(
+                    solver_result['solver_data'], sort_keys=True, indent=4
+                )
+            )
 
     # Install buildroot
     log.info(
@@ -213,3 +204,66 @@ def main() -> None:
         log.response(response, broker)
 
     sys.exit(exit_code)
+
+
+def resolve_build_dependencies(
+    package_source_path: str, dist_profile: str, log_file: str = ''
+) -> Dict:
+    """
+    Resolve build dependencies
+
+    :return:
+        Returns a dictionary containing result and potential
+        issue information like in the following example
+
+        .. code:: python
+
+            {
+                'solver_data': dict,
+                'solver_log': 'log_data'
+            }
+
+    :rtype: Dict
+    """
+    solver_result = {
+        'solver_data': {},
+        'solver_log': ''
+    }
+    kiwi_solve = Command.run(
+        [
+            Path.which(
+                'kiwi-ng', alternative_lookup_paths=['/usr/local/bin']
+            ),
+            '--profile', dist_profile,
+            'image', 'info',
+            '--description', package_source_path,
+            '--resolve-package-list'
+        ], raise_on_error=False
+    )
+    log_data = ''
+    solver_data = ''
+    if kiwi_solve.output:
+        solver_line = False
+        for line in kiwi_solve.output.split(os.linesep):
+            if line.startswith('{'):
+                solver_line = True
+            if solver_line:
+                solver_data += line
+            else:
+                log_data = ''.join(
+                    [log_data, line, os.linesep]
+                )
+
+    if kiwi_solve.error:
+        log_data += kiwi_solve.error
+
+    if solver_data:
+        solver_result['solver_data'] = json.loads(solver_data)
+    if log_data:
+        solver_result['solver_log'] = log_data
+
+    if log_file:
+        with open(log_file, 'w') as log_fd:
+            log_fd.write(format(solver_result['solver_log']))
+
+    return solver_result
