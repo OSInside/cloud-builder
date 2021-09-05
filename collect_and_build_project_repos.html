@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Collect and Build Project Repos &mdash; Cloud Builder 0.1.29 documentation</title>
+  <title>Collect and Build Project Repos &mdash; Cloud Builder 0.1.30 documentation</title>
   
 
   
@@ -102,7 +102,11 @@
 <li class="toctree-l1"><a class="reference internal" href="request_package_build.html">Request a Package Build</a></li>
 <li class="toctree-l1"><a class="reference internal" href="auto_rebuild_on_source_change.html">Auto Rebuild on Package Source Change</a></li>
 <li class="toctree-l1"><a class="reference internal" href="auto_rebuild_on_build_dependencies.html">Auto Rebuild on Package Build Dependency Changes</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Collect and Build Project Repos</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Collect and Build Project Repos</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#create-and-setup-the-reposerver-instance">Create and Setup the reposerver instance</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#setup-apache-to-serve-the-repos">Setup Apache to Serve the Repos</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="commands.html">Overview Cloud Builder Services</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="commands/cb_fetch.html">cb-fetch</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="commands/cb_fetch.html#synopsis">SYNOPSIS</a></li>
@@ -135,7 +139,12 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="commands/cb_depsolver.html">cb-depsolver</a></li>
-<li class="toctree-l2"><a class="reference internal" href="commands/cb_collector.html">cb-collector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="commands/cb_collect.html">cb-collect</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="commands/cb_collect.html#synopsis">SYNOPSIS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="commands/cb_collect.html#description">DESCRIPTION</a></li>
+<li class="toctree-l3"><a class="reference internal" href="commands/cb_collect.html#options">OPTIONS</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="commands/cb_ctl.html">cb-ctl</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="commands/cb_ctl.html#synopsis">SYNOPSIS</a></li>
 <li class="toctree-l3"><a class="reference internal" href="commands/cb_ctl.html#description">DESCRIPTION</a></li>
@@ -213,27 +222,186 @@
             
   <div class="section" id="collect-and-build-project-repos">
 <span id="id1"></span><h1>Collect and Build Project Repos<a class="headerlink" href="#collect-and-build-project-repos" title="Permalink to this headline">¶</a></h1>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>I need to implement the cb-collector service first</p>
+<p>Building the packages on the runner(s) is the foundation of
+the Cloud Builder project. However, first the possibility to create
+and publish package repositories creates real value to it.
+The <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-collect</span></code> service implements the creation of package
+repositories by collecting the latest build results from
+the runner(s) plus creation of the metadata information
+such that package managers can consume them.</p>
+<p>This chapter describes how to setup <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-collect</span></code> in combination
+with an <code class="xref py py-obj docutils literal notranslate"><span class="pre">apache</span></code> web-server to serve the <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-collect</span></code> created
+repositories. Let’s call this instance the <code class="xref py py-obj docutils literal notranslate"><span class="pre">reposerver</span></code>.</p>
+<div class="section" id="create-and-setup-the-reposerver-instance">
+<h2>Create and Setup the reposerver instance<a class="headerlink" href="#create-and-setup-the-reposerver-instance" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic">
+<li><p><strong>Start reposerver instance</strong></p>
+<p>For the reposerver there is no real requirement to use a
+specific linux distribution. It makes the setup procedure
+simpler to use a distribution for which Cloud Builder packages are
+provided though. Cloud Builder packages are available for Leap and
+Fedora at the moment. Thus let’s go for Leap as a start
+and run a Leap 15.3 instance as follows:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ <span class="nv">leap_15_3_ami</span><span class="o">=</span>ami-0b4f49bedf96b14c9
+
+$ aws ec2 run-instances <span class="se">\</span>
+    --image-id <span class="si">${</span><span class="nv">leap_15_3_ami</span><span class="si">}</span> <span class="se">\</span>
+    --count <span class="m">1</span> <span class="se">\</span>
+    --instance-type t2.micro <span class="se">\</span>
+    --key-name MySSHKeyPairName <span class="se">\</span>
+    --security-group-ids sg-MyGroup <span class="se">\</span>
+    --subnet-id subnet-MySubNet<span class="p">;</span>
+</pre></div>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Design Idea</p>
-<ol class="arabic simple">
-<li><p>Send info request for each package in a project for all
-dists and archs as configured in <code class="xref py py-obj docutils literal notranslate"><span class="pre">cloud_builder.yml</span></code></p></li>
-<li><p>Fetch the package(s) and build up the same tree as the
-package is organized in the git</p></li>
-<li><p>After fetching all packages from a project create
-a repo from it using e.g <code class="xref py py-obj docutils literal notranslate"><span class="pre">createrepo</span></code> for rpm packages</p></li>
-</ol>
-<p>Periodically run this for each project in a threading
-daemon concept</p>
+<p>The reposerver instance requires a good network connection
+as well as enough storage capacity to store the repository
+data. Therefore the selected <code class="xref py py-obj docutils literal notranslate"><span class="pre">t2.micro</span></code> instance type might
+not be sufficient depending on what magnitude the Cloud Builder
+services are used</p>
+</div>
+</li>
+<li><p><strong>Install Cloud Builder on the reposerver</strong></p>
+<p>Login to the reposerver instance and install Cloud Builder as follows:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ ssh -i PathToPkeyMatchingMySSHKeyPairName <span class="se">\</span>
+      ec2-user@InstanceIP
+
+$ sudo zypper addrepo https://download.opensuse.org/repositories/Virtualization:/Appliances:/Staging/openSUSE_Leap_15.3 cloud-builder
+$ sudo zypper install python3-cloud_builder
+</pre></div>
+</div>
+</li>
+<li><p><strong>Setup git package source connection</strong></p>
+<p>Still logged in on the reposerver edit the file
+<code class="file docutils literal notranslate"><span class="pre">/etc/cloud_builder</span></code> as follows:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">CB_PROJECT</span><span class="o">=</span><span class="s2">&quot;https://github.com/OSInside/cloud-builder-packages.git&quot;</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The above setting is the default after install of Cloud Builder.
+The used CB_PROJECT git repository is the Cloud Builder provided example git
+repo containing some arbitrary package sources. It only serves the
+purpose to let users test and run Cloud Builder. For production
+change this value to your git project</p>
+</div>
+</li>
+<li><p><strong>Setup broker connection on the reposerver</strong></p>
+<p>Still logged in on the reposerver create the file
+<code class="file docutils literal notranslate"><span class="pre">/etc/cloud_builder_broker.yml</span></code> as follows:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo vi /etc/cloud_builder_broker.yml
+</pre></div>
+</div>
+<p>Place the following content:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">broker</span><span class="p">:</span>
+  <span class="nt">host</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">BootstrapServersString</span>
+</pre></div>
+</div>
+<p>See the ‘<strong>Configure</strong> <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-ctl</span></code>’ list item in the <a class="reference internal" href="kafka_broker_setup.html#control-plane-setup"><span class="std std-ref">Control Plane Setup</span></a>
+for details how to obtain the broker credentials.</p>
+</li>
+<li><p><strong>Setup SSH key pair for collecting packages from runners</strong></p>
+<p>Still logged in on the reposerver create a new SSH keypair as follows</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ sudo -i
+$ ssh-keygen -t rsa -f ~/.ssh/id_cb_collect
+</pre></div>
+</div>
+<p>Once done reference the path to the private key in the
+<code class="file docutils literal notranslate"><span class="pre">/etc/cloud_builder</span></code> setup file as follows:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ sudo vi /etc/cloud_builder
+
+<span class="nv">CB_SSH_PKEY</span><span class="o">=</span><span class="s2">&quot;/root/.ssh/id_cb_collect&quot;</span>
+</pre></div>
+</div>
+</li>
+<li><p><strong>Attach an EBS volume to the reposerver</strong></p>
+<p>To store and backup the repository data an extra block storage
+volume should be attached to the server.</p>
 <ul class="simple">
-<li><p>Setup an apache server to serve the repo structure</p></li>
-<li><p>Attach a volume to the instance to store the repos</p></li>
+<li><p>Follow the documentation from here to attach a new volume:
+<a class="reference external" href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-attaching-volume.html">https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-attaching-volume.html</a></p></li>
+<li><p>Create the <code class="xref py py-obj docutils literal notranslate"><span class="pre">XFS</span></code> filesystem on the new volume and mount it to
+<code class="file docutils literal notranslate"><span class="pre">/srv/www</span></code> on the reposerver. Read the following documentation
+to understand how to make the volume available:
+<a class="reference external" href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-using-volumes.html">https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-using-volumes.html</a></p></li>
 </ul>
+</li>
+<li><p><strong>Setup cb-collect user on the runners</strong></p>
+<p>In cloud environments the distributors publish cloud images with
+different predefined user configurations. For example on
+Fedora instances ssh login is used via <code class="xref py py-obj docutils literal notranslate"><span class="pre">fedora&#64;IP</span></code> whereas on
+Leap instances the user setup is <code class="xref py py-obj docutils literal notranslate"><span class="pre">ec2-user&#64;IP</span></code>. Most probably
+the username will be different on any distribution. As Cloud Builder
+runners can be instances from different distributions to allow
+utilizing the native distribution tools to build packages, it
+is advisable to generalize the user and access permissions which
+are used to collect packages from the available runner instances.</p>
+<p>To do this login to each runner and create the <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-collect</span></code>
+user and access setup as follows:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># on the reposerver</span>
+
+$ sudo cat /root/.ssh/id_cb_collect.pub
+
+$ ssh -i PathToPkeyMatchingMySSHKeyPairName <span class="se">\</span>
+     RunnerUserName@RunnerInstanceIP
+
+$ sudo -i
+$ useradd -d /home/cb-collect -m cb-collect
+$ su -l cb-collect
+$ mkdir -m <span class="m">0700</span> .ssh
+$ touch .ssh/authorized_keys
+$ chmod <span class="m">600</span> .ssh/authorized_keys
+$ vi .ssh/authorized_keys
+
+Copy <span class="p">&amp;</span> Paste the SSH pubkey as it was printed on the console
+by the very first cat... <span class="nb">command</span> and safe the file
+
+$ <span class="nb">exit</span>
+
+<span class="c1"># back on the reposerver, repeat for each runner...</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If there are many runners the setup of the user and access
+permissions as desribed above is cumbersome. Configuration
+management tools like <code class="xref py py-obj docutils literal notranslate"><span class="pre">ansible</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">CloudFormation</span></code> and alike can
+be helpful to automate this step and should be preferred in
+general for the setup of an entire Cloud Builder cluster</p>
+</div>
+<p>Once done on all runners setup the SSH user in the
+<code class="file docutils literal notranslate"><span class="pre">/etc/cloud_builder</span></code> setup file as follows:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ sudo vi /etc/cloud_builder
+
+<span class="nv">CB_SSH_USER</span><span class="o">=</span><span class="s2">&quot;cb-collect&quot;</span>
+</pre></div>
+</div>
+</li>
+<li><p><strong>Start</strong> <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-collect</span></code> <strong>service</strong></p>
+<p>Still logged in on the reposerver, start the <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-collect</span></code> service
+as follows:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ sudo systemctl start cb-collect
+</pre></div>
+</div>
+<p>The service will immediately start to collect package results
+from the available runners. This is done by sending info requests
+which are read and worked on by the <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-info</span></code> service. Therefore
+it’s required that <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-info</span></code> runs on all runners which are expected
+to provide data to be present in repositories.</p>
+<p>If there is response information for packages, <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-collect</span></code>
+creates repositories in the same structure than the git repo
+is organized. For the example git tree this could look like
+the following example:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>/srv/www/projects/projects/MS/...
+</pre></div>
+</div>
+</li>
+</ol>
+</div>
+<div class="section" id="setup-apache-to-serve-the-repos">
+<h2>Setup Apache to Serve the Repos<a class="headerlink" href="#setup-apache-to-serve-the-repos" title="Permalink to this headline">¶</a></h2>
+<p>TODO</p>
 </div>
 </div>
 

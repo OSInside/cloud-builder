@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>cb-collector &mdash; Cloud Builder 0.1.29 documentation</title>
+  <title>cb-collect &mdash; Cloud Builder 0.1.30 documentation</title>
   
 
   
@@ -102,7 +102,11 @@
 <li class="toctree-l1"><a class="reference internal" href="../request_package_build.html">Request a Package Build</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../auto_rebuild_on_source_change.html">Auto Rebuild on Package Source Change</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../auto_rebuild_on_build_dependencies.html">Auto Rebuild on Package Build Dependency Changes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../collect_and_build_project_repos.html">Collect and Build Project Repos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../collect_and_build_project_repos.html">Collect and Build Project Repos</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../collect_and_build_project_repos.html#create-and-setup-the-reposerver-instance">Create and Setup the reposerver instance</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../collect_and_build_project_repos.html#setup-apache-to-serve-the-repos">Setup Apache to Serve the Repos</a></li>
+</ul>
+</li>
 <li class="toctree-l1 current"><a class="reference internal" href="../commands.html">Overview Cloud Builder Services</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="cb_fetch.html">cb-fetch</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="cb_fetch.html#synopsis">SYNOPSIS</a></li>
@@ -135,7 +139,12 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="cb_depsolver.html">cb-depsolver</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">cb-collector</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">cb-collect</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#synopsis">SYNOPSIS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#description">DESCRIPTION</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#options">OPTIONS</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="cb_ctl.html">cb-ctl</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="cb_ctl.html#synopsis">SYNOPSIS</a></li>
 <li class="toctree-l3"><a class="reference internal" href="cb_ctl.html#description">DESCRIPTION</a></li>
@@ -194,13 +203,13 @@
         
           <li><a href="../commands.html">Overview Cloud Builder Services</a> &raquo;</li>
         
-      <li>cb-collector</li>
+      <li>cb-collect</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
           
-            <a href="../_sources/commands/cb_collector.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/commands/cb_collect.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -213,9 +222,58 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="cb-collector">
-<h1>cb-collector<a class="headerlink" href="#cb-collector" title="Permalink to this headline">¶</a></h1>
-<p>Not Implemented</p>
+  <div class="section" id="cb-collect">
+<h1>cb-collect<a class="headerlink" href="#cb-collect" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="synopsis">
+<h2>SYNOPSIS<a class="headerlink" href="#synopsis" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>cb-collect -h <span class="p">|</span> --help
+cb-collect --project<span class="o">=</span>&lt;github_project&gt; --ssh-pkey<span class="o">=</span>&lt;ssh_pkey_file&gt;
+    <span class="o">[</span>--ssh-user<span class="o">=</span>&lt;user&gt;<span class="o">]</span>
+    <span class="o">[</span>--timeout<span class="o">=</span>&lt;time_sec&gt;<span class="o">]</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="description">
+<h2>DESCRIPTION<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
+<p>cb-collect - fetches/updates a git repository and
+collects build results of package sources as organized
+in the git tree. Each project in the git tree will
+be represented as a package repository.</p>
+<p>The tree structure of the repository tree follows the
+git project structure like in the following example:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>REPO_ROOT
+ ├── ...
+ ├── PROJECT_A
+ │   └── SUB_PROJECT
+ │       └── REPO_DATA_AND_REPO_METADATA
+ └── PROJECT_B
+     └── REPO_DATA_AND_REPO_METADATA
+</pre></div>
+</div>
+<p>The REPO_ROOT could be served to the public via a
+web server e.g apache such that the repos will be
+consumable for the outside world and package
+managers</p>
+</div>
+<div class="section" id="options">
+<h2>OPTIONS<a class="headerlink" href="#options" title="Permalink to this headline">¶</a></h2>
+<dl class="option-list">
+<dt><kbd><span class="option">--project=<var>&lt;github_project&gt;</var></span></kbd></dt>
+<dd><p>git clone source URI to fetch project with
+packages managed to build in cloud builder</p>
+</dd>
+<dt><kbd><span class="option">--ssh-pkey=<var>&lt;ssh_pkey_file&gt;</var></span></kbd></dt>
+<dd><p>Path to ssh private key file to access runner data</p>
+</dd>
+<dt><kbd><span class="option">--ssh-user=<var>&lt;user&gt;</var></span></kbd></dt>
+<dd><p>User name to access runners via ssh, defaults to: ec2-user</p>
+</dd>
+<dt><kbd><span class="option">--timeout=<var>&lt;time_sec&gt;</var></span></kbd></dt>
+<dd><p>Wait time_sec seconds of inactivity on the message
+broker before return. Default: 30sec</p>
+</dd>
+</dl>
+</div>
 </div>
 
 
