@@ -1,4 +1,0 @@
-cb-collector
-============
-
-Not Implemented
