@@ -17,7 +17,7 @@ Overview Cloud Builder Services
    commands/cb_run
    commands/cb_info
    commands/cb_depsolver
-   commands/cb_collector
+   commands/cb_collect
    commands/cb_ctl
 
 cb-fetch:
@@ -54,7 +54,7 @@ cb-depsolver:
   repository using the satsolver library. In case a dependency
   has changed the package gets rebuild.
 
-cb-collector:
+cb-collect:
   Collects information for each package in the git, downloads
   the package binaries and creates project specific repositories.
   The cb-info service is a requirement if the collector will
