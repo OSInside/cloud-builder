@@ -87,3 +87,6 @@ class TestDefaults:
                 '/root/cloud_builder_sources/'
                 'projects/MS/python-kiwi_boxed_plugin'
             ) == 'projects/MS'
+
+    def test_get_repo_root(self):
+        assert Defaults.get_repo_root() == '/srv/www/projects'
