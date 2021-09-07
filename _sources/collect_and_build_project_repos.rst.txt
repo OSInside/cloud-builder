@@ -54,7 +54,7 @@ Create and Setup the reposerver instance
    .. code:: bash
 
       $ ssh -i PathToPkeyMatchingMySSHKeyPairName \
-            ec2-user@InstanceIP
+            ec2-user@RepoServerInstanceIP
 
       $ sudo zypper addrepo https://download.opensuse.org/repositories/Virtualization:/Appliances:/Staging/openSUSE_Leap_15.3 cloud-builder
       $ sudo zypper install python3-cloud_builder
@@ -65,6 +65,8 @@ Create and Setup the reposerver instance
    :file:`/etc/cloud_builder` as follows:
 
    .. code:: bash
+
+      $ sudo vi /etc/cloud_builder
 
       CB_PROJECT="https://github.com/OSInside/cloud-builder-packages.git"
 
@@ -209,4 +211,67 @@ Create and Setup the reposerver instance
 Setup Apache to Serve the Repos
 -------------------------------
 
-TODO
+All repos created by the `cb-collect` service are now available
+and managed on the local system. To consume the repos the `Apache`
+web server is used. The following describes a very simple setup
+for `Apache` to serve the :file:`/srv/www/projects/projects`
+contents.
+
+.. note::
+
+   The following setup instructions for `Apache` are valid if
+   the reposerver is based on the Leap distribution. In case
+   another distribution was used, adaptions to the information
+   below are likely.
+
+1. **Install** `Apache`
+
+   .. code:: bash
+
+      $ sudo zypper in apache2
+
+2. **Setup Apache DocumentRoot**
+
+   Edit the file :file:`/etc/apache2/httpd.conf` and place the
+   following content at the end of the file:
+
+   .. code:: bash
+
+      DocumentRoot "/srv/www/projects/projects"
+
+      <Directory "/srv/www/projects/projects">
+          Options All Indexes FollowSymLinks
+          AllowOverride None
+          Require all granted
+      </Directory>
+
+   .. note::
+
+      For a real production setup including https access,
+      more config steps are needed. In addition the `Apache`
+      documentation recommends to place setup instructions
+      in separate files and only include them in the master
+      configuration. This all makes sense, so please consider
+      the above as an example to get started.
+       
+3. **Start** `Apache`
+
+   .. code:: bash
+
+      $ sudo systemctl start apache2
+
+4. **Open HTTP port**
+
+   By default instances in the cloud blocks all inbound ports.
+   To access the server the HTTP port must be opened for
+   incomming connections. To do this add a new HTTP(80) inbound rule
+   in the used security group of the reposerver instance. The
+   documentation from here: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/authorizing-access-to-an-instance.html helps with that task
+
+5. **Access the reposerver**
+
+   Open a web browser and place the following URL:
+
+   .. code:: bash
+
+      http://RepoServerInstanceIP

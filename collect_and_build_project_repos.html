@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Collect and Build Project Repos &mdash; Cloud Builder 0.1.31 documentation</title>
+  <title>Collect and Build Project Repos &mdash; Cloud Builder 0.1.32 documentation</title>
   
 
   
@@ -265,7 +265,7 @@ services are used</p>
 <li><p><strong>Install Cloud Builder on the reposerver</strong></p>
 <p>Login to the reposerver instance and install Cloud Builder as follows:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ ssh -i PathToPkeyMatchingMySSHKeyPairName <span class="se">\</span>
-      ec2-user@InstanceIP
+      ec2-user@RepoServerInstanceIP
 
 $ sudo zypper addrepo https://download.opensuse.org/repositories/Virtualization:/Appliances:/Staging/openSUSE_Leap_15.3 cloud-builder
 $ sudo zypper install python3-cloud_builder
@@ -275,7 +275,9 @@ $ sudo zypper install python3-cloud_builder
 <li><p><strong>Setup git package source connection</strong></p>
 <p>Still logged in on the reposerver edit the file
 <code class="file docutils literal notranslate"><span class="pre">/etc/cloud_builder</span></code> as follows:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">CB_PROJECT</span><span class="o">=</span><span class="s2">&quot;https://github.com/OSInside/cloud-builder-packages.git&quot;</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ sudo vi /etc/cloud_builder
+
+<span class="nv">CB_PROJECT</span><span class="o">=</span><span class="s2">&quot;https://github.com/OSInside/cloud-builder-packages.git&quot;</span>
 </pre></div>
 </div>
 <div class="admonition note">
@@ -401,7 +403,65 @@ the following example:</p>
 </div>
 <div class="section" id="setup-apache-to-serve-the-repos">
 <h2>Setup Apache to Serve the Repos<a class="headerlink" href="#setup-apache-to-serve-the-repos" title="Permalink to this headline">¶</a></h2>
-<p>TODO</p>
+<p>All repos created by the <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-collect</span></code> service are now available
+and managed on the local system. To consume the repos the <code class="xref py py-obj docutils literal notranslate"><span class="pre">Apache</span></code>
+web server is used. The following describes a very simple setup
+for <code class="xref py py-obj docutils literal notranslate"><span class="pre">Apache</span></code> to serve the <code class="file docutils literal notranslate"><span class="pre">/srv/www/projects/projects</span></code>
+contents.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The following setup instructions for <code class="xref py py-obj docutils literal notranslate"><span class="pre">Apache</span></code> are valid if
+the reposerver is based on the Leap distribution. In case
+another distribution was used, adaptions to the information
+below are likely.</p>
+</div>
+<ol class="arabic">
+<li><p><strong>Install</strong> <code class="xref py py-obj docutils literal notranslate"><span class="pre">Apache</span></code></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ sudo zypper <span class="k">in</span> apache2
+</pre></div>
+</div>
+</li>
+<li><p><strong>Setup Apache DocumentRoot</strong></p>
+<p>Edit the file <code class="file docutils literal notranslate"><span class="pre">/etc/apache2/httpd.conf</span></code> and place the
+following content at the end of the file:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>DocumentRoot <span class="s2">&quot;/srv/www/projects/projects&quot;</span>
+
+&lt;Directory <span class="s2">&quot;/srv/www/projects/projects&quot;</span>&gt;
+    Options All Indexes FollowSymLinks
+    AllowOverride None
+    Require all granted
+&lt;/Directory&gt;
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>For a real production setup including https access,
+more config steps are needed. In addition the <code class="xref py py-obj docutils literal notranslate"><span class="pre">Apache</span></code>
+documentation recommends to place setup instructions
+in separate files and only include them in the master
+configuration. This all makes sense, so please consider
+the above as an example to get started.</p>
+</div>
+</li>
+<li><p><strong>Start</strong> <code class="xref py py-obj docutils literal notranslate"><span class="pre">Apache</span></code></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ sudo systemctl start apache2
+</pre></div>
+</div>
+</li>
+<li><p><strong>Open HTTP port</strong></p>
+<p>By default instances in the cloud blocks all inbound ports.
+To access the server the HTTP port must be opened for
+incomming connections. To do this add a new HTTP(80) inbound rule
+in the used security group of the reposerver instance. The
+documentation from here: <a class="reference external" href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/authorizing-access-to-an-instance.html">https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/authorizing-access-to-an-instance.html</a> helps with that task</p>
+</li>
+<li><p><strong>Access the reposerver</strong></p>
+<p>Open a web browser and place the following URL:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>http://RepoServerInstanceIP
+</pre></div>
+</div>
+</li>
+</ol>
 </div>
 </div>
 
