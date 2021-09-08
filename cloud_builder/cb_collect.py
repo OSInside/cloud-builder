@@ -398,6 +398,8 @@ def _create_rpm_repo(target_path: str):
         ['createrepo_c', target_path]
     )
     # TODO: package and repo signing
+    # - signing of repomd.xml or alike if not rpm repo
+    # - signing of package files
 
 
 def _set_lock(project_path: str) -> bool:
