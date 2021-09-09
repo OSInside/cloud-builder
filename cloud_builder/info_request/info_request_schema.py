@@ -26,19 +26,36 @@ info_request_schema = {
         'type': 'string',
         'nullable': False
     },
+    'project': {
+        'required': True,
+        'type': 'string',
+        'nullable': False
+    },
     'package': {
-        'required': True,
-        'type': 'string',
-        'nullable': False
+        'required': False,
+        'type': 'dict',
+        'schema': {
+            'arch': {
+                'required': True,
+                'type': 'string',
+                'nullable': False
+            },
+            'dist': {
+                'required': True,
+                'type': 'string',
+                'nullable': False
+            }
+        }
     },
-    'arch': {
-        'required': True,
-        'type': 'string',
-        'nullable': False
-    },
-    'dist': {
-        'required': True,
-        'type': 'string',
-        'nullable': False
+    'image': {
+        'required': False,
+        'type': 'dict',
+        'schema': {
+            'arch': {
+                'required': True,
+                'type': 'string',
+                'nullable': False
+            }
+        }
     }
 }

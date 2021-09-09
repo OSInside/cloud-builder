@@ -31,7 +31,7 @@ info_response_schema = {
         'type': 'string',
         'nullable': False
     },
-    'package': {
+    'project': {
         'required': True,
         'type': 'string',
         'nullable': False
@@ -45,25 +45,42 @@ info_response_schema = {
         'required': True,
         'type': 'boolean'
     },
-    'arch': {
-        'required': True,
-        'type': 'string',
-        'nullable': False
+    'package': {
+        'required': False,
+        'type': 'dict',
+        'schema': {
+            'arch': {
+                'required': True,
+                'type': 'string',
+                'nullable': False
+            },
+            'dist': {
+                'required': True,
+                'type': 'string',
+                'nullable': False
+            },
+            'prepare_log_file': {
+                'required': True,
+                'type': 'string',
+                'nullable': False
+            }
+        }
     },
-    'dist': {
-        'required': True,
-        'type': 'string',
-        'nullable': False
+    'image': {
+        'required': False,
+        'type': 'dict',
+        'schema': {
+            'arch': {
+                'required': True,
+                'type': 'string',
+                'nullable': False
+            }
+        }
     },
     'binary_packages': {
         'required': True,
         'type': 'list',
         'nullable': True
-    },
-    'prepare_log_file': {
-        'required': True,
-        'type': 'string',
-        'nullable': False
     },
     'log_file': {
         'required': True,

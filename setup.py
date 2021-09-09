@@ -40,7 +40,8 @@ config = {
             'cb-prepare=cloud_builder.cb_prepare:main',
             'cb-fetch=cloud_builder.cb_fetch:main',
             'cb-scheduler=cloud_builder.cb_scheduler:main',
-            'cb-collect=cloud_builder.cb_collect:main'
+            'cb-collect=cloud_builder.cb_collect:main',
+            'cb-image=cloud_builder.cb_image:main'
         ]
     },
     'include_package_data': True,

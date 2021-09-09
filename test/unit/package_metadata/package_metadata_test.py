@@ -31,7 +31,7 @@ class TestCBPackageMetaData:
             '../data/cloud_builder-invalid.yml'
         )
         assert metadata == {}
-        assert response.set_package_invalid_metadata_response.called
+        assert response.set_project_invalid_metadata_response.called
 
     @patch('cloud_builder.package_metadata.package_metadata.CBResponse')
     @patch('cloud_builder.broker.CBMessageBroker.new')
@@ -44,4 +44,4 @@ class TestCBPackageMetaData:
             '../data/cloud_builder-broken.yml'
         )
         assert metadata == {}
-        assert response.set_package_invalid_metadata_response.called
+        assert response.set_project_invalid_metadata_response.called

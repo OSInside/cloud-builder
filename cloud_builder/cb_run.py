@@ -81,6 +81,7 @@ def main() -> None:
     ).split('@')[0].strip(os.sep)
 
     log = CBCloudLogger('CBRun', package_name)
+    log.set_logfile()
 
     # created by run.sh script written in cb_prepare and called here
     prepare_log_file = ''.join(

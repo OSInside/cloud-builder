@@ -16,6 +16,7 @@
 # along with Cloud Builder.  If not, see <http://www.gnu.org/licenses/>
 #
 import yaml
+import logging
 from typing import List
 from kafka import KafkaConsumer
 from kafka import KafkaProducer
@@ -36,6 +37,8 @@ from cloud_builder.exceptions import (
     CBKafkaConsumerException,
     CBConfigFileValidationError
 )
+
+log = logging.getLogger('cloud_builder')
 
 
 class CBMessageBrokerKafka(CBMessageBrokerBase):
@@ -191,7 +194,7 @@ class CBMessageBrokerKafka(CBMessageBrokerBase):
         """
         Callback for successful sending of a message
         """
-        self.log.info(
+        log.debug(
             f'Message successfully sent to: {record_metadata.topic}'
         )
 
@@ -199,7 +202,7 @@ class CBMessageBrokerKafka(CBMessageBrokerBase):
         """
         Callback for error sending of a message
         """
-        self.log.error(
+        log.debug(
             f'Message failed with: {exception}'
         )
 

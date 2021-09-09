@@ -129,6 +129,9 @@ def main() -> None:
 
     Privileges.check_for_root_permissions()
 
+    log = CBCloudLogger('CBScheduler', '(system)')
+    log.set_logfile()
+
     Path.create(
         Defaults.get_runner_package_root()
     )
@@ -145,17 +148,19 @@ def main() -> None:
             'Poll timeout on the message broker greater than update interval'
         )
 
-    handle_build_requests(poll_timeout, running_limit)
+    handle_build_requests(poll_timeout, running_limit, log)
 
     project_scheduler = BlockingScheduler()
     project_scheduler.add_job(
-        lambda: handle_build_requests(poll_timeout, running_limit),
+        lambda: handle_build_requests(poll_timeout, running_limit, log),
         'interval', seconds=update_interval
     )
     project_scheduler.start()
 
 
-def handle_build_requests(poll_timeout: int, running_limit: int) -> None:
+def handle_build_requests(
+    poll_timeout: int, running_limit: int, log: CBCloudLogger
+) -> None:
     """
     Check on the runner state and if ok listen to the
     message broker queue for new package build requests
@@ -173,8 +178,6 @@ def handle_build_requests(poll_timeout: int, running_limit: int) -> None:
         will be closed and opened again if the limit is no
         longer reached
     """
-    log = CBCloudLogger('CBScheduler', '(system)')
-
     if get_running_builds() >= running_limit:
         # runner is busy...
         log.info('Max running builds limit reached')
@@ -196,19 +199,21 @@ def handle_build_requests(poll_timeout: int, running_limit: int) -> None:
                 if request:
                     package_source_path = os.path.join(
                         Defaults.get_runner_project_dir(),
-                        format(request['package'])
+                        format(request['project'])
                     )
                     package_config = is_request_valid(
                         package_source_path, request, log, broker
                     )
                     if package_config:
-                        build_package(request, broker)
+                        build_package(request, broker, log)
     finally:
         log.info('Closing message broker connection')
         broker.close()
 
 
-def build_package(request: Dict, broker: CBMessageBroker) -> None:
+def build_package(
+    request: Dict, broker: CBMessageBroker, log: CBCloudLogger
+) -> None:
     """
     Update the package sources and run the script which
     utilizes cb-prepare/cb-run to build the package for
@@ -217,9 +222,7 @@ def build_package(request: Dict, broker: CBMessageBroker) -> None:
     :param dict request: yaml dict request record
     :param CBMessageBroker broker: instance of CBMessageBroker
     """
-    log = CBCloudLogger(
-        'CBScheduler', os.path.basename(request['package'])
-    )
+    log.set_id(os.path.basename(request['project']))
     reset_build_if_running(
         request, log, broker
     )
@@ -256,9 +259,9 @@ def reset_build_if_running(
     :param CBMessageBroker broker: instance of CBMessageBroker
     """
     package_root = os.path.join(
-        Defaults.get_runner_package_root(), request['package']
+        Defaults.get_runner_package_root(), request['project']
     )
-    dist_profile = f'{request["dist"]}.{request["arch"]}'
+    dist_profile = f'{request["package"]["dist"]}.{request["package"]["arch"]}'
     build_root = f'{package_root}@{dist_profile}'
     package_run_pid = f'{build_root}.pid'
     if os.path.isfile(package_run_pid):
@@ -277,9 +280,9 @@ def reset_build_if_running(
                     build_pid
                 ),
                 response_code=status_flags.reset_running_build,
-                package=request['package'],
-                arch=request['arch'],
-                dist=request['dist']
+                package=request['project'],
+                arch=request['package']['arch'],
+                dist=request['package']['dist']
             )
             log.response(response, broker)
             os.kill(build_pid, signal.SIGTERM)
@@ -324,10 +327,10 @@ def is_request_valid(
     )
     # 1. Check on package sources to exist
     if not os.path.isdir(package_source_path):
-        response.set_package_not_existing_response(
+        response.set_project_not_existing_response(
             message=f'Package does not exist: {package_source_path}',
             response_code=status_flags.package_not_existing,
-            package=request['package']
+            project=request['project']
         )
         log.response(response, broker)
         return {}
@@ -337,18 +340,18 @@ def is_request_valid(
         package_source_path, Defaults.get_cloud_builder_metadata_file_name()
     )
     if not os.path.isfile(package_metadata):
-        response.set_package_metadata_not_existing_response(
+        response.set_project_metadata_not_existing_response(
             message=f'Package metadata does not exist: {package_metadata}',
             response_code=status_flags.package_metadata_not_existing,
-            package=request['package']
+            project=request['project']
         )
         log.response(response, broker)
         return {}
 
     # 3. Check if requested arch+dist is configured
     target_ok = False
-    request_arch = request['arch']
-    request_dist = request['dist']
+    request_arch = request['package']['arch']
+    request_dist = request['package']['dist']
     request_runner_group = request['runner_group']
     package_config = CBPackageMetaData.get_package_config(
         package_source_path, log, request['request_id']
@@ -361,22 +364,22 @@ def is_request_valid(
                 target_ok = True
                 break
     if not target_ok:
-        response.set_package_invalid_target_response(
+        response.set_project_invalid_target_response(
             message='No build config for: {0}.{1} in runner group {2}'.format(
                 request_dist, request_arch, request_runner_group
             ),
             response_code=status_flags.package_target_not_configured,
-            package=request['package']
+            project=request['project']
         )
         log.response(response, broker)
         return {}
 
     # 4. Check if host architecture is compatbile
-    if not request['arch'] == platform.machine():
+    if not request['package']['arch'] == platform.machine():
         response.set_buildhost_arch_incompatible_response(
             message=f'Incompatible arch: {platform.machine()}',
             response_code=status_flags.package_request_accepted,
-            package=request['package']
+            package=request['project']
         )
         log.response(response, broker)
         return {}
@@ -385,9 +388,9 @@ def is_request_valid(
     response.set_package_build_scheduled_response(
         message='Accept package build request',
         response_code=status_flags.package_request_accepted,
-        package=request['package'],
-        arch=request['arch'],
-        dist=request['dist']
+        package=request['project'],
+        arch=request['package']['arch'],
+        dist=request['package']['dist']
     )
     log.response(response, broker)
     broker.acknowledge()
@@ -412,9 +415,9 @@ def create_run_script(
 
     :rtype: str
     """
-    dist_profile = f'{request["dist"]}.{request["arch"]}'
+    dist_profile = f'{request["package"]["dist"]}.{request["package"]["arch"]}'
     if local_build:
-        package_source_path = request['package']
+        package_source_path = request['project']
         package_root = package_source_path
         build_root = f'{package_root}@{dist_profile}'
         run_script = dedent('''
@@ -443,10 +446,10 @@ def create_run_script(
         )
     else:
         package_source_path = os.path.join(
-            Defaults.get_runner_project_dir(), request['package']
+            Defaults.get_runner_project_dir(), request['project']
         )
         package_root = os.path.join(
-            Defaults.get_runner_package_root(), request['package']
+            Defaults.get_runner_package_root(), request['project']
         )
         build_root = f'{package_root}@{dist_profile}'
         run_script = dedent('''

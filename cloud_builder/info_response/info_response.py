@@ -25,14 +25,14 @@ class CBInfoResponse:
     Implement creation of response info schema valid data dict
     """
     def __init__(self, request_id: str, identity: str) -> None:
-        self.info_schema_version = 0.1
+        self.info_schema_version = 0.2
         self.info_response_dict: Dict = {
             'schema_version': self.info_schema_version,
             'identity': identity,
             'request_id': request_id
         }
 
-    def set_info_response(
+    def set_package_info_response(
         self, package: str, source_ip: str, is_running: bool,
         arch: str, dist: str, binary_packages: List[str] = [],
         prepare_log_file: str = 'unknown', log_file: str = 'unknown',
@@ -41,26 +41,29 @@ class CBInfoResponse:
     ) -> None:
         self.info_response_dict = {
             **self.info_response_dict,
-            'package': package,
+            'project': package,
             'source_ip': source_ip,
             'is_running': is_running,
-            'arch': arch,
-            'dist': dist,
+            'package': {
+                'arch': arch,
+                'dist': dist,
+                'prepare_log_file': prepare_log_file
+            },
             'binary_packages': binary_packages,
-            'prepare_log_file': prepare_log_file,
             'log_file': log_file,
             'solver_file': solver_file,
             'utc_modification_time': utc_modification_time,
             'build_status': build_status
         }
 
-    def set_info_response_result(
+    def set_package_info_response_result(
         self, binary_packages: List[str], prepare_log_file: str, log_file: str,
         solver_file: str, utc_modification_time: str,
         build_status: str
     ) -> None:
         self.info_response_dict['binary_packages'] = binary_packages
-        self.info_response_dict['prepare_log_file'] = prepare_log_file
+        self.info_response_dict['package']['prepare_log_file'] = \
+            prepare_log_file
         self.info_response_dict['log_file'] = log_file
         self.info_response_dict['solver_file'] = solver_file
         self.info_response_dict['utc_modification_time'] = utc_modification_time

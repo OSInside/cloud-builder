@@ -25,15 +25,19 @@ class CBInfoRequest:
     """
     def __init__(self) -> None:
         self.info_request_dict: Dict = {}
-        self.info_request_schema_version = 0.1
+        self.info_request_schema_version = 0.2
 
-    def set_info_request(self, package: str, arch: str, dist: str) -> None:
+    def set_package_info_request(
+        self, package: str, arch: str, dist: str
+    ) -> None:
         self.info_request_dict = {
             'schema_version': self.info_request_schema_version,
             'request_id': CBIdentity.get_request_id(),
-            'package': package,
-            'arch': arch,
-            'dist': dist
+            'project': package,
+            'package': {
+                'arch': arch,
+                'dist': dist
+            }
         }
 
     def get_data(self) -> Dict:

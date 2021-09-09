@@ -26,21 +26,6 @@ package_request_schema = {
         'type': 'string',
         'nullable': False
     },
-    'package': {
-        'required': True,
-        'type': 'string',
-        'nullable': False
-    },
-    'arch': {
-        'required': True,
-        'type': 'string',
-        'nullable': False
-    },
-    'dist': {
-        'required': True,
-        'type': 'string',
-        'nullable': False
-    },
     'runner_group': {
         'required': True,
         'type': 'string',
@@ -50,5 +35,37 @@ package_request_schema = {
         'required': True,
         'type': 'string',
         'nullable': False
+    },
+    'project': {
+        'required': True,
+        'type': 'string',
+        'nullable': False
+    },
+    'package': {
+        'required': False,
+        'type': 'dict',
+        'schema': {
+            'arch': {
+                'required': True,
+                'type': 'string',
+                'nullable': False
+            },
+            'dist': {
+                'required': True,
+                'type': 'string',
+                'nullable': False
+            }
+        }
+    },
+    'image': {
+        'required': False,
+        'type': 'dict',
+        'schema': {
+            'arch': {
+                'required': True,
+                'type': 'string',
+                'nullable': False
+            }
+        }
     }
 }

@@ -1,51 +1,69 @@
 import yaml
 import io
+from pytest import fixture
 from mock import (
     patch, Mock, MagicMock, call
 )
-
+import logging
 from cloud_builder.cloud_logger import CBCloudLogger
 from cloud_builder.response.response import CBResponse
 from cloud_builder.info_response.info_response import CBInfoResponse
 
 
 class TestCBCloudLogger:
-    @patch('cloud_builder.cloud_logger.CBLogger')
+    @fixture(autouse=True)
+    def inject_fixtures(self, caplog):
+        self._caplog = caplog
+
     @patch('cloud_builder.cloud_logger.CBIdentity')
-    def setup(self, mock_CBIdentity, mock_CBLogger):
+    def setup(self, mock_CBIdentity):
         self.cloud_logger = CBCloudLogger('service', 'name')
+
+    @patch('kiwi.logger.Logger.set_logfile')
+    def test_set_logfile(self, mock_set_logfile):
+        self.cloud_logger.set_logfile()
+        mock_set_logfile.assert_called_once_with(
+            '/var/log/cloud_builder.log'
+        )
 
     def test_get_id(self):
         assert self.cloud_logger.get_id() == self.cloud_logger.id
 
+    @patch('cloud_builder.cloud_logger.CBIdentity')
+    def test_set_id(self, mock_CBIdentity):
+        self.cloud_logger.set_id('new_name')
+        assert self.cloud_logger.get_id() == self.cloud_logger.id
+
     def test_info(self):
-        self.cloud_logger.info('message')
-        self.cloud_logger.log.info.assert_called_once_with(
-            '{0}: {1}'.format(self.cloud_logger.id, 'message')
-        )
+        with self._caplog.at_level(logging.INFO):
+            self.cloud_logger.info('message')
+            assert '{0}: {1}'.format(
+                self.cloud_logger.id, 'message'
+            ) in self._caplog.text
 
     def test_warning(self):
-        self.cloud_logger.warning('message')
-        self.cloud_logger.log.warning.assert_called_once_with(
-            '{0}: {1}'.format(self.cloud_logger.id, 'message')
-        )
+        with self._caplog.at_level(logging.WARNING):
+            self.cloud_logger.warning('message')
+            assert '{0}: {1}'.format(
+                self.cloud_logger.id, 'message'
+            ) in self._caplog.text
 
     def test_error(self):
-        self.cloud_logger.error('message')
-        self.cloud_logger.log.error.assert_called_once_with(
-            '{0}: {1}'.format(self.cloud_logger.id, 'message')
-        )
+        with self._caplog.at_level(logging.ERROR):
+            self.cloud_logger.error('message')
+            assert '{0}: {1}'.format(
+                self.cloud_logger.id, 'message'
+            ) in self._caplog.text
 
     def test_info_response(self):
         response = CBInfoResponse('UUID', 'response_identity')
         broker = Mock()
-        self.cloud_logger.info_response(response, broker)
-        self.cloud_logger.log.info.assert_called_once_with(
-            '{0}: {1}'.format(
+        with self._caplog.at_level(logging.INFO):
+            self.cloud_logger.info_response(response, broker)
+            assert '{0}: {1}'.format(
                 self.cloud_logger.id, yaml.dump(response.get_data()).encode()
-            )
-        )
-        broker.send_info_response.assert_called_once_with(response)
+            ) in self._caplog.text
+            broker.send_info_response.assert_called_once_with(response)
 
     def test_response(self):
         response = CBResponse('UUID', 'response_identity')
@@ -68,12 +86,10 @@ class TestCBCloudLogger:
                 call('schema_version'),
                 call(':'),
                 call(' '),
-                call('0.1'),
+                call('0.2'),
                 call('\n')
             ]
-        self.cloud_logger.log.info.assert_called_once_with(
-            '{0}: {1}'.format(
+            assert '{0}: {1}'.format(
                 self.cloud_logger.id, yaml.dump(response.get_data()).encode()
-            )
-        )
+            ) in self._caplog.text
         broker.send_response.assert_called_once_with(response)

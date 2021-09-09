@@ -79,6 +79,9 @@ def main() -> None:
 
     Privileges.check_for_root_permissions()
 
+    log = CBCloudLogger('CBInfo', '(system)')
+    log.set_logfile()
+
     update_interval = int(args['--update-interval'] or 10)
     poll_timeout = int(args['--poll-timeout'] or 5000)
 
@@ -90,17 +93,17 @@ def main() -> None:
             'Poll timeout on the message broker greater than update interval'
         )
 
-    handle_info_requests(poll_timeout)
+    handle_info_requests(poll_timeout, log)
 
     project_scheduler = BlockingScheduler()
     project_scheduler.add_job(
-        lambda: handle_info_requests(poll_timeout),
+        lambda: handle_info_requests(poll_timeout, log),
         'interval', seconds=update_interval
     )
     project_scheduler.start()
 
 
-def handle_info_requests(poll_timeout: int) -> None:
+def handle_info_requests(poll_timeout: int, log: CBCloudLogger) -> None:
     """
     Listen to the message broker queue for info requests
     in pub/sub mode. The subscription model is based on
@@ -120,8 +123,6 @@ def handle_info_requests(poll_timeout: int) -> None:
         timeout in msec after which the blocking read() to the
         message broker returns
     """
-    log = CBCloudLogger('CBInfo', '(system)')
-
     broker = CBMessageBroker.new(
         'kafka', config_file=Defaults.get_broker_config()
     )
@@ -135,19 +136,23 @@ def handle_info_requests(poll_timeout: int) -> None:
                 request = broker.validate_info_request(message.value)
                 if request:
                     lookup(
-                        request['package'],
-                        request['arch'],
-                        request['dist'],
+                        request['project'],
+                        request['package']['arch'],
+                        request['package']['dist'],
                         request['request_id'],
-                        broker
+                        broker,
+                        log
                     )
     finally:
         log.info('Closing message broker connection')
         broker.close()
 
 
-def lookup(package: str, arch: str, dist: str, request_id: str, broker: Any):
-    log = CBCloudLogger('CBInfo', package)
+def lookup(
+    package: str, arch: str, dist: str, request_id: str,
+    broker: Any, log: CBCloudLogger
+):
+    log.set_id(package)
     build_pid_file = os.sep.join(
         [Defaults.get_runner_package_root(), f'{package}@{dist}.{arch}.pid']
     )
@@ -157,7 +162,7 @@ def lookup(package: str, arch: str, dist: str, request_id: str, broker: Any):
         response = CBInfoResponse(
             request_id, log.get_id()
         )
-        response.set_info_response(
+        response.set_package_info_response(
             package, source_ip, is_building(build_pid_file), arch, dist
         )
         package_result_file = os.sep.join(
@@ -172,11 +177,11 @@ def lookup(package: str, arch: str, dist: str, request_id: str, broker: Any):
             )
             with open(package_result_file) as result_file:
                 result = broker.validate_package_response(result_file.read())
-                response.set_info_response_result(
-                    result['binary_packages'],
-                    result['prepare_log_file'],
-                    result['log_file'],
-                    result['solver_file'],
+                response.set_package_info_response_result(
+                    result['package']['binary_packages'],
+                    result['package']['prepare_log_file'],
+                    result['package']['log_file'],
+                    result['package']['solver_file'],
                     format(utc_modification_time),
                     get_package_status(result['response_code'])
                 )

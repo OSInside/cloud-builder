@@ -13,11 +13,13 @@ class TestCBPackageRequest:
             'vim', 'x86_64', 'TW', 'runner_group', 'action'
         )
         assert self.request.get_data() == {
+            'package': {
+                'arch': 'x86_64',
+                'dist': 'TW'
+            },
             'action': 'action',
-            'arch': 'x86_64',
-            'package': 'vim',
-            'dist': 'TW',
+            'project': 'vim',
             'runner_group': 'runner_group',
             'request_id': mock_CBIdentity.get_request_id.return_value,
-            'schema_version': 0.1
+            'schema_version': 0.2
         }
