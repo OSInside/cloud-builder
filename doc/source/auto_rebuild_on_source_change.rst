@@ -18,7 +18,7 @@ requests under the following conditions:
 2. **Package source(s) and/or metadata has changed:**
 
   Similar to the first case with the difference that a
-  change on the pacakge metadata `cloud_builder.yml` and/or
+  change on the package metadata `cloud_builder.yml` and/or
   `cloud_builder.kiwi` will force a cleanup and rebuild of
   an eventual existing buildroot on the selected runner
 
@@ -66,14 +66,16 @@ like in the following example will be provided:
 .. code:: bash
 
    {
-       "arch": "x86_64",
-       "dist": "TW",
        "identity": "CBFetch:18.193.45.127:15259:xclock",
        "message": "Package update request scheduled",
-       "package": "projects/MS/xclock",
+       "project": "projects/MS/xclock",
        "request_id": "d309d5d2-f2e0-11eb-9538-06be1098538e",
        "response_code": "package rebuild due to source change",
-       "schema_version": 0.1
+       "schema_version": 0.2,
+       "target": {
+           "arch": "x86_64",
+           "dist": "TW"
+       }
    }
 
 The provided `request_id` can be used to check on the status

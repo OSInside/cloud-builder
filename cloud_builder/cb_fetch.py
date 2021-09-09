@@ -83,23 +83,26 @@ def main() -> None:
 
     Privileges.check_for_root_permissions()
 
+    log = CBCloudLogger('CBFetch', '(system)')
+    log.set_logfile()
+
     project_dir = Defaults.get_runner_project_dir()
     if not os.path.isdir(project_dir):
         Command.run(
             ['git', 'clone', args['--project'], project_dir]
         )
     if not args['--single-shot']:
-        update_project()
+        update_project(log)
 
         project_scheduler = BlockingScheduler()
         project_scheduler.add_job(
-            lambda: update_project(),
+            lambda: update_project(log),
             'interval', seconds=int(args['--update-interval'] or 30)
         )
         project_scheduler.start()
 
 
-def update_project() -> None:
+def update_project(log: CBCloudLogger) -> None:
     """
     Callback method registered with the BlockingScheduler
     """
@@ -134,7 +137,7 @@ def update_project() -> None:
         'kafka', config_file=Defaults.get_broker_config()
     )
     for package_source_path in sorted(changed_packages.keys()):
-        log = CBCloudLogger('CBFetch', os.path.basename(package_source_path))
+        log.set_id(os.path.basename(package_source_path))
         package_config = CBPackageMetaData.get_package_config(
             os.path.join(
                 Defaults.get_runner_project_dir(), package_source_path
@@ -162,8 +165,8 @@ def update_project() -> None:
                 response.set_package_update_request_response(
                     message='Package update request scheduled',
                     response_code=request_action,
-                    package=request['package'],
-                    arch=request['arch'],
-                    dist=request['dist']
+                    package=request['project'],
+                    arch=request['package']['arch'],
+                    dist=request['package']['dist']
                 )
                 log.response(response, broker)

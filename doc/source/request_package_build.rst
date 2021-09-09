@@ -28,12 +28,14 @@ the `MS` project as follows:
       [ INFO    ]: 09:31:15 | Message successfully sent to: suse
       {
           "action": "package rebuild requested",
-          "arch": "x86_64",
-          "dist": "TW",
-          "package": "projects/MS/xclock",
-          "request_id": "b88becf6-f04f-11eb-8cff-06be1098538e",
+          "package": {
+              "arch": "x86_64",
+              "dist": "TW"
+          },
+          "project": "projects/MS/xclock",
+          "request_id": "e0adf9c6-1224-11ec-bdbe-06be1098538e",
           "runner_group": "suse",
-          "schema_version": 0.1
+          "schema_version": 0.2
       }
 
    .. note::
@@ -70,42 +72,48 @@ the `MS` project as follows:
    .. code:: bash
 
       {
-          "arch": "x86_64",
-          "dist": "TW",
-          "identity": "CBScheduler:18.193.45.127:6432:(system)",
+          "identity": "CBScheduler:18.193.45.127:20028:xclock",
           "message": "Accept package build request",
-          "package": "projects/MS/xclock",
-          "request_id": "b88becf6-f04f-11eb-8cff-06be1098538e",
+          "project": "projects/MS/xclock",
+          "request_id": "e0adf9c6-1224-11ec-bdbe-06be1098538e",
           "response_code": "package request accepted",
-          "schema_version": 0.1
+          "schema_version": 0.2,
+          "target": {
+              "arch": "x86_64",
+              "dist": "TW"
+          }
       }
       {
-          "build_root": "/var/tmp/CB/projects/MS/xclock@TW.x86_64",
-          "exit_code": 0,
-          "identity": "CBPrepare:18.193.45.127:6455:xclock",
-          "log_file": "/var/tmp/CB/projects/MS/xclock@TW.x86_64.prepare.log",
+          "identity": "CBPrepare:18.193.45.127:25128:xclock",
           "message": "Buildroot ready for package build",
-          "package": "xclock",
-          "request_id": "b88becf6-f04f-11eb-8cff-06be1098538e",
+          "package_prepare": {
+              "build_root": "/var/tmp/CB/projects/MS/xclock@TW.x86_64",
+              "exit_code": 0,
+              "prepare_log_file": "/var/tmp/CB/projects/MS/xclock@TW.x86_64.prepare.log",
+              "solver_file": "/var/tmp/CB/projects/MS/xclock@TW.x86_64.solver.json"
+          },
+          "project": "projects/MS/xclock",
+          "request_id": "e0adf9c6-1224-11ec-bdbe-06be1098538e",
           "response_code": "build root setup succeeded",
-          "schema_version": 0.1,
-          "solver_file": "/var/tmp/CB/projects/MS/xclock@TW.x86_64.solver.json"
+          "schema_version": 0.2
       }
       {
-          "binary_packages": [
-              "/var/tmp/CB/projects/MS/xclock@TW.x86_64/home/abuild/rpmbuild/RPMS/x86_64/xclock-1.0.9-0.x86_64.rpm",
-              "/var/tmp/CB/projects/MS/xclock@TW.x86_64/home/abuild/rpmbuild/SRPMS/xclock-1.0.9-0.src.rpm"
-          ],
-          "exit_code": 0,
-          "identity": "CBRun:18.193.45.127:6566:projects/MS/xclock",
-          "log_file": "/var/tmp/CB/projects/MS/xclock@TW.x86_64.build.log",
+          "identity": "CBRun:18.193.45.127:25226:projects/MS/xclock",
           "message": "Package build finished",
-          "package": "projects/MS/xclock",
-          "prepare_log_file": "/var/tmp/CB/projects/MS/xclock@TW.x86_64.prepare.log",
-          "request_id": "b88becf6-f04f-11eb-8cff-06be1098538e",
+          "package": {
+              "binary_packages": [
+                  "/var/tmp/CB/projects/MS/xclock@TW.x86_64/home/abuild/rpmbuild/RPMS/x86_64/xclock-1.0.9-0.x86_64.rpm",
+                  "/var/tmp/CB/projects/MS/xclock@TW.x86_64/home/abuild/rpmbuild/SRPMS/xclock-1.0.9-0.src.rpm"
+              ],
+              "exit_code": 0,
+              "log_file": "/var/tmp/CB/projects/MS/xclock@TW.x86_64.build.log",
+              "prepare_log_file": "/var/tmp/CB/projects/MS/xclock@TW.x86_64.prepare.log",
+              "solver_file": "/var/tmp/CB/projects/MS/xclock@TW.x86_64.solver.json"
+          },
+          "project": "projects/MS/xclock",
+          "request_id": "e0adf9c6-1224-11ec-bdbe-06be1098538e",
           "response_code": "package build succeeded",
-          "schema_version": 0.1,
-          "solver_file": "/var/tmp/CB/projects/MS/xclock@TW.x86_64.solver.json"
+          "schema_version": 0.2
       }
 
    As you can see from this information there are the three {CB}

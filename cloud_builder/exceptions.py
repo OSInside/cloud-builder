@@ -16,10 +16,12 @@
 # along with Cloud Builder.  If not, see <http://www.gnu.org/licenses/>
 #
 import sys
+import logging
 from functools import wraps
 from typing import Callable
-from cloud_builder.logger import CBLogger
 from kiwi.exceptions import KiwiError
+
+log = logging.getLogger('cloud_builder')
 
 
 def exception_handler(func: Callable) -> Callable:
@@ -36,7 +38,6 @@ def exception_handler(func: Callable) -> Callable:
     """
     @wraps(func)
     def wrapper(*args, **kwargs):
-        log = CBLogger.get_logger()
         try:
             return func(*args, **kwargs)
         except CBError as issue:

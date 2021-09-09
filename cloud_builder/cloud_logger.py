@@ -16,14 +16,16 @@
 # along with Cloud Builder.  If not, see <http://www.gnu.org/licenses/>
 #
 import yaml
+import logging
 from typing import (
     Any, Dict
 )
-from cloud_builder.logger import CBLogger
-from cloud_builder.defaults import Defaults
 from cloud_builder.identity import CBIdentity
+from cloud_builder.defaults import Defaults
 from cloud_builder.response.response import CBResponse
 from cloud_builder.info_response.info_response import CBInfoResponse
+
+log: Any = logging.getLogger('cloud_builder')
 
 
 class CBCloudLogger:
@@ -36,10 +38,14 @@ class CBCloudLogger:
         :param str service: service name
         :param str name: custom name
         """
-        self.log = CBLogger.get_logger(
-            logfile=Defaults.get_cb_logfile()
-        )
+        self.service = service
         self.id = CBIdentity.get_id(service, name)
+
+    def set_logfile(self) -> None:
+        """
+        Set log file from Defaults settings
+        """
+        log.set_logfile(Defaults.get_cb_logfile())
 
     def get_id(self) -> str:
         """
@@ -51,13 +57,21 @@ class CBCloudLogger:
         """
         return self.id
 
+    def set_id(self, name: str) -> None:
+        """
+        Set new name for service identity
+
+        :param str name: custom name
+        """
+        self.id = CBIdentity.get_id(self.service, name)
+
     def info(self, message: str) -> None:
         """
         Local log an info message
 
         :param str message: message
         """
-        self.log.info(f'{self.id}: {message}')
+        log.info(f'{self.id}: {message}')
 
     def warning(self, message: str) -> None:
         """
@@ -65,7 +79,7 @@ class CBCloudLogger:
 
         :param str message: message
         """
-        self.log.warning(f'{self.id}: {message}')
+        log.warning(f'{self.id}: {message}')
 
     def error(self, message: str) -> None:
         """
@@ -73,7 +87,7 @@ class CBCloudLogger:
 
         :param str message: message
         """
-        self.log.error(f'{self.id}: {message}')
+        log.error(f'{self.id}: {message}')
 
     def info_response(
         self, response: CBInfoResponse, broker: Any, filename: str = None
@@ -110,7 +124,7 @@ class CBCloudLogger:
         :param Dict response_dict: message dict
         :param str filename: store to filename in yaml format
         """
-        self.log.info(
+        log.info(
             '{0}: {1}'.format(
                 self.id, yaml.dump(response_dict).encode()
             )

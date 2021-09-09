@@ -16,6 +16,7 @@
 # along with Cloud Builder.  If not, see <http://www.gnu.org/licenses/>
 #
 import yaml
+import logging
 from abc import ABCMeta, abstractmethod
 from cerberus import Validator
 from typing import (
@@ -33,8 +34,9 @@ from cloud_builder.info_request.info_request_schema import info_request_schema
 from cloud_builder.info_response.info_response_schema import (
     info_response_schema
 )
-from cloud_builder.logger import CBLogger
 from cloud_builder.exceptions import CBConfigFileNotFoundError
+
+log = logging.getLogger('cloud_builder')
 
 
 class CBMessageBrokerBase(metaclass=ABCMeta):
@@ -53,7 +55,6 @@ class CBMessageBrokerBase(metaclass=ABCMeta):
         except Exception as issue:
             raise CBConfigFileNotFoundError(issue)
 
-        self.log = CBLogger.get_logger()
         self.post_init()
 
     @abstractmethod
@@ -148,7 +149,7 @@ class CBMessageBrokerBase(metaclass=ABCMeta):
             validator = Validator(schema)
             validator.validate(message_as_yaml, schema)
             if validator.errors:
-                self.log.error(
+                log.debug(
                     'ValidationError for {0!r}: {1!r}'.format(
                         message_as_yaml, validator.errors
                     )
@@ -156,7 +157,7 @@ class CBMessageBrokerBase(metaclass=ABCMeta):
                 message_as_yaml = {}
                 self.acknowledge()
         except Exception as issue:
-            self.log.error(
+            log.debug(
                 'YAMLError in {0!r}: {1!r}'.format(
                     message, issue
                 )

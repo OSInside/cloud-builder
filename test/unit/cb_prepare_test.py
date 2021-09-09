@@ -110,7 +110,7 @@ class TestCBPrepare:
         response.set_package_buildroot_response.assert_called_once_with(
             message='Buildroot ready for package build',
             response_code='build root setup succeeded',
-            package='package',
+            package='projects/package',
             log_file='/var/tmp/CB/projects/package@dist.arch.prepare.log',
             solver_file='/var/tmp/CB/projects/package@dist.arch.solver.json',
             build_root='/var/tmp/CB/projects/package@dist.arch',
@@ -204,7 +204,7 @@ class TestCBPrepare:
         response.set_package_buildroot_response.assert_called_once_with(
             message='sync error',
             response_code='build root setup failed',
-            package='package',
+            package='projects/package',
             log_file='/var/tmp/CB/projects/package@dist.arch.prepare.log',
             solver_file='/var/tmp/CB/projects/package@dist.arch.solver.json',
             build_root='/var/tmp/CB/projects/package@dist.arch',

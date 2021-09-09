@@ -59,8 +59,6 @@ from typing import (
     Dict, List, Any, Optional
 )
 
-log = CBCloudLogger('CBCollect', '(system)')
-
 
 @exception_handler
 def main() -> None:
@@ -94,6 +92,9 @@ def main() -> None:
 
     Privileges.check_for_root_permissions()
 
+    log = CBCloudLogger('CBCollect', '(system)')
+    log.set_logfile()
+
     project_dir = Defaults.get_runner_project_dir()
     if not os.path.isdir(project_dir):
         Command.run(
@@ -105,7 +106,8 @@ def main() -> None:
     )
     build_repos(
         broker, int(args['--timeout'] or 30),
-        args['--ssh-pkey'], args['--ssh-user'] or 'ec2-user'
+        args['--ssh-pkey'], args['--ssh-user'] or 'ec2-user',
+        log
     )
 
 
@@ -149,7 +151,7 @@ def build_project_tree() -> Dict[str, List]:
     return projects_tree
 
 
-def send_package_info_requests(broker: Any) -> List[str]:
+def send_package_info_requests(broker: Any, log: CBCloudLogger) -> List[str]:
     """
     Walk through the packages and send info requests
 
@@ -172,7 +174,7 @@ def send_package_info_requests(broker: Any) -> List[str]:
             if package_config:
                 for target in package_config.get('distributions') or []:
                     info_request = CBInfoRequest()
-                    info_request.set_info_request(
+                    info_request.set_package_info_request(
                         package_path.replace(
                             Defaults.get_runner_project_dir(), ''
                         ), target['arch'], target['dist']
@@ -185,7 +187,8 @@ def send_package_info_requests(broker: Any) -> List[str]:
 
 
 def group_info_response(
-    broker: Any, request_id_list: List[str], timeout_sec: int
+    broker: Any, request_id_list: List[str], timeout_sec: int,
+    log: CBCloudLogger
 ) -> Dict:
     """
     Watch on the info_response queue for information
@@ -226,13 +229,13 @@ def group_info_response(
                 response = broker.validate_info_response(
                     message.value
                 )
-                if response:
+                if response and 'package' in response:
                     broker.acknowledge()
                     if response['request_id'] in request_id_list:
                         package_id = '{0}_{1}_{2}'.format(
-                            response['package'],
-                            response['arch'],
-                            response['dist']
+                            response['project'],
+                            response['package']['arch'],
+                            response['package']['dist']
                         )
                         if package_id in info_records:
                             info_records[package_id].append(response)
@@ -283,7 +286,8 @@ def group_info_response(
 
 
 def build_repos(
-    broker: Any, timeout: int, ssh_pkey_file: str, user: str
+    broker: Any, timeout: int, ssh_pkey_file: str, user: str,
+    log: CBCloudLogger
 ) -> None:
     """
     Application loop - building project repositories
@@ -292,9 +296,9 @@ def build_repos(
     :param int timeout: Read timeout on info response queue
     """
     while(True):
-        request_id_list = send_package_info_requests(broker)
+        request_id_list = send_package_info_requests(broker, log)
         runner_responses = group_info_response(
-            broker, request_id_list, timeout
+            broker, request_id_list, timeout, log
         )
         if not runner_responses:
             log.info(f'No runners responded... sleeping {timeout} sec')
@@ -305,7 +309,7 @@ def build_repos(
                 target=build_project_repo,
                 args=(
                     project_path, runner_responses[project_path],
-                    ssh_pkey_file, user,
+                    ssh_pkey_file, user, log
                 )
             )
             project_repo_thread.start()
@@ -313,7 +317,7 @@ def build_repos(
 
 def build_project_repo(
     project_path: str, runner_responses_for_project: Dict,
-    ssh_pkey_file: str, user: str
+    ssh_pkey_file: str, user: str, log: CBCloudLogger
 ) -> None:
     if not _set_lock(project_path):
         log.info(f'Repo sync for {project_path} is locked')

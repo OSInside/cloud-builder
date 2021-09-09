@@ -25,7 +25,7 @@ class CBResponse:
     Implement creation of response schema valid data dict
     """
     def __init__(self, request_id: str, identity: str) -> None:
-        self.response_schema_version = 0.1
+        self.response_schema_version = 0.2
         self.response_dict: Dict = {
             'schema_version': self.response_schema_version,
             'identity': identity,
@@ -41,12 +41,14 @@ class CBResponse:
             **self.response_dict,
             'message': message,
             'response_code': response_code,
-            'package': package,
-            'prepare_log_file': prepare_log_file,
-            'log_file': log_file,
-            'solver_file': solver_file,
-            'binary_packages': binary_packages,
-            'exit_code': exit_code
+            'project': package,
+            'package': {
+                'prepare_log_file': prepare_log_file,
+                'log_file': log_file,
+                'solver_file': solver_file,
+                'binary_packages': binary_packages,
+                'exit_code': exit_code
+            }
         }
 
     def set_package_buildroot_response(
@@ -57,11 +59,13 @@ class CBResponse:
             **self.response_dict,
             'message': message,
             'response_code': response_code,
-            'package': package,
-            'log_file': log_file,
-            'solver_file': solver_file,
-            'build_root': build_root,
-            'exit_code': exit_code
+            'project': package,
+            'package_prepare': {
+                'prepare_log_file': log_file,
+                'solver_file': solver_file,
+                'build_root': build_root,
+                'exit_code': exit_code
+            }
         }
 
     def set_package_update_request_response(
@@ -93,25 +97,25 @@ class CBResponse:
     ) -> None:
         self._set_standard_response(message, response_code, package)
 
-    def set_package_not_existing_response(
-        self, message: str, response_code: str, package: str
+    def set_project_not_existing_response(
+        self, message: str, response_code: str, project: str
     ) -> None:
-        self._set_standard_response(message, response_code, package)
+        self._set_standard_response(message, response_code, project)
 
-    def set_package_invalid_metadata_response(
-        self, message: str, response_code: str, package: str
+    def set_project_invalid_metadata_response(
+        self, message: str, response_code: str, project: str
     ) -> None:
-        self._set_standard_response(message, response_code, package)
+        self._set_standard_response(message, response_code, project)
 
-    def set_package_invalid_target_response(
-        self, message: str, response_code: str, package: str
+    def set_project_invalid_target_response(
+        self, message: str, response_code: str, project: str
     ) -> None:
-        self._set_standard_response(message, response_code, package)
+        self._set_standard_response(message, response_code, project)
 
-    def set_package_metadata_not_existing_response(
-        self, message: str, response_code: str, package: str
+    def set_project_metadata_not_existing_response(
+        self, message: str, response_code: str, project: str
     ) -> None:
-        self._set_standard_response(message, response_code, package)
+        self._set_standard_response(message, response_code, project)
 
     def get_data(self) -> Dict:
         return self.response_dict
@@ -123,7 +127,7 @@ class CBResponse:
             **self.response_dict,
             'message': message,
             'response_code': response_code,
-            'package': package
+            'project': package
         }
 
     def _set_dist_standard_response(
@@ -134,7 +138,9 @@ class CBResponse:
             **self.response_dict,
             'message': message,
             'response_code': response_code,
-            'package': package,
-            'arch': arch,
-            'dist': dist
+            'project': package,
+            'target': {
+                'arch': arch,
+                'dist': dist
+            }
         }

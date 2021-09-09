@@ -45,7 +45,9 @@ import sys
 import json
 from docopt import docopt
 from textwrap import dedent
-from typing import Dict
+from typing import (
+    Dict, List
+)
 
 from cloud_builder.version import __version__
 from cloud_builder.cloud_logger import CBCloudLogger
@@ -87,12 +89,16 @@ def main() -> None:
     Privileges.check_for_root_permissions()
 
     log = CBCloudLogger('CBPrepare', os.path.basename(args['--package']))
+    log.set_logfile()
 
     status_flags = Defaults.get_status_flags()
 
     dist_profile = args['--profile']
     build_root = args['--root']
     package_name = os.path.basename(args['--package'])
+    project_name = os.sep.join(
+        [os.path.dirname(build_root), package_name]
+    ).replace(Defaults.get_runner_package_root(), '').lstrip(os.sep)
 
     # Solve buildroot packages and create solver json
     prepare_log_file = f'{build_root}.prepare.log'
@@ -104,7 +110,7 @@ def main() -> None:
             )
         )
         solver_result = resolve_build_dependencies(
-            args['--package'], dist_profile, prepare_log_file
+            args['--package'], [dist_profile], prepare_log_file
         )
         with open(solver_json_file, 'w') as solve_result:
             solve_result.write(
@@ -192,7 +198,7 @@ def main() -> None:
         response.set_package_buildroot_response(
             message=message,
             response_code=status,
-            package=package_name,
+            package=project_name,
             log_file=prepare_log_file,
             solver_file=solver_json_file,
             build_root=build_root,
@@ -207,7 +213,7 @@ def main() -> None:
 
 
 def resolve_build_dependencies(
-    package_source_path: str, dist_profile: str, log_file: str = ''
+    package_source_path: str, profile_list: List[str] = [], log_file: str = ''
 ) -> Dict:
     """
     Resolve build dependencies
@@ -225,20 +231,29 @@ def resolve_build_dependencies(
 
     :rtype: Dict
     """
+    profiles = []
+    for profile in profile_list:
+        profiles.extend(['--profile', profile])
     solver_result = {
         'solver_data': {},
         'solver_log': ''
     }
-    kiwi_solve = Command.run(
+    kiwi_call = [
+        Path.which(
+            'kiwi-ng', alternative_lookup_paths=['/usr/local/bin']
+        )
+    ]
+    if profiles:
+        kiwi_call.extend(profiles)
+    kiwi_call.extend(
         [
-            Path.which(
-                'kiwi-ng', alternative_lookup_paths=['/usr/local/bin']
-            ),
-            '--profile', dist_profile,
             'image', 'info',
             '--description', package_source_path,
             '--resolve-package-list'
-        ], raise_on_error=False
+        ]
+    )
+    kiwi_solve = Command.run(
+        kiwi_call, raise_on_error=False
     )
     log_data = ''
     solver_data = ''

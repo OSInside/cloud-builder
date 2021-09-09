@@ -91,9 +91,9 @@ class CBPackageMetaData:
         )
         status_flags = Defaults.get_status_flags()
         response = CBResponse(request_id, log.get_id())
-        response.set_package_invalid_metadata_response(
+        response.set_project_invalid_metadata_response(
             message=message,
             response_code=status_flags.invalid_metadata,
-            package=package_path
+            project=package_path
         )
         log.response(response, broker)

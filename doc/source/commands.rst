@@ -15,6 +15,7 @@ Overview Cloud Builder Services
    commands/cb_scheduler
    commands/cb_prepare
    commands/cb_run
+   commands/cb_image
    commands/cb_info
    commands/cb_depsolver
    commands/cb_collect
@@ -28,8 +29,11 @@ cb-fetch:
 cb-scheduler:
   Listens to incomming package build requests and builds the
   package with help from **cb-prepare** and **cb-run**.
-  Multiple schedulers on as many compute instances increases
-  the build performance
+  Also supports building OS images with help from **cb-image**.
+  If a package or an image should be build is configured via
+  the :file:`cloud_builder.yml` package metadata. Multiple
+  schedulers on as many compute instances increases
+  the build performance.
 
 cb-prepare:
   Prepares the buildroot environment within the package gets
@@ -43,6 +47,9 @@ cb-run:
   {CB} uses SUSE's `build <https://software.opensuse.org/package/build>`__
   tool to build packages. The tool supports a wide range of
   package formats.
+
+cb-image:
+  Builds OS images using `KIWI <https://osinside.github.io/kiwi>`__
 
 cb-info:
   Looks up package information. This service should run on

@@ -30,9 +30,10 @@ class TestCBScheduler:
     @patch('cloud_builder.cb_scheduler.Path.create')
     @patch('cloud_builder.cb_scheduler.BlockingScheduler')
     @patch('cloud_builder.cb_scheduler.Defaults')
+    @patch('cloud_builder.cb_scheduler.CBCloudLogger')
     def test_main_normal_runtime(
-        self, mock_Defaults, mock_BlockingScheduler, mock_Path_create,
-        mock_Privileges_check_for_root_permissions,
+        self, mock_CBCloudLogger, mock_Defaults, mock_BlockingScheduler,
+        mock_Path_create, mock_Privileges_check_for_root_permissions,
         mock_handle_build_requests, mock_get_running_builds
     ):
         project_scheduler = Mock()
@@ -43,7 +44,7 @@ class TestCBScheduler:
             mock_Defaults.get_runner_package_root.return_value
         )
         mock_handle_build_requests.assert_called_once_with(
-            5000, 10
+            5000, 10, mock_CBCloudLogger.return_value
         )
         mock_BlockingScheduler.assert_called_once_with()
         project_scheduler.start.assert_called_once_with()
@@ -52,9 +53,10 @@ class TestCBScheduler:
     @patch('cloud_builder.cb_scheduler.Path.create')
     @patch('cloud_builder.cb_scheduler.Defaults')
     @patch('sys.exit')
+    @patch('cloud_builder.cb_scheduler.CBCloudLogger')
     def test_main_poll_timeout_greater_than_update_interval(
-        self, mock_sys_exit, mock_Defaults, mock_Path_create,
-        mock_Privileges_check_for_root_permissions,
+        self, mock_CBCloudLogger, mock_sys_exit, mock_Defaults,
+        mock_Path_create, mock_Privileges_check_for_root_permissions,
     ):
         sys.argv = [
             sys.argv[0], '--poll-timeout', '20000', '--update-interval', '10'
@@ -70,7 +72,7 @@ class TestCBScheduler:
         log = Mock()
         mock_CBCloudLogger.return_value = log
         mock_get_running_builds.return_value = 20
-        handle_build_requests(5000, 10)
+        handle_build_requests(5000, 10, log)
         log.info.assert_called_once_with(
             'Max running builds limit reached'
         )
@@ -89,9 +91,11 @@ class TestCBScheduler:
         log = Mock()
         request = {
             'action': 'package source changed',
-            'arch': 'x86_64',
-            'dist': 'TW',
-            'package': 'vim',
+            'package': {
+                'arch': 'x86_64',
+                'dist': 'TW',
+            },
+            'project': 'vim',
             'request_id': 'c8becd30-a5f6-43a6-a4f4-598ec1115b17',
             'schema_version': 0.1
         }
@@ -113,10 +117,10 @@ class TestCBScheduler:
 
         mock_get_running_builds.side_effect = running_limit
 
-        handle_build_requests(5000, 10)
+        handle_build_requests(5000, 10, log)
 
         mock_build_package.assert_called_once_with(
-            request, broker
+            request, broker, log
         )
 
         broker.close.assert_called_once_with()
@@ -141,13 +145,15 @@ class TestCBScheduler:
             'cloud_builder_sources'
         request = {
             'action': status_flags.package_rebuild_clean,
-            'arch': 'x86_64',
-            'dist': 'TW',
-            'package': 'vim',
+            'package': {
+                'arch': 'x86_64',
+                'dist': 'TW'
+            },
+            'project': 'vim',
             'request_id': 'c8becd30-a5f6-43a6-a4f4-598ec1115b17',
             'schema_version': 0.1
         }
-        build_package(request, broker)
+        build_package(request, broker, log)
         mock_reset_build_if_running.assert_called_once_with(
             request, log, broker
         )
@@ -177,9 +183,11 @@ class TestCBScheduler:
         mock_psutil_pid_exists.return_value = True
         request = {
             'action': 'package source changed',
-            'arch': 'x86_64',
-            'dist': 'TW',
-            'package': 'projects/MS/vim',
+            'package': {
+                'arch': 'x86_64',
+                'dist': 'TW'
+            },
+            'project': 'projects/MS/vim',
             'request_id': 'c8becd30-a5f6-43a6-a4f4-598ec1115b17',
             'schema_version': 0.1
         }
@@ -212,9 +220,11 @@ class TestCBScheduler:
         mock_CBResponse.return_value = response
         request = {
             'action': 'package source changed',
-            'arch': 'x86_64',
-            'dist': 'TW',
-            'package': 'vim',
+            'package': {
+                'arch': 'x86_64',
+                'dist': 'TW'
+            },
+            'project': 'vim',
             'request_id': 'c8becd30-a5f6-43a6-a4f4-598ec1115b17',
             'schema_version': 0.1
         }
@@ -234,9 +244,11 @@ class TestCBScheduler:
         mock_CBResponse.return_value = response
         request = {
             'action': 'package source changed',
-            'arch': 'x86_64',
-            'dist': 'TW',
-            'package': 'vim',
+            'package': {
+                'arch': 'x86_64',
+                'dist': 'TW'
+            },
+            'project': 'vim',
             'request_id': 'c8becd30-a5f6-43a6-a4f4-598ec1115b17',
             'schema_version': 0.1
         }
@@ -266,10 +278,12 @@ class TestCBScheduler:
         mock_CBResponse.return_value = response
         request = {
             'action': 'package source changed',
-            'arch': 'x86_64',
-            'dist': 'TW',
+            'package': {
+                'arch': 'x86_64',
+                'dist': 'TW'
+            },
             'runner_group': 'suse',
-            'package': 'vim',
+            'project': 'vim',
             'request_id': 'c8becd30-a5f6-43a6-a4f4-598ec1115b17',
             'schema_version': 0.1
         }
@@ -301,10 +315,12 @@ class TestCBScheduler:
         mock_CBResponse.return_value = response
         request = {
             'action': 'package source changed',
-            'arch': 'x86_64',
-            'dist': 'TW',
+            'package': {
+                'arch': 'x86_64',
+                'dist': 'TW'
+            },
             'runner_group': 'suse',
-            'package': 'vim',
+            'project': 'vim',
             'request_id': 'c8becd30-a5f6-43a6-a4f4-598ec1115b17',
             'schema_version': 0.1
         }
@@ -336,10 +352,12 @@ class TestCBScheduler:
         mock_CBResponse.return_value = response
         request = {
             'action': 'package source changed',
-            'arch': 'x86_64',
-            'dist': 'TW',
+            'package': {
+                'arch': 'x86_64',
+                'dist': 'TW'
+            },
             'runner_group': 'suse',
-            'package': 'vim',
+            'project': 'vim',
             'request_id': 'c8becd30-a5f6-43a6-a4f4-598ec1115b17',
             'schema_version': 0.1
         }
@@ -355,9 +373,11 @@ class TestCBScheduler:
     def test_create_run_script_for_local_build(self, mock_Path_create):
         request = {
             'action': 'package build on localhost requested',
-            'arch': 'x86_64',
-            'dist': 'TW',
-            'package': 'projects/MS/vim',
+            'package': {
+                'arch': 'x86_64',
+                'dist': 'TW'
+            },
+            'project': 'projects/MS/vim',
             'request_id': 'c8becd30-a5f6-43a6-a4f4-598ec1115b17',
             'schema_version': 0.1
         }
@@ -400,9 +420,11 @@ class TestCBScheduler:
             Defaults.get_runner_package_root()
         request = {
             'action': 'package source and its meta changed',
-            'arch': 'x86_64',
-            'dist': 'TW',
-            'package': 'projects/MS/vim',
+            'package': {
+                'arch': 'x86_64',
+                'dist': 'TW'
+            },
+            'project': 'projects/MS/vim',
             'request_id': 'c8becd30-a5f6-43a6-a4f4-598ec1115b17',
             'schema_version': 0.1
         }

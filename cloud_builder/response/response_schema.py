@@ -41,48 +41,105 @@ response_schema = {
         'type': 'string',
         'nullable': False
     },
-    'package': {
+    'project': {
         'required': True,
         'type': 'string',
         'nullable': False
     },
-    'arch': {
+    'target': {
         'required': False,
-        'type': 'string',
-        'nullable': False
+        'type': 'dict',
+        'schema': {
+            'arch': {
+                'required': True,
+                'type': 'string',
+                'nullable': False
+            },
+            'dist': {
+                'required': False,
+                'type': 'string',
+                'nullable': False
+            }
+        }
     },
-    'dist': {
+    'package_prepare': {
         'required': False,
-        'type': 'string',
-        'nullable': False
+        'type': 'dict',
+        'schema': {
+            'prepare_log_file': {
+                'required': True,
+                'type': 'string',
+                'nullable': False
+            },
+            'build_root': {
+                'required': True,
+                'type': 'string',
+                'nullable': False
+            },
+            'solver_file': {
+                'required': True,
+                'type': 'string',
+                'nullable': False
+            },
+            'exit_code': {
+                'required': True,
+                'type': 'number'
+            }
+        }
     },
-    'prepare_log_file': {
+    'package': {
         'required': False,
-        'type': 'string',
-        'nullable': False
+        'type': 'dict',
+        'schema': {
+            'prepare_log_file': {
+                'required': True,
+                'type': 'string',
+                'nullable': False
+            },
+            'log_file': {
+                'required': True,
+                'type': 'string',
+                'nullable': False
+            },
+            'solver_file': {
+                'required': True,
+                'type': 'string',
+                'nullable': False
+            },
+            'binary_packages': {
+                'required': True,
+                'type': 'list',
+                'nullable': False
+            },
+            'exit_code': {
+                'required': True,
+                'type': 'number'
+            }
+        }
     },
-    'log_file': {
+    'image': {
         'required': False,
-        'type': 'string',
-        'nullable': False
-    },
-    'solver_file': {
-        'required': False,
-        'type': 'string',
-        'nullable': False
-    },
-    'binary_packages': {
-        'required': False,
-        'type': 'list',
-        'nullable': False
-    },
-    'exit_code': {
-        'required': False,
-        'type': 'number'
-    },
-    'build_root': {
-        'required': False,
-        'type': 'string',
-        'nullable': False
+        'type': 'dict',
+        'schema': {
+            'log_file': {
+                'required': True,
+                'type': 'string',
+                'nullable': False
+            },
+            'solver_file': {
+                'required': True,
+                'type': 'string',
+                'nullable': False
+            },
+            'binary_packages': {
+                'required': True,
+                'type': 'list',
+                'nullable': False
+            },
+            'exit_code': {
+                'required': True,
+                'type': 'number'
+            }
+        }
     }
 }

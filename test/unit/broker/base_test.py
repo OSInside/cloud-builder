@@ -1,7 +1,10 @@
+import logging
 from mock import (
     patch, Mock
 )
-from pytest import raises
+from pytest import (
+    raises, fixture
+)
 
 from cloud_builder.broker.base import CBMessageBrokerBase
 from cloud_builder.exceptions import CBConfigFileNotFoundError
@@ -16,10 +19,12 @@ from cloud_builder.info_response.info_response_schema import (
 
 
 class TestCBMessageBrokerBase:
+    @fixture(autouse=True)
+    def inject_fixtures(self, caplog):
+        self._caplog = caplog
+
     @patch.multiple(CBMessageBrokerBase, __abstractmethods__=set())
-    @patch('cloud_builder.broker.base.CBLogger.get_logger')
-    def setup(self, mock_get_logger):
-        self.log = mock_get_logger.return_value
+    def setup(self):
         self.broker = CBMessageBrokerBase(
             config_file='../data/etc/cloud_builder_broker.yml'
         )
@@ -62,37 +67,39 @@ class TestCBMessageBrokerBase:
 
     @patch.object(CBMessageBrokerBase, 'acknowledge')
     def test_validate_message_with_schema_broken_yaml(self, mock_acknowledge):
-        assert self.broker.validate_message_with_schema(
-            'invalid_yaml', package_request_schema
-        ) == {}
-        for log_message in self.log.error.call_args_list[0][0]:
-            assert 'DocumentError' in log_message
-        mock_acknowledge.assert_called_once_with()
+        with self._caplog.at_level(logging.DEBUG):
+            assert self.broker.validate_message_with_schema(
+                'invalid_yaml', package_request_schema
+            ) == {}
+            assert format('DocumentError') in self._caplog.text
+            mock_acknowledge.assert_called_once_with()
 
     @patch.object(CBMessageBrokerBase, 'acknowledge')
     def test_validate_message_with_schema_invalid_yaml(self, mock_acknowledge):
-        assert self.broker.validate_message_with_schema(
-            "{'foo': 'bar'}", package_request_schema
-        ) == {}
-        for log_message in self.log.error.call_args_list[0][0]:
-            assert 'ValidationError' in log_message
-        mock_acknowledge.assert_called_once_with()
+        with self._caplog.at_level(logging.DEBUG):
+            assert self.broker.validate_message_with_schema(
+                "{'foo': 'bar'}", package_request_schema
+            ) == {}
+            assert format('ValidationError') in self._caplog.text
+            mock_acknowledge.assert_called_once_with()
 
     @patch.object(CBMessageBrokerBase, 'acknowledge')
     def test_validate_message_with_schema_ok(self, mock_acknowledge):
         assert self.broker.validate_message_with_schema(
-            "{'schema_version': 0.1, 'request_id': 'uuid', "
-            "'package': 'vim', 'arch': 'x86_64', 'dist': 'TW', "
+            "{'schema_version': 0.2, 'request_id': 'uuid', "
+            "'project': 'vim', 'package': {'arch': 'x86_64', 'dist': 'TW'}, "
             "'runner_group': 'suse', 'action': 'action'}",
             package_request_schema
         ) == {
             'action': 'action',
-            'arch': 'x86_64',
-            'dist': 'TW',
+            'package': {
+                'arch': 'x86_64',
+                'dist': 'TW'
+            },
             'runner_group': 'suse',
-            'package': 'vim',
+            'project': 'vim',
             'request_id': 'uuid',
-            'schema_version': 0.1
+            'schema_version': 0.2
         }
         assert not mock_acknowledge.called
 

@@ -14,28 +14,32 @@ class TestCBResponse:
             **self.response.response_dict,
             'message': 'message',
             'response_code': 'response_code',
-            'package': 'package',
-            'prepare_log_file': 'prepare_log_file',
-            'log_file': 'log_file',
-            'solver_file': 'solver_file',
-            'binary_packages': [],
-            'exit_code': 0
+            'project': 'package',
+            'package': {
+                'prepare_log_file': 'prepare_log_file',
+                'log_file': 'log_file',
+                'solver_file': 'solver_file',
+                'binary_packages': [],
+                'exit_code': 0
+            }
         }
 
     def test_set_package_buildroot_response(self):
         self.response.set_package_buildroot_response(
-            'message', 'response_code', 'package', 'log_file',
+            'message', 'response_code', 'package', 'prepare_log_file',
             'solver_file', 'build_root', 0
         )
         assert self.response.get_data() == {
             **self.response.response_dict,
             'message': 'message',
             'response_code': 'response_code',
-            'package': 'package',
-            'log_file': 'log_file',
-            'solver_file': 'solver_file',
-            'build_root': 'build_root',
-            'exit_code': 0
+            'project': 'package',
+            'package_prepare': {
+                'prepare_log_file': 'prepare_log_file',
+                'solver_file': 'solver_file',
+                'build_root': 'build_root',
+                'exit_code': 0
+            }
         }
 
     def test_set_package_update_request_response(self):
@@ -46,9 +50,11 @@ class TestCBResponse:
             **self.response.response_dict,
             'message': 'message',
             'response_code': 'response_code',
-            'package': 'package',
-            'arch': 'arch',
-            'dist': 'dist'
+            'project': 'package',
+            'target': {
+                'arch': 'arch',
+                'dist': 'dist'
+            }
         }
 
     def test_set_package_build_scheduled_response(self):
@@ -59,9 +65,11 @@ class TestCBResponse:
             **self.response.response_dict,
             'message': 'message',
             'response_code': 'response_code',
-            'package': 'package',
-            'arch': 'arch',
-            'dist': 'dist'
+            'project': 'package',
+            'target': {
+                'arch': 'arch',
+                'dist': 'dist'
+            }
         }
 
     def test_set_buildhost_arch_incompatible_response(self):
@@ -72,7 +80,7 @@ class TestCBResponse:
             **self.response.response_dict,
             'message': 'message',
             'response_code': 'response_code',
-            'package': 'package'
+            'project': 'package'
         }
 
     def test_set_package_jobs_reset_response(self):
@@ -83,51 +91,53 @@ class TestCBResponse:
             **self.response.response_dict,
             'message': 'message',
             'response_code': 'response_code',
-            'package': 'package',
-            'arch': 'arch',
-            'dist': 'dist'
+            'project': 'package',
+            'target': {
+                'arch': 'arch',
+                'dist': 'dist'
+            }
         }
 
-    def test_set_package_not_existing_response(self):
-        self.response.set_package_not_existing_response(
+    def test_set_project_not_existing_response(self):
+        self.response.set_project_not_existing_response(
             'message', 'response_code', 'package'
         )
         assert self.response.get_data() == {
             **self.response.response_dict,
             'message': 'message',
             'response_code': 'response_code',
-            'package': 'package'
+            'project': 'package'
         }
 
-    def test_set_package_invalid_metadata_response(self):
-        self.response.set_package_invalid_metadata_response(
+    def test_set_project_invalid_metadata_response(self):
+        self.response.set_project_invalid_metadata_response(
             'message', 'response_code', 'package'
         )
         assert self.response.get_data() == {
             **self.response.response_dict,
             'message': 'message',
             'response_code': 'response_code',
-            'package': 'package'
+            'project': 'package'
         }
 
-    def test_set_package_invalid_target_response(self):
-        self.response.set_package_invalid_target_response(
+    def test_set_project_invalid_target_response(self):
+        self.response.set_project_invalid_target_response(
             'message', 'response_code', 'package'
         )
         assert self.response.get_data() == {
             **self.response.response_dict,
             'message': 'message',
             'response_code': 'response_code',
-            'package': 'package'
+            'project': 'package'
         }
 
-    def test_set_package_metadata_not_existing_response(self):
-        self.response.set_package_metadata_not_existing_response(
+    def test_set_project_metadata_not_existing_response(self):
+        self.response.set_project_metadata_not_existing_response(
             'message', 'response_code', 'package'
         )
         assert self.response.get_data() == {
             **self.response.response_dict,
             'message': 'message',
             'response_code': 'response_code',
-            'package': 'package'
+            'project': 'package'
         }

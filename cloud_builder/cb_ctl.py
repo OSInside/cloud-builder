@@ -129,7 +129,6 @@ from cloud_builder.package_metadata.package_metadata import CBPackageMetaData
 from cloud_builder.info_request.info_request import CBInfoRequest
 from cloud_builder.utils.display import CBDisplay
 from cloud_builder.config.cbctl_schema import cbctl_config_schema
-from cloud_builder.logger import CBLogger
 from cloud_builder.cb_scheduler import create_run_script
 from cloud_builder.cb_prepare import resolve_build_dependencies
 
@@ -144,21 +143,23 @@ from kiwi.command import Command
 from kiwi.privileges import Privileges
 from kiwi.path import Path
 
+kiwi_log = logging.getLogger('kiwi')
+kiwi_log.setLevel(logging.INFO)
+
+log = logging.getLogger('cloud_builder')
+log.setLevel(logging.INFO)
+
 
 @exception_handler
 def main() -> None:
     """
     cb-ctl - cloud builder control utility
     """
-    kiwi_log = logging.getLogger('kiwi')
-    kiwi_log.setLevel(logging.INFO)
-
     args = docopt(
         __doc__,
         version='CB (ctl) version ' + __version__,
         options_first=True
     )
-
     if args['--build']:
         build_package(
             get_broker(),
@@ -321,7 +322,7 @@ def get_build_dependencies_local(dist: str) -> None:
 
     package_source_path = _check_package_config_from_working_directory()
     solver_result = resolve_build_dependencies(
-        package_source_path, f'{dist}.{platform.machine()}'
+        package_source_path, [f'{dist}.{platform.machine()}']
     )
     if solver_result['solver_data']:
         CBDisplay.print_json(
@@ -358,7 +359,6 @@ def fetch_binaries(
     broker: Any, package: str, project_path: str, arch: str, dist: str,
     timeout_sec: int, target_dir, config: Dict
 ) -> None:
-    log = CBLogger.get_logger()
     info_response = get_info(
         broker, package, project_path, arch, dist, timeout_sec
     )
@@ -498,7 +498,7 @@ def _send_info_request(
     broker: Any, package_path: str, arch: str, dist: str
 ) -> str:
     info_request = CBInfoRequest()
-    info_request.set_info_request(package_path, arch, dist)
+    info_request.set_package_info_request(package_path, arch, dist)
     broker.send_info_request(info_request)
     broker.close()
     return info_request.get_data()['request_id']

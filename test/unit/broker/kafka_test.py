@@ -1,4 +1,7 @@
-from pytest import raises
+import logging
+from pytest import (
+    raises, fixture
+)
 from mock import (
     patch, Mock
 )
@@ -16,14 +19,16 @@ from cloud_builder.exceptions import (
 
 
 class TestCBMessageBrokerKafka:
+    @fixture(autouse=True)
+    def inject_fixtures(self, caplog):
+        self._caplog = caplog
+
     def setup(self):
         config_file = '../data/etc/cloud_builder_broker.yml'
         with open(config_file) as config:
             CBMessageBrokerKafka.__bases__ = (Mock,)
-            self.log = Mock()
             self.kafka = CBMessageBrokerKafka(config_file)
             self.kafka.config = yaml.safe_load(config)
-            self.kafka.log = self.log
             self.kafka.post_init()
         assert self.kafka.kafka_host == 'URI:9092'
 
@@ -31,10 +36,8 @@ class TestCBMessageBrokerKafka:
         config_file = '../data/etc/cloud_builder_broker-invalid.yml'
         with open(config_file) as config:
             CBMessageBrokerKafka.__bases__ = (Mock,)
-            self.log = Mock()
             self.kafka = CBMessageBrokerKafka(config_file)
             self.kafka.config = yaml.safe_load(config)
-            self.kafka.log = self.log
             with raises(CBConfigFileValidationError):
                 self.kafka.post_init()
 
@@ -143,13 +146,15 @@ class TestCBMessageBrokerKafka:
     def test_on_send_success(self):
         record_metadata = Mock()
         record_metadata.topic = 'topic'
-        self.kafka._on_send_success(record_metadata)
-        self.log.info.assert_called_once_with(
-            'Message successfully sent to: topic'
-        )
+        with self._caplog.at_level(logging.DEBUG):
+            self.kafka._on_send_success(record_metadata)
+            assert format(
+                'Message successfully sent to: topic'
+            ) in self._caplog.text
 
     def test_on_send_error(self):
-        self.kafka._on_send_error('exception')
-        self.log.error.assert_called_once_with(
-            'Message failed with: exception'
-        )
+        with self._caplog.at_level(logging.DEBUG):
+            self.kafka._on_send_error('exception')
+            assert format(
+                'Message failed with: exception'
+            ) in self._caplog.text

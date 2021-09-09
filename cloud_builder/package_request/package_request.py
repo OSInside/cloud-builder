@@ -25,7 +25,7 @@ class CBPackageRequest:
     """
     def __init__(self) -> None:
         self.package_request_dict: Dict = {}
-        self.package_request_schema_version = 0.1
+        self.package_request_schema_version = 0.2
 
     def set_package_build_request(
         self, package: str, arch: str, dist: str, runner_group: str, action: str
@@ -33,11 +33,13 @@ class CBPackageRequest:
         self.package_request_dict = {
             'schema_version': self.package_request_schema_version,
             'request_id': CBIdentity.get_request_id(),
-            'package': package,
-            'arch': arch,
-            'dist': dist,
+            'project': package,
             'runner_group': runner_group,
-            'action': action
+            'action': action,
+            'package': {
+                'arch': arch,
+                'dist': dist
+            }
         }
 
     def get_data(self) -> Dict:

@@ -25,8 +25,9 @@ class TestCBInfo:
     @patch('cloud_builder.cb_info.handle_info_requests')
     @patch('cloud_builder.cb_info.Privileges.check_for_root_permissions')
     @patch('cloud_builder.cb_info.BlockingScheduler')
+    @patch('cloud_builder.cb_info.CBCloudLogger')
     def test_main_normal_runtime(
-        self, mock_BlockingScheduler,
+        self, mock_CBCloudLogger, mock_BlockingScheduler,
         mock_Privileges_check_for_root_permissions,
         mock_handle_info_requests
     ):
@@ -35,7 +36,7 @@ class TestCBInfo:
         main()
         mock_Privileges_check_for_root_permissions.assert_called_once_with()
         mock_handle_info_requests.assert_called_once_with(
-            5000
+            5000, mock_CBCloudLogger.return_value
         )
         mock_BlockingScheduler.assert_called_once_with()
         info_scheduler.start.assert_called_once_with()
@@ -43,8 +44,9 @@ class TestCBInfo:
     @patch('cloud_builder.cb_info.Privileges.check_for_root_permissions')
     @patch('cloud_builder.cb_info.Defaults')
     @patch('sys.exit')
+    @patch('cloud_builder.cb_info.CBCloudLogger')
     def test_main_poll_timeout_greater_than_update_interval(
-        self, mock_sys_exit, mock_Defaults,
+        self, mock_CBCloudLogger, mock_sys_exit, mock_Defaults,
         mock_Privileges_check_for_root_permissions,
     ):
         sys.argv = [
@@ -63,11 +65,13 @@ class TestCBInfo:
     ):
         log = Mock()
         request = {
-            'arch': 'x86_64',
-            'dist': 'TW',
-            'package': 'vim',
+            'package': {
+                'arch': 'x86_64',
+                'dist': 'TW',
+            },
+            'project': 'vim',
             'request_id': 'uuid',
-            'schema_version': 0.1
+            'schema_version': 0.2
         }
         broker = Mock()
         broker_read_return = [
@@ -84,7 +88,7 @@ class TestCBInfo:
         mock_CBMessageBroker.new.return_value = broker
 
         with raises(IndexError):
-            handle_info_requests(5000)
+            handle_info_requests(5000, log)
 
         assert broker.read.call_args_list[0] == call(
             topic='cb-info-request',
@@ -92,7 +96,7 @@ class TestCBInfo:
             timeout_ms=5000
         )
         mock_lookup.assert_called_once_with(
-            'vim', 'x86_64', 'TW', 'uuid', broker
+            'vim', 'x86_64', 'TW', 'uuid', broker, log
         )
         broker.close.assert_called_once_with()
 
@@ -116,22 +120,25 @@ class TestCBInfo:
         mock_CBInfoResponse.return_value = response
         broker = Mock()
         broker.validate_package_response.return_value = {
-            'binary_packages': [],
-            'prepare_log_file': 'prepare_log_file',
-            'log_file': 'log_file',
-            'solver_file': 'solver_file',
+            'package': {
+                'binary_packages': [],
+                'prepare_log_file': 'prepare_log_file',
+                'log_file': 'log_file',
+                'solver_file': 'solver_file',
+            },
             'response_code': 'response_code'
         }
 
         with patch('builtins.open', create=True):
-            lookup('package', 'arch', 'dist', 'uuid', broker)
+            lookup('package', 'arch', 'dist', 'uuid', broker, log)
 
         broker.acknowledge.assert_called_once_with()
-        response.set_info_response_result.assert_called_once_with(
-            broker.validate_package_response.return_value['binary_packages'],
-            broker.validate_package_response.return_value['prepare_log_file'],
-            broker.validate_package_response.return_value['log_file'],
-            broker.validate_package_response.return_value['solver_file'],
+        result = broker.validate_package_response.return_value
+        response.set_package_info_response_result.assert_called_once_with(
+            result['package']['binary_packages'],
+            result['package']['prepare_log_file'],
+            result['package']['log_file'],
+            result['package']['solver_file'],
             mock_get_result_modification_time.return_value,
             mock_get_package_status.return_value
         )
