@@ -145,5 +145,6 @@ install -D -m 644 etc/cloud_builder \
 %{_bindir}/cb-info
 %{_bindir}/cb-ctl
 %{_bindir}/cb-collect
+%{_bindir}/cb-image
 
 %changelog
