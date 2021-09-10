@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>cb-fetch &mdash; Cloud Builder 0.1.33 documentation</title>
+  <title>cb-image &mdash; Cloud Builder 0.1.33 documentation</title>
   
 
   
@@ -42,8 +42,8 @@
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="cb-scheduler" href="cb_scheduler.html" />
-    <link rel="prev" title="Overview Cloud Builder Services" href="../commands.html" /> 
+    <link rel="next" title="cb-info" href="cb_info.html" />
+    <link rel="prev" title="cb-run" href="cb_run.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -108,10 +108,10 @@
 </ul>
 </li>
 <li class="toctree-l1 current"><a class="reference internal" href="../commands.html">Overview Cloud Builder Services</a><ul class="current">
-<li class="toctree-l2 current"><a class="current reference internal" href="#">cb-fetch</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#synopsis">SYNOPSIS</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#description">DESCRIPTION</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#options">OPTIONS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cb_fetch.html">cb-fetch</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="cb_fetch.html#synopsis">SYNOPSIS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cb_fetch.html#description">DESCRIPTION</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cb_fetch.html#options">OPTIONS</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="cb_scheduler.html">cb-scheduler</a><ul>
@@ -132,10 +132,10 @@
 <li class="toctree-l3"><a class="reference internal" href="cb_run.html#options">OPTIONS</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="cb_image.html">cb-image</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="cb_image.html#synopsis">SYNOPSIS</a></li>
-<li class="toctree-l3"><a class="reference internal" href="cb_image.html#description">DESCRIPTION</a></li>
-<li class="toctree-l3"><a class="reference internal" href="cb_image.html#options">OPTIONS</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">cb-image</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#synopsis">SYNOPSIS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#description">DESCRIPTION</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#options">OPTIONS</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="cb_info.html">cb-info</a><ul>
@@ -209,13 +209,13 @@
         
           <li><a href="../commands.html">Overview Cloud Builder Services</a> &raquo;</li>
         
-      <li>cb-fetch</li>
+      <li>cb-image</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
           
-            <a href="../_sources/commands/cb_fetch.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/commands/cb_image.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -228,52 +228,58 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="cb-fetch">
-<h1>cb-fetch<a class="headerlink" href="#cb-fetch" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="cb-image">
+<h1>cb-image<a class="headerlink" href="#cb-image" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="synopsis">
 <h2>SYNOPSIS<a class="headerlink" href="#synopsis" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>cb-fetch -h <span class="p">|</span> --help
-cb-fetch --project<span class="o">=</span>&lt;github_project&gt;
-    <span class="o">[</span>--update-interval<span class="o">=</span>&lt;time_sec&gt;<span class="o">]</span>
-    <span class="o">[</span>--single-shot<span class="o">]</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>cb-image -h <span class="p">|</span> --help
+cb-image --description<span class="o">=</span>&lt;image_description_path&gt; --target-dir<span class="o">=</span>&lt;target_path&gt; --bundle-id<span class="o">=</span>&lt;ID&gt; --request-id<span class="o">=</span>&lt;UUID&gt;
+    <span class="o">[</span>--profile<span class="o">=</span>&lt;name&gt;...<span class="o">]</span>
+    <span class="o">[</span>-- &lt;kiwi_custom_build_command_args&gt;...<span class="o">]</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="description">
 <h2>DESCRIPTION<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
-<p>cb-fetch - fetches a git repository and manages content
-changes on a configurable schedule. In case of a change
-a rebuild request is send to the message broker</p>
-<p>The tree structure in the git repository has to respect
-a predefined layout like in the following example:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>projects
-├── ...
-├── PROJECT_A
-│   └── SUB_PROJECT
-│       └── ...
-└── PROJECT_B
-    └── PACKAGE
-        ├── _Defaults.get_cloud_builder_metadata_file_name<span class="o">()</span>_
-        ├── _Defaults.get_cloud_builder_kiwi_file_name<span class="o">()</span>_
-        ├── PACKAGE.changes
-        ├── PACKAGE.spec
-        └── PACKAGE.tar.xz
-</pre></div>
-</div>
+<p>cb-image - builds an image using KIWI.
+Inside of the image_description_path a KIWI image
+description is expected. The process of building the
+image is two fold:</p>
+<ul class="simple">
+<li><p>Build the image</p></li>
+<li><p>Bundle image result file(s) into an rpm package</p></li>
+</ul>
+<p>The created image root tree will be deleted after
+the image build. The reason for this is that building
+an image should always start from a clean state to
+guarantee the root tree integrity with respect to the
+used package repositories</p>
 </div>
 <div class="section" id="options">
 <h2>OPTIONS<a class="headerlink" href="#options" title="Permalink to this headline">¶</a></h2>
 <dl class="option-list">
-<dt><kbd><span class="option">--project=<var>&lt;github_project&gt;</var></span></kbd></dt>
-<dd><p>git clone source URI to fetch project with
-packages managed to build in cloud builder</p>
+<dt><kbd><span class="option">--description=<var>&lt;image_description_path&gt;</var></span></kbd></dt>
+<dd><p>Path to KIWI image description</p>
 </dd>
-<dt><kbd><span class="option">--update-interval=<var>&lt;time_sec&gt;</var></span></kbd></dt>
-<dd><p>Optional update interval for the project
-Default is 30sec</p>
+<dt><kbd><span class="option">--target-dir=<var>&lt;target_path&gt;</var></span></kbd></dt>
+<dd><p>Path to create image result package</p>
 </dd>
-<dt><kbd><span class="option">--single-shot</span></kbd></dt>
-<dd><p>Optional single shot run. Only clone the repo</p>
+<dt><kbd><span class="option">--bundle-id=<var>&lt;ID&gt;</var></span></kbd></dt>
+<dd><p>Identifier added to the build result file names</p>
+</dd>
+</dl>
+<p>–profile=&lt;name&gt;…</p>
+<blockquote>
+<div><p>List of optional profile names to use for building</p>
+</div></blockquote>
+<p>– &lt;kiwi_custom_build_command_args&gt;…</p>
+<blockquote>
+<div><p>List of additional kiwi build command arguments
+See ‘kiwi-ng system build –help’ for details</p>
+</div></blockquote>
+<dl class="option-list">
+<dt><kbd><span class="option">--request-id=<var>&lt;UUID&gt;</var></span></kbd></dt>
+<dd><p>UUID for this prepare process</p>
 </dd>
 </dl>
 </div>
@@ -285,8 +291,8 @@ Default is 30sec</p>
           </div>
           <footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="cb_scheduler.html" class="btn btn-neutral float-right" title="cb-scheduler" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-        <a href="../commands.html" class="btn btn-neutral float-left" title="Overview Cloud Builder Services" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="cb_info.html" class="btn btn-neutral float-right" title="cb-info" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="cb_run.html" class="btn btn-neutral float-left" title="cb-run" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 
   <hr/>

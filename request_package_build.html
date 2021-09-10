@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Request a Package Build &mdash; Cloud Builder 0.1.32 documentation</title>
+  <title>Request a Package Build &mdash; Cloud Builder 0.1.33 documentation</title>
   
 
   
@@ -132,6 +132,12 @@
 <li class="toctree-l3"><a class="reference internal" href="commands/cb_run.html#options">OPTIONS</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="commands/cb_image.html">cb-image</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="commands/cb_image.html#synopsis">SYNOPSIS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="commands/cb_image.html#description">DESCRIPTION</a></li>
+<li class="toctree-l3"><a class="reference internal" href="commands/cb_image.html#options">OPTIONS</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="commands/cb_info.html">cb-info</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="commands/cb_info.html#synopsis">SYNOPSIS</a></li>
 <li class="toctree-l3"><a class="reference internal" href="commands/cb_info.html#description">DESCRIPTION</a></li>
@@ -240,12 +246,14 @@ the <code class="xref py py-obj docutils literal notranslate"><span class="pre">
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="o">[</span> INFO    <span class="o">]</span>: <span class="m">09</span>:31:15 <span class="p">|</span> Message successfully sent to: suse
 <span class="o">{</span>
     <span class="s2">&quot;action&quot;</span>: <span class="s2">&quot;package rebuild requested&quot;</span>,
-    <span class="s2">&quot;arch&quot;</span>: <span class="s2">&quot;x86_64&quot;</span>,
-    <span class="s2">&quot;dist&quot;</span>: <span class="s2">&quot;TW&quot;</span>,
-    <span class="s2">&quot;package&quot;</span>: <span class="s2">&quot;projects/MS/xclock&quot;</span>,
-    <span class="s2">&quot;request_id&quot;</span>: <span class="s2">&quot;b88becf6-f04f-11eb-8cff-06be1098538e&quot;</span>,
+    <span class="s2">&quot;package&quot;</span>: <span class="o">{</span>
+        <span class="s2">&quot;arch&quot;</span>: <span class="s2">&quot;x86_64&quot;</span>,
+        <span class="s2">&quot;dist&quot;</span>: <span class="s2">&quot;TW&quot;</span>
+    <span class="o">}</span>,
+    <span class="s2">&quot;project&quot;</span>: <span class="s2">&quot;projects/MS/xclock&quot;</span>,
+    <span class="s2">&quot;request_id&quot;</span>: <span class="s2">&quot;e0adf9c6-1224-11ec-bdbe-06be1098538e&quot;</span>,
     <span class="s2">&quot;runner_group&quot;</span>: <span class="s2">&quot;suse&quot;</span>,
-    <span class="s2">&quot;schema_version&quot;</span>: <span class="m">0</span>.1
+    <span class="s2">&quot;schema_version&quot;</span>: <span class="m">0</span>.2
 <span class="o">}</span>
 </pre></div>
 </div>
@@ -278,42 +286,48 @@ value to avoid boring wait periods.</p>
 </div>
 <p>A typical output from the above command could look like this</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="o">{</span>
-    <span class="s2">&quot;arch&quot;</span>: <span class="s2">&quot;x86_64&quot;</span>,
-    <span class="s2">&quot;dist&quot;</span>: <span class="s2">&quot;TW&quot;</span>,
-    <span class="s2">&quot;identity&quot;</span>: <span class="s2">&quot;CBScheduler:18.193.45.127:6432:(system)&quot;</span>,
+    <span class="s2">&quot;identity&quot;</span>: <span class="s2">&quot;CBScheduler:18.193.45.127:20028:xclock&quot;</span>,
     <span class="s2">&quot;message&quot;</span>: <span class="s2">&quot;Accept package build request&quot;</span>,
-    <span class="s2">&quot;package&quot;</span>: <span class="s2">&quot;projects/MS/xclock&quot;</span>,
-    <span class="s2">&quot;request_id&quot;</span>: <span class="s2">&quot;b88becf6-f04f-11eb-8cff-06be1098538e&quot;</span>,
+    <span class="s2">&quot;project&quot;</span>: <span class="s2">&quot;projects/MS/xclock&quot;</span>,
+    <span class="s2">&quot;request_id&quot;</span>: <span class="s2">&quot;e0adf9c6-1224-11ec-bdbe-06be1098538e&quot;</span>,
     <span class="s2">&quot;response_code&quot;</span>: <span class="s2">&quot;package request accepted&quot;</span>,
-    <span class="s2">&quot;schema_version&quot;</span>: <span class="m">0</span>.1
+    <span class="s2">&quot;schema_version&quot;</span>: <span class="m">0</span>.2,
+    <span class="s2">&quot;target&quot;</span>: <span class="o">{</span>
+        <span class="s2">&quot;arch&quot;</span>: <span class="s2">&quot;x86_64&quot;</span>,
+        <span class="s2">&quot;dist&quot;</span>: <span class="s2">&quot;TW&quot;</span>
+    <span class="o">}</span>
 <span class="o">}</span>
 <span class="o">{</span>
-    <span class="s2">&quot;build_root&quot;</span>: <span class="s2">&quot;/var/tmp/CB/projects/MS/xclock@TW.x86_64&quot;</span>,
-    <span class="s2">&quot;exit_code&quot;</span>: <span class="m">0</span>,
-    <span class="s2">&quot;identity&quot;</span>: <span class="s2">&quot;CBPrepare:18.193.45.127:6455:xclock&quot;</span>,
-    <span class="s2">&quot;log_file&quot;</span>: <span class="s2">&quot;/var/tmp/CB/projects/MS/xclock@TW.x86_64.prepare.log&quot;</span>,
+    <span class="s2">&quot;identity&quot;</span>: <span class="s2">&quot;CBPrepare:18.193.45.127:25128:xclock&quot;</span>,
     <span class="s2">&quot;message&quot;</span>: <span class="s2">&quot;Buildroot ready for package build&quot;</span>,
-    <span class="s2">&quot;package&quot;</span>: <span class="s2">&quot;xclock&quot;</span>,
-    <span class="s2">&quot;request_id&quot;</span>: <span class="s2">&quot;b88becf6-f04f-11eb-8cff-06be1098538e&quot;</span>,
+    <span class="s2">&quot;package_prepare&quot;</span>: <span class="o">{</span>
+        <span class="s2">&quot;build_root&quot;</span>: <span class="s2">&quot;/var/tmp/CB/projects/MS/xclock@TW.x86_64&quot;</span>,
+        <span class="s2">&quot;exit_code&quot;</span>: <span class="m">0</span>,
+        <span class="s2">&quot;prepare_log_file&quot;</span>: <span class="s2">&quot;/var/tmp/CB/projects/MS/xclock@TW.x86_64.prepare.log&quot;</span>,
+        <span class="s2">&quot;solver_file&quot;</span>: <span class="s2">&quot;/var/tmp/CB/projects/MS/xclock@TW.x86_64.solver.json&quot;</span>
+    <span class="o">}</span>,
+    <span class="s2">&quot;project&quot;</span>: <span class="s2">&quot;projects/MS/xclock&quot;</span>,
+    <span class="s2">&quot;request_id&quot;</span>: <span class="s2">&quot;e0adf9c6-1224-11ec-bdbe-06be1098538e&quot;</span>,
     <span class="s2">&quot;response_code&quot;</span>: <span class="s2">&quot;build root setup succeeded&quot;</span>,
-    <span class="s2">&quot;schema_version&quot;</span>: <span class="m">0</span>.1,
-    <span class="s2">&quot;solver_file&quot;</span>: <span class="s2">&quot;/var/tmp/CB/projects/MS/xclock@TW.x86_64.solver.json&quot;</span>
+    <span class="s2">&quot;schema_version&quot;</span>: <span class="m">0</span>.2
 <span class="o">}</span>
 <span class="o">{</span>
-    <span class="s2">&quot;binary_packages&quot;</span>: <span class="o">[</span>
-        <span class="s2">&quot;/var/tmp/CB/projects/MS/xclock@TW.x86_64/home/abuild/rpmbuild/RPMS/x86_64/xclock-1.0.9-0.x86_64.rpm&quot;</span>,
-        <span class="s2">&quot;/var/tmp/CB/projects/MS/xclock@TW.x86_64/home/abuild/rpmbuild/SRPMS/xclock-1.0.9-0.src.rpm&quot;</span>
-    <span class="o">]</span>,
-    <span class="s2">&quot;exit_code&quot;</span>: <span class="m">0</span>,
-    <span class="s2">&quot;identity&quot;</span>: <span class="s2">&quot;CBRun:18.193.45.127:6566:projects/MS/xclock&quot;</span>,
-    <span class="s2">&quot;log_file&quot;</span>: <span class="s2">&quot;/var/tmp/CB/projects/MS/xclock@TW.x86_64.build.log&quot;</span>,
+    <span class="s2">&quot;identity&quot;</span>: <span class="s2">&quot;CBRun:18.193.45.127:25226:projects/MS/xclock&quot;</span>,
     <span class="s2">&quot;message&quot;</span>: <span class="s2">&quot;Package build finished&quot;</span>,
-    <span class="s2">&quot;package&quot;</span>: <span class="s2">&quot;projects/MS/xclock&quot;</span>,
-    <span class="s2">&quot;prepare_log_file&quot;</span>: <span class="s2">&quot;/var/tmp/CB/projects/MS/xclock@TW.x86_64.prepare.log&quot;</span>,
-    <span class="s2">&quot;request_id&quot;</span>: <span class="s2">&quot;b88becf6-f04f-11eb-8cff-06be1098538e&quot;</span>,
+    <span class="s2">&quot;package&quot;</span>: <span class="o">{</span>
+        <span class="s2">&quot;binary_packages&quot;</span>: <span class="o">[</span>
+            <span class="s2">&quot;/var/tmp/CB/projects/MS/xclock@TW.x86_64/home/abuild/rpmbuild/RPMS/x86_64/xclock-1.0.9-0.x86_64.rpm&quot;</span>,
+            <span class="s2">&quot;/var/tmp/CB/projects/MS/xclock@TW.x86_64/home/abuild/rpmbuild/SRPMS/xclock-1.0.9-0.src.rpm&quot;</span>
+        <span class="o">]</span>,
+        <span class="s2">&quot;exit_code&quot;</span>: <span class="m">0</span>,
+        <span class="s2">&quot;log_file&quot;</span>: <span class="s2">&quot;/var/tmp/CB/projects/MS/xclock@TW.x86_64.build.log&quot;</span>,
+        <span class="s2">&quot;prepare_log_file&quot;</span>: <span class="s2">&quot;/var/tmp/CB/projects/MS/xclock@TW.x86_64.prepare.log&quot;</span>,
+        <span class="s2">&quot;solver_file&quot;</span>: <span class="s2">&quot;/var/tmp/CB/projects/MS/xclock@TW.x86_64.solver.json&quot;</span>
+    <span class="o">}</span>,
+    <span class="s2">&quot;project&quot;</span>: <span class="s2">&quot;projects/MS/xclock&quot;</span>,
+    <span class="s2">&quot;request_id&quot;</span>: <span class="s2">&quot;e0adf9c6-1224-11ec-bdbe-06be1098538e&quot;</span>,
     <span class="s2">&quot;response_code&quot;</span>: <span class="s2">&quot;package build succeeded&quot;</span>,
-    <span class="s2">&quot;schema_version&quot;</span>: <span class="m">0</span>.1,
-    <span class="s2">&quot;solver_file&quot;</span>: <span class="s2">&quot;/var/tmp/CB/projects/MS/xclock@TW.x86_64.solver.json&quot;</span>
+    <span class="s2">&quot;schema_version&quot;</span>: <span class="m">0</span>.2
 <span class="o">}</span>
 </pre></div>
 </div>
