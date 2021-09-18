@@ -32,9 +32,10 @@ status_flags = NamedTuple(
         ('package_request_accepted', str),
         ('incompatible_build_arch', str),
         ('reset_running_build', str),
-        ('package_not_existing', str),
-        ('package_metadata_not_existing', str),
+        ('project_not_existing', str),
+        ('project_metadata_not_existing', str),
         ('package_target_not_configured', str),
+        ('image_target_not_configured', str),
         ('invalid_metadata', str),
         ('package_local', str)
     ]
@@ -62,9 +63,9 @@ class Defaults:
         return 'cloud_builder.kiwi'
 
     @staticmethod
-    def get_package_request_queue_name() -> str:
+    def get_build_request_queue_name() -> str:
         """
-        Return name of message queue used for sending
+        Return default name of message queue used for sending
         package build requests.
 
         Queue is a shared queue:
@@ -74,7 +75,7 @@ class Defaults:
         readers. In kafka this done by assigning as many partitions
         as there are potential readers
         """
-        return 'cb-package-request'
+        return 'cb-build-request'
 
     @staticmethod
     def get_response_queue_name() -> str:
@@ -179,10 +180,11 @@ class Defaults:
             package_request_accepted='package request accepted',
             incompatible_build_arch='incompatible build arch',
             reset_running_build='reset running build',
-            package_not_existing='package does not exist',
-            package_metadata_not_existing='package metadata does not exist',
+            project_not_existing='project does not exist',
+            project_metadata_not_existing='project metadata does not exist',
             invalid_metadata='invalid package metadata',
             package_target_not_configured='package target not configured',
+            image_target_not_configured='image target not configured',
             package_local='package build on localhost requested'
         )
 

@@ -22,12 +22,12 @@ from cerberus import Validator
 from typing import (
     Dict, List
 )
-from cloud_builder.package_request.package_request import CBPackageRequest
+from cloud_builder.build_request.build_request import CBBuildRequest
 from cloud_builder.response.response import CBResponse
 from cloud_builder.info_response.info_response import CBInfoResponse
 from cloud_builder.info_request.info_request import CBInfoRequest
-from cloud_builder.package_request.package_request_schema import (
-    package_request_schema
+from cloud_builder.build_request.build_request_schema import (
+    build_request_schema
 )
 from cloud_builder.response.response_schema import response_schema
 from cloud_builder.info_request.info_request_schema import info_request_schema
@@ -61,9 +61,9 @@ class CBMessageBrokerBase(metaclass=ABCMeta):
     def post_init(self) -> None:
         pass
 
-    def validate_package_request(self, message: str) -> Dict:
+    def validate_build_request(self, message: str) -> Dict:
         """
-        Validate a package build request
+        Validate a build build request
 
         Invalid messages will be auto committed such that they
         don't appear again
@@ -75,7 +75,7 @@ class CBMessageBrokerBase(metaclass=ABCMeta):
         :rtype: str
         """
         return self.validate_message_with_schema(
-            message, package_request_schema
+            message, build_request_schema
         )
 
     def validate_package_response(self, message: str) -> Dict:
@@ -167,13 +167,13 @@ class CBMessageBrokerBase(metaclass=ABCMeta):
         return message_as_yaml
 
     @abstractmethod
-    def send_package_request(self, request: CBPackageRequest) -> None:
+    def send_package_request(self, request: CBBuildRequest) -> None:
         """
         Send a package build request
 
         Implementation in specialized broker class
 
-        :param CBPackageRequest request: unused
+        :param CBBuildRequest request: unused
         """
         raise NotImplementedError
 

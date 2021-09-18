@@ -45,7 +45,7 @@ from cloud_builder.version import __version__
 from cloud_builder.cloud_logger import CBCloudLogger
 from cloud_builder.response.response import CBResponse
 from cloud_builder.defaults import Defaults
-from cloud_builder.package_metadata.package_metadata import CBPackageMetaData
+from cloud_builder.project_metadata.project_metadata import CBProjectMetaData
 from cloud_builder.broker import CBMessageBroker
 from kiwi.command import Command
 from kiwi.privileges import Privileges
@@ -64,10 +64,10 @@ from cloud_builder.exceptions import (
 @exception_handler
 def main() -> None:
     """
-    cb-scheduler - listens on incoming package build requests
-    from the message broker on a regular schedule. Only if
-    the max package to build limit is not exceeded, request
-    messages from the broker are accepted. In case the request
+    cb-scheduler - listens on incoming package and image build
+    requests from the message broker on a regular schedule.
+    Only if the max package/image to build limit is not exceeded,
+    request messages from the broker are accepted. In case the request
     matches the runner capabilities e.g architecture it gets
     acknowledged and removed from the broker queue.
 
@@ -120,6 +120,43 @@ def main() -> None:
     The .kiwi metadata file has to provide instructions
     such that the creation of a correct buildroot for these
     profiles is possible.
+
+    --
+
+    An image can be build for different profiles, build arguments
+    and architectures. An example image config to build myimage
+    for myprofile and for the x86_64 achitecture would look like
+    the following:
+
+    .. code:: yaml
+
+        schema_version: 0.1
+        name: myimage
+
+        images:
+          -
+            profile: myprofile
+            build_arguments:
+              - "--clear-cache"
+            arch: x86_64
+            runner_group: suse
+
+    The above instructs the scheduler to build one image for the
+    myprofile profile and the x86_64 achitecture on a runner in the
+    suse group. The package cache on this runner will be cleared
+    prior building the image. The image output files will get pacakged
+    into an rpm package. To do this properly the scheduler creates a
+    script which calls cb-image.
+
+    The directory containing the image config file:
+
+        Defaults.get_cloud_builder_metadata_file_name()
+
+    is treated as the image description and passed as such to the
+    KIWI image builder via cb-image. KIWI searches for a *.kiwi file
+    to accept the directory as an image description. If the cloud
+    builder image config file names a profile, that profile must be
+    defined in the KIWI *.kiwi file
     """
     args = docopt(
         __doc__,
@@ -163,8 +200,8 @@ def handle_build_requests(
 ) -> None:
     """
     Check on the runner state and if ok listen to the
-    message broker queue for new package build requests
-    The package_request_queue is used as shared queue
+    message broker queue for new package/image build requests
+    The build_request_queue is used as shared queue
     within a single group. It's important to have this
     queue configured to distribute messages across
     several readers to let multiple CB scheduler scale
@@ -195,20 +232,29 @@ def handle_build_requests(
             for message in broker.read(
                 topic=broker.get_runner_group(), timeout_ms=poll_timeout
             ):
-                request = broker.validate_package_request(message.value)
+                request = broker.validate_build_request(message.value)
                 if request:
-                    package_source_path = os.path.join(
+                    project_source_path = os.path.join(
                         Defaults.get_runner_project_dir(),
                         format(request['project'])
                     )
-                    package_config = is_request_valid(
-                        package_source_path, request, log, broker
+                    build_config = is_request_valid(
+                        project_source_path, request, log, broker
                     )
-                    if package_config:
+                    if build_config and 'distributions' in build_config:
                         build_package(request, broker, log)
+                    elif build_config and 'images' in build_config:
+                        build_image(request, broker, log)
     finally:
         log.info('Closing message broker connection')
         broker.close()
+
+
+def build_image(
+    request: Dict, broker: CBMessageBroker, log: CBCloudLogger
+) -> None:
+    # TODO
+    pass
 
 
 def build_package(
@@ -243,7 +289,7 @@ def build_package(
 
     log.info('Starting build process')
     Command.run(
-        ['bash', create_run_script(request, buildroot_rebuild)]
+        ['bash', create_package_run_script(request, buildroot_rebuild)]
     )
 
 
@@ -301,18 +347,19 @@ def get_running_builds() -> int:
 
 
 def is_request_valid(
-    package_source_path: str, request: Dict, log: CBCloudLogger, broker: Any
+    project_source_path: str, request: Dict, log: CBCloudLogger, broker: Any
 ) -> Dict:
     """
     Sanity checks between the request and the package sources
 
-    1. Check if given package source exists
-    2. Check if there is a cloud builder metadata and kiwi file
-    3. Check if architecture + dist + runner_group is configured in the metadata
-    4. Check if the host architecture is compatbile with the
+    1. Check if given package/image source exists
+    2. Check if there is a cloud builder metadata and a .kiwi file
+    3. Check if architecture + runner_group is configured in the metadata
+    4. Check if dist is configured for package builds
+    5. Check if the host architecture is compatbile with the
        request architecture
 
-    :param str package_source_path: path to package sources
+    :param str project_source_path: path to package/image sources
     :param dict request: yaml dict request record
     :param CBCloudLogger log: logger instance
     :param CBMessageBroker broker: instance of CBMessageBroker
@@ -325,79 +372,115 @@ def is_request_valid(
     response = CBResponse(
         request['request_id'], log.get_id()
     )
-    # 1. Check on package sources to exist
-    if not os.path.isdir(package_source_path):
+    # 1. Check on project sources to exist
+    if not os.path.isdir(project_source_path):
         response.set_project_not_existing_response(
-            message=f'Package does not exist: {package_source_path}',
-            response_code=status_flags.package_not_existing,
+            message=f'Project does not exist: {project_source_path}',
+            response_code=status_flags.project_not_existing,
             project=request['project']
         )
         log.response(response, broker)
         return {}
 
-    # 2. Check on package metadata to exist
-    package_metadata = os.path.join(
-        package_source_path, Defaults.get_cloud_builder_metadata_file_name()
+    # 2. Check on project metadata to exist
+    project_metadata = os.path.join(
+        project_source_path, Defaults.get_cloud_builder_metadata_file_name()
     )
-    if not os.path.isfile(package_metadata):
+    if not os.path.isfile(project_metadata):
         response.set_project_metadata_not_existing_response(
-            message=f'Package metadata does not exist: {package_metadata}',
-            response_code=status_flags.package_metadata_not_existing,
+            message=f'Project metadata does not exist: {project_metadata}',
+            response_code=status_flags.project_metadata_not_existing,
             project=request['project']
         )
         log.response(response, broker)
         return {}
 
-    # 3. Check if requested arch+dist is configured
-    target_ok = False
-    request_arch = request['package']['arch']
-    request_dist = request['package']['dist']
-    request_runner_group = request['runner_group']
-    package_config = CBPackageMetaData.get_package_config(
-        package_source_path, log, request['request_id']
+    # 3. Check if requested package arch+dist+runner_group is configured
+    project_config = CBProjectMetaData.get_project_config(
+        project_source_path, log, request['request_id']
     )
-    if package_config:
-        for target in package_config.get('distributions') or []:
+    if not project_config:
+        return {}
+    request_arch = 'none'
+    request_dist = 'none'
+    if 'package' in request:
+        target_ok = False
+        request_arch = request['package']['arch']
+        request_dist = request['package']['dist']
+        request_runner_group = request['runner_group']
+        for target in project_config.get('distributions') or []:
             if request_arch == target.get('arch') and \
                request_dist == target.get('dist') and \
                request_runner_group == target.get('runner_group'):
                 target_ok = True
                 break
-    if not target_ok:
-        response.set_project_invalid_target_response(
-            message='No build config for: {0}.{1} in runner group {2}'.format(
-                request_dist, request_arch, request_runner_group
-            ),
-            response_code=status_flags.package_target_not_configured,
-            project=request['project']
-        )
-        log.response(response, broker)
-        return {}
+        if not target_ok:
+            response.set_project_invalid_target_response(
+                message='No {0} config for: {1}.{2} in runner group {3}'.format(
+                    'package', request_dist, request_arch, request_runner_group
+                ),
+                response_code=status_flags.package_target_not_configured,
+                project=request['project']
+            )
+            log.response(response, broker)
+            return {}
 
-    # 4. Check if host architecture is compatbile
-    if not request['package']['arch'] == platform.machine():
+    # 4. Check if requested image arch+runner_group is configured
+    if 'image' in request:
+        target_ok = False
+        request_arch = request['image']['arch']
+        request_runner_group = request['runner_group']
+        for target in project_config.get('images') or []:
+            if request_arch == target.get('arch') and \
+               request_runner_group == target.get('runner_group'):
+                target_ok = True
+                break
+        if not target_ok:
+            response.set_project_invalid_target_response(
+                message='No {0} config for: {1} in runner group {2}'.format(
+                    'image', request_arch, request_runner_group
+                ),
+                response_code=status_flags.image_target_not_configured,
+                project=request['project']
+            )
+            log.response(response, broker)
+            return {}
+
+    # 5. Check if host architecture is compatbile
+    if request_arch and request_arch != platform.machine():
         response.set_buildhost_arch_incompatible_response(
             message=f'Incompatible arch: {platform.machine()}',
-            response_code=status_flags.package_request_accepted,
+            response_code=status_flags.incompatible_build_arch,
             package=request['project']
         )
         log.response(response, broker)
         return {}
 
     # All good...
-    response.set_package_build_scheduled_response(
-        message='Accept package build request',
-        response_code=status_flags.package_request_accepted,
-        package=request['project'],
-        arch=request['package']['arch'],
-        dist=request['package']['dist']
-    )
+    if 'package' in request:
+        response.set_package_build_scheduled_response(
+            message='Accept package build request',
+            response_code=status_flags.package_request_accepted,
+            package=request['project'],
+            arch=request_arch,
+            dist=request_dist
+        )
+    elif 'image' in request:
+        pass
+        # TODO
     log.response(response, broker)
     broker.acknowledge()
-    return package_config
+    return project_config
 
 
-def create_run_script(
+def create_image_run_script(
+    request: Dict, local_build: bool = False
+) -> str:
+    # TODO
+    pass
+
+
+def create_package_run_script(
     request: Dict, buildroot_rebuild: bool, local_build: bool = False
 ) -> str:
     """

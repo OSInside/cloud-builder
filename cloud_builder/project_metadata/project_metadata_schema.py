@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Cloud Builder.  If not, see <http://www.gnu.org/licenses/>
 #
-package_metadata_schema = {
+project_metadata_schema = {
     'schema_version': {
         'required': True,
         'type': 'number',
@@ -27,7 +27,7 @@ package_metadata_schema = {
         'nullable': False
     },
     'distributions': {
-        'required': True,
+        'required': False,
         'type': 'list',
         'nullable': False,
         'schema': {
@@ -37,6 +37,36 @@ package_metadata_schema = {
                     'required': True,
                     'type': 'string',
                     'nullable': False
+                },
+                'arch': {
+                    'required': True,
+                    'type': 'string',
+                    'nullable': False
+                },
+                'runner_group': {
+                    'required': True,
+                    'type': 'string',
+                    'nullable': False
+                }
+            }
+        }
+    },
+    'images': {
+        'required': False,
+        'type': 'list',
+        'nullable': False,
+        'schema': {
+            'type': 'dict',
+            'schema': {
+                'profile': {
+                    'required': False,
+                    'type': 'string',
+                    'nullable': False
+                },
+                'build_arguments': {
+                    'required': False,
+                    'type': 'list',
+                    'nullable': False,
                 },
                 'arch': {
                     'required': True,

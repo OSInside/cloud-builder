@@ -124,19 +124,19 @@ from typing import (
 from cloud_builder.version import __version__
 from cloud_builder.defaults import Defaults
 from cloud_builder.broker import CBMessageBroker
-from cloud_builder.package_request.package_request import CBPackageRequest
-from cloud_builder.package_metadata.package_metadata import CBPackageMetaData
+from cloud_builder.build_request.build_request import CBBuildRequest
+from cloud_builder.project_metadata.project_metadata import CBProjectMetaData
 from cloud_builder.info_request.info_request import CBInfoRequest
 from cloud_builder.utils.display import CBDisplay
 from cloud_builder.config.cbctl_schema import cbctl_config_schema
-from cloud_builder.cb_scheduler import create_run_script
+from cloud_builder.cb_scheduler import create_package_run_script
 from cloud_builder.cb_prepare import resolve_build_dependencies
 
 from cloud_builder.exceptions import (
     exception_handler,
     CBConfigFileNotFoundError,
     CBConfigFileValidationError,
-    CBPackageMetadataError
+    CBProjectMetadataError
 )
 
 from kiwi.command import Command
@@ -265,7 +265,7 @@ def build_package(
     arch: str, dist: str, runner_group: str, clean_buildroot: bool
 ) -> None:
     status_flags = Defaults.get_status_flags()
-    package_request = CBPackageRequest()
+    package_request = CBBuildRequest()
     package_request.set_package_build_request(
         _get_package_path(project_path, package),
         arch, dist, runner_group,
@@ -282,7 +282,7 @@ def build_package_local(dist: str, clean_buildroot: bool) -> None:
 
     status_flags = Defaults.get_status_flags()
     package_source_path = os.getcwd()
-    package_request = CBPackageRequest()
+    package_request = CBBuildRequest()
     package_request.set_package_build_request(
         package=package_source_path,
         arch=platform.machine(),
@@ -294,7 +294,7 @@ def build_package_local(dist: str, clean_buildroot: bool) -> None:
     _check_package_config_from_working_directory()
 
     package_build_run = [
-        'bash', create_run_script(
+        'bash', create_package_run_script(
             package_request.get_data(), clean_buildroot,
             local_build=True
         )
@@ -570,11 +570,11 @@ def _get_package_path(project_path: str, package_name: str) -> str:
 
 def _check_package_config_from_working_directory() -> str:
     package_source_path = os.getcwd()
-    package_config = CBPackageMetaData.get_package_config(
+    project_config = CBProjectMetaData.get_project_config(
         package_source_path
     )
-    if not package_config:
-        raise CBPackageMetadataError(
+    if not project_config:
+        raise CBProjectMetadataError(
             f'No package metadata found in {package_source_path}'
         )
     return package_source_path

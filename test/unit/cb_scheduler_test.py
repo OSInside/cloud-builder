@@ -11,15 +11,18 @@ from cloud_builder.cb_scheduler import (
     main,
     handle_build_requests,
     build_package,
+    build_image,
     reset_build_if_running,
     is_request_valid,
-    create_run_script,
+    create_package_run_script,
+    create_image_run_script,
     get_running_builds
 )
 
 
 class TestCBScheduler:
     def setup(self):
+        self.status_flags = Defaults.get_status_flags()
         sys.argv = [
             sys.argv[0]
         ]
@@ -79,32 +82,80 @@ class TestCBScheduler:
 
     @patch('cloud_builder.cb_scheduler.CBResponse')
     @patch('cloud_builder.cb_scheduler.get_running_builds')
+    @patch('cloud_builder.cb_scheduler.build_image')
+    @patch('cloud_builder.cb_scheduler.CBCloudLogger')
+    @patch('cloud_builder.cb_scheduler.CBMessageBroker')
+    @patch('cloud_builder.cb_scheduler.is_request_valid')
+    def test_handle_image_build_requests(
+        self, mock_is_request_valid, mock_CBMessageBroker,
+        mock_CBCloudLogger, mock_build_image, mock_get_running_builds,
+        mock_CBResponse
+    ):
+        log = Mock()
+        # TODO: correct action setting
+        request = {
+            'action': 'image source changed',
+            'image': {
+                'arch': 'x86_64'
+            },
+            'project': 'myimage',
+            'request_id': 'c8becd30-a5f6-43a6-a4f4-598ec1115b17',
+            'schema_version': 0.2
+        }
+        project_config = {
+            'name': 'myimage', 'images': []
+        }
+        broker = Mock()
+        broker.read.return_value = [Mock(value=request)]
+        broker.validate_build_request.return_value = request
+        mock_CBCloudLogger.return_value = log
+        mock_CBMessageBroker.new.return_value = broker
+        mock_is_request_valid.return_value = project_config
+        build_instances = [
+            20, 8, 5
+        ]
+
+        def running_limit():
+            return build_instances.pop()
+
+        mock_get_running_builds.side_effect = running_limit
+
+        handle_build_requests(5000, 10, log)
+
+        mock_build_image.assert_called_once_with(
+            request, broker, log
+        )
+
+        broker.close.assert_called_once_with()
+
+    @patch('cloud_builder.cb_scheduler.CBResponse')
+    @patch('cloud_builder.cb_scheduler.get_running_builds')
     @patch('cloud_builder.cb_scheduler.build_package')
     @patch('cloud_builder.cb_scheduler.CBCloudLogger')
     @patch('cloud_builder.cb_scheduler.CBMessageBroker')
     @patch('cloud_builder.cb_scheduler.is_request_valid')
-    def test_handle_build_requests(
+    def test_handle_package_build_requests(
         self, mock_is_request_valid, mock_CBMessageBroker,
         mock_CBCloudLogger, mock_build_package, mock_get_running_builds,
         mock_CBResponse
     ):
         log = Mock()
         request = {
-            'action': 'package source changed',
+            'action': self.status_flags.package_rebuild,
             'package': {
                 'arch': 'x86_64',
                 'dist': 'TW',
             },
             'project': 'vim',
             'request_id': 'c8becd30-a5f6-43a6-a4f4-598ec1115b17',
-            'schema_version': 0.1
+            'schema_version': 0.2
         }
         package_config = {
             'name': 'vim', 'distributions': []
         }
         broker = Mock()
         broker.read.return_value = [Mock(value=request)]
-        broker.validate_package_request.return_value = request
+        broker.validate_build_request.return_value = request
         mock_CBCloudLogger.return_value = log
         mock_CBMessageBroker.new.return_value = broker
         mock_is_request_valid.return_value = package_config
@@ -127,47 +178,69 @@ class TestCBScheduler:
 
     @patch('cloud_builder.cb_scheduler.CBCloudLogger')
     @patch('cloud_builder.cb_scheduler.Command.run')
-    @patch('cloud_builder.cb_scheduler.Defaults')
-    @patch('cloud_builder.cb_scheduler.create_run_script')
+    @patch('cloud_builder.cb_scheduler.Defaults.get_runner_project_dir')
+    @patch('cloud_builder.cb_scheduler.create_image_run_script')
+    @patch('cloud_builder.cb_scheduler.reset_build_if_running')
+    def test_build_image(
+        self, mock_reset_build_if_running, mock_create_image_run_script,
+        mock_Defaults_get_runner_project_dir, mock_Command_run,
+        mock_CBCloudLogger
+    ):
+        log = Mock()
+        broker = Mock()
+        # TODO: correct action setting
+        request = {
+            'action': 'image rebuild on source change',
+            'image': {
+                'arch': 'x86_64'
+            },
+            'project': 'myimage',
+            'request_id': 'c8becd30-a5f6-43a6-a4f4-598ec1115b17',
+            'schema_version': 0.2
+        }
+        # TODO
+        build_image(request, broker, log)
+
+    @patch('cloud_builder.cb_scheduler.CBCloudLogger')
+    @patch('cloud_builder.cb_scheduler.Command.run')
+    @patch('cloud_builder.cb_scheduler.Defaults.get_runner_project_dir')
+    @patch('cloud_builder.cb_scheduler.create_package_run_script')
     @patch('cloud_builder.cb_scheduler.reset_build_if_running')
     def test_build_package(
-        self, mock_reset_build_if_running, mock_create_run_script,
-        mock_Defaults, mock_Command_run, mock_CBCloudLogger
+        self, mock_reset_build_if_running, mock_create_package_run_script,
+        mock_Defaults_get_runner_project_dir,
+        mock_Command_run, mock_CBCloudLogger
     ):
         log = Mock()
         broker = Mock()
         mock_CBCloudLogger.return_value = log
-        status_flags = Mock(
-            package_rebuild_clean='package rebuild on new buildroot'
-        )
-        mock_Defaults.get_status_flags.return_value = status_flags
-        mock_Defaults.get_runner_project_dir.return_value = \
+        mock_Defaults_get_runner_project_dir.return_value = \
             'cloud_builder_sources'
         request = {
-            'action': status_flags.package_rebuild_clean,
+            'action': self.status_flags.package_rebuild_clean,
             'package': {
                 'arch': 'x86_64',
                 'dist': 'TW'
             },
             'project': 'vim',
             'request_id': 'c8becd30-a5f6-43a6-a4f4-598ec1115b17',
-            'schema_version': 0.1
+            'schema_version': 0.2
         }
         build_package(request, broker, log)
         mock_reset_build_if_running.assert_called_once_with(
             request, log, broker
         )
-        mock_create_run_script.assert_called_once_with(request, True)
+        mock_create_package_run_script.assert_called_once_with(request, True)
         assert mock_Command_run.call_args_list == [
             call(
                 [
                     'git', '-C',
-                    mock_Defaults.get_runner_project_dir.return_value,
+                    mock_Defaults_get_runner_project_dir.return_value,
                     'pull'
                 ]
             ),
             call(
-                ['bash', mock_create_run_script.return_value]
+                ['bash', mock_create_package_run_script.return_value]
             )
         ]
 
@@ -182,14 +255,14 @@ class TestCBScheduler:
         mock_path_isfile.return_value = True
         mock_psutil_pid_exists.return_value = True
         request = {
-            'action': 'package source changed',
+            'action': self.status_flags.package_source_rebuild,
             'package': {
                 'arch': 'x86_64',
                 'dist': 'TW'
             },
             'project': 'projects/MS/vim',
             'request_id': 'c8becd30-a5f6-43a6-a4f4-598ec1115b17',
-            'schema_version': 0.1
+            'schema_version': 0.2
         }
         log = Mock()
         broker = Mock()
@@ -219,14 +292,14 @@ class TestCBScheduler:
         response = Mock()
         mock_CBResponse.return_value = response
         request = {
-            'action': 'package source changed',
+            'action': self.status_flags.package_source_rebuild,
             'package': {
                 'arch': 'x86_64',
                 'dist': 'TW'
             },
             'project': 'vim',
             'request_id': 'c8becd30-a5f6-43a6-a4f4-598ec1115b17',
-            'schema_version': 0.1
+            'schema_version': 0.2
         }
         log = Mock()
         broker = Mock()
@@ -243,14 +316,14 @@ class TestCBScheduler:
         response = Mock()
         mock_CBResponse.return_value = response
         request = {
-            'action': 'package source changed',
+            'action': self.status_flags.package_source_rebuild,
             'package': {
                 'arch': 'x86_64',
                 'dist': 'TW'
             },
             'project': 'vim',
             'request_id': 'c8becd30-a5f6-43a6-a4f4-598ec1115b17',
-            'schema_version': 0.1
+            'schema_version': 0.2
         }
         log = Mock()
         broker = Mock()
@@ -262,30 +335,58 @@ class TestCBScheduler:
     @patch('os.path.isdir')
     @patch('os.path.isfile')
     @patch('cloud_builder.cb_scheduler.CBResponse')
-    @patch('cloud_builder.cb_scheduler.CBPackageMetaData')
-    def test_is_request_valid_incorrect_target(
-        self, mock_CBPackageMetaData, mock_CBResponse,
+    @patch('cloud_builder.cb_scheduler.CBProjectMetaData')
+    def test_is_request_valid_get_project_config_failed(
+        self, mock_CBProjectMetaData, mock_CBResponse,
         mock_os_path_isfile, mock_os_path_isdir
     ):
-        package_config = {
-            'name': 'vim',
-            'distributions': [
-                {'dist': 'FOO', 'arch': 'x86_64', 'runner_group': 'suse'}
-            ]
-        }
-        mock_CBPackageMetaData.get_package_config.return_value = package_config
+        package_config = {}
+        mock_CBProjectMetaData.get_project_config.return_value = package_config
         response = Mock()
         mock_CBResponse.return_value = response
         request = {
-            'action': 'package source changed',
+            'action': self.status_flags.package_source_rebuild,
             'package': {
                 'arch': 'x86_64',
                 'dist': 'TW'
             },
-            'runner_group': 'suse',
             'project': 'vim',
             'request_id': 'c8becd30-a5f6-43a6-a4f4-598ec1115b17',
-            'schema_version': 0.1
+            'schema_version': 0.2
+        }
+        log = Mock()
+        broker = Mock()
+        mock_os_path_isdir.return_value = True
+        mock_os_path_isfile.return_value = True
+        assert is_request_valid('path', request, log, broker) == {}
+
+    @patch('os.path.isdir')
+    @patch('os.path.isfile')
+    @patch('cloud_builder.cb_scheduler.CBResponse')
+    @patch('cloud_builder.cb_scheduler.CBProjectMetaData')
+    def test_is_request_valid_incorrect_image_target(
+        self, mock_CBProjectMetaData, mock_CBResponse,
+        mock_os_path_isfile, mock_os_path_isdir
+    ):
+        package_config = {
+            'name': 'myimage',
+            'images': [
+                {'arch': 'x86_64', 'runner_group': 'FOO'}
+            ]
+        }
+        mock_CBProjectMetaData.get_project_config.return_value = package_config
+        response = Mock()
+        mock_CBResponse.return_value = response
+        # TODO: correct action setting
+        request = {
+            'action': self.status_flags.package_source_rebuild,
+            'image': {
+                'arch': 'x86_64'
+            },
+            'runner_group': 'suse',
+            'project': 'myimage',
+            'request_id': 'c8becd30-a5f6-43a6-a4f4-598ec1115b17',
+            'schema_version': 0.2
         }
         log = Mock()
         broker = Mock()
@@ -297,10 +398,45 @@ class TestCBScheduler:
     @patch('os.path.isdir')
     @patch('os.path.isfile')
     @patch('cloud_builder.cb_scheduler.CBResponse')
-    @patch('cloud_builder.cb_scheduler.CBPackageMetaData')
+    @patch('cloud_builder.cb_scheduler.CBProjectMetaData')
+    def test_is_request_valid_incorrect_package_target(
+        self, mock_CBProjectMetaData, mock_CBResponse,
+        mock_os_path_isfile, mock_os_path_isdir
+    ):
+        package_config = {
+            'name': 'vim',
+            'distributions': [
+                {'dist': 'FOO', 'arch': 'x86_64', 'runner_group': 'suse'}
+            ]
+        }
+        mock_CBProjectMetaData.get_project_config.return_value = package_config
+        response = Mock()
+        mock_CBResponse.return_value = response
+        request = {
+            'action': self.status_flags.package_source_rebuild,
+            'package': {
+                'arch': 'x86_64',
+                'dist': 'TW'
+            },
+            'runner_group': 'suse',
+            'project': 'vim',
+            'request_id': 'c8becd30-a5f6-43a6-a4f4-598ec1115b17',
+            'schema_version': 0.2
+        }
+        log = Mock()
+        broker = Mock()
+        mock_os_path_isdir.return_value = True
+        mock_os_path_isfile.return_value = True
+        assert is_request_valid('path', request, log, broker) == {}
+        log.response.assert_called_once_with(response, broker)
+
+    @patch('os.path.isdir')
+    @patch('os.path.isfile')
+    @patch('cloud_builder.cb_scheduler.CBResponse')
+    @patch('cloud_builder.cb_scheduler.CBProjectMetaData')
     @patch('platform.machine')
     def test_is_request_valid_incompatible_host_arch(
-        self, mock_platform_machine, mock_CBPackageMetaData, mock_CBResponse,
+        self, mock_platform_machine, mock_CBProjectMetaData, mock_CBResponse,
         mock_os_path_isfile, mock_os_path_isdir
     ):
         mock_platform_machine.return_value = 'aarch64'
@@ -310,11 +446,11 @@ class TestCBScheduler:
                 {'dist': 'TW', 'arch': 'x86_64', 'runner_group': 'suse'}
             ]
         }
-        mock_CBPackageMetaData.get_package_config.return_value = package_config
+        mock_CBProjectMetaData.get_project_config.return_value = package_config
         response = Mock()
         mock_CBResponse.return_value = response
         request = {
-            'action': 'package source changed',
+            'action': self.status_flags.package_source_rebuild,
             'package': {
                 'arch': 'x86_64',
                 'dist': 'TW'
@@ -322,7 +458,7 @@ class TestCBScheduler:
             'runner_group': 'suse',
             'project': 'vim',
             'request_id': 'c8becd30-a5f6-43a6-a4f4-598ec1115b17',
-            'schema_version': 0.1
+            'schema_version': 0.2
         }
         log = Mock()
         broker = Mock()
@@ -334,10 +470,48 @@ class TestCBScheduler:
     @patch('os.path.isdir')
     @patch('os.path.isfile')
     @patch('cloud_builder.cb_scheduler.CBResponse')
-    @patch('cloud_builder.cb_scheduler.CBPackageMetaData')
+    @patch('cloud_builder.cb_scheduler.CBProjectMetaData')
     @patch('platform.machine')
-    def test_is_request_valid_all_good(
-        self, mock_platform_machine, mock_CBPackageMetaData, mock_CBResponse,
+    def test_is_request_valid_for_image_build_all_good(
+        self, mock_platform_machine, mock_CBProjectMetaData, mock_CBResponse,
+        mock_os_path_isfile, mock_os_path_isdir
+    ):
+        mock_platform_machine.return_value = 'x86_64'
+        package_config = {
+            'name': 'myimage',
+            'images': [
+                {'arch': 'x86_64', 'runner_group': 'suse'}
+            ]
+        }
+        mock_CBProjectMetaData.get_project_config.return_value = package_config
+        response = Mock()
+        mock_CBResponse.return_value = response
+        # TODO: correct action setting
+        request = {
+            'action': self.status_flags.package_source_rebuild,
+            'image': {
+                'arch': 'x86_64'
+            },
+            'runner_group': 'suse',
+            'project': 'myimage',
+            'request_id': 'c8becd30-a5f6-43a6-a4f4-598ec1115b17',
+            'schema_version': 0.2
+        }
+        log = Mock()
+        broker = Mock()
+        mock_os_path_isdir.return_value = True
+        mock_os_path_isfile.return_value = True
+        assert is_request_valid('path', request, log, broker) == package_config
+        log.response.assert_called_once_with(response, broker)
+        broker.acknowledge.assert_called_once_with()
+
+    @patch('os.path.isdir')
+    @patch('os.path.isfile')
+    @patch('cloud_builder.cb_scheduler.CBResponse')
+    @patch('cloud_builder.cb_scheduler.CBProjectMetaData')
+    @patch('platform.machine')
+    def test_is_request_valid_for_package_build_all_good(
+        self, mock_platform_machine, mock_CBProjectMetaData, mock_CBResponse,
         mock_os_path_isfile, mock_os_path_isdir
     ):
         mock_platform_machine.return_value = 'x86_64'
@@ -347,11 +521,11 @@ class TestCBScheduler:
                 {'dist': 'TW', 'arch': 'x86_64', 'runner_group': 'suse'}
             ]
         }
-        mock_CBPackageMetaData.get_package_config.return_value = package_config
+        mock_CBProjectMetaData.get_project_config.return_value = package_config
         response = Mock()
         mock_CBResponse.return_value = response
         request = {
-            'action': 'package source changed',
+            'action': self.status_flags.package_source_rebuild,
             'package': {
                 'arch': 'x86_64',
                 'dist': 'TW'
@@ -359,7 +533,7 @@ class TestCBScheduler:
             'runner_group': 'suse',
             'project': 'vim',
             'request_id': 'c8becd30-a5f6-43a6-a4f4-598ec1115b17',
-            'schema_version': 0.1
+            'schema_version': 0.2
         }
         log = Mock()
         broker = Mock()
@@ -370,16 +544,16 @@ class TestCBScheduler:
         broker.acknowledge.assert_called_once_with()
 
     @patch('cloud_builder.cb_scheduler.Path.create')
-    def test_create_run_script_for_local_build(self, mock_Path_create):
+    def test_create_package_run_script_for_local_build(self, mock_Path_create):
         request = {
-            'action': 'package build on localhost requested',
+            'action': self.status_flags.package_local,
             'package': {
                 'arch': 'x86_64',
                 'dist': 'TW'
             },
             'project': 'projects/MS/vim',
             'request_id': 'c8becd30-a5f6-43a6-a4f4-598ec1115b17',
-            'schema_version': 0.1
+            'schema_version': 0.2
         }
         script_code = dedent('''
             #!/bin/bash
@@ -402,16 +576,20 @@ class TestCBScheduler:
         with patch('builtins.open', create=True) as mock_open:
             mock_open.return_value = MagicMock(spec=io.IOBase)
             file_handle = mock_open.return_value.__enter__.return_value
-            create_run_script(request, True, True)
+            create_package_run_script(request, True, True)
             mock_Path_create.assert_called_once_with('projects/MS')
             mock_open.assert_called_once_with(
                 'projects/MS/vim@TW.x86_64.sh', 'w'
             )
             file_handle.write.assert_called_once_with(script_code)
 
+    def test_create_image_run_script_for_runner_build(self):
+        # TODO
+        create_image_run_script({})
+
     @patch('cloud_builder.cb_scheduler.Defaults')
     @patch('cloud_builder.cb_scheduler.Path.create')
-    def test_create_run_script_for_runner_build(
+    def test_create_package_run_script_for_runner_build(
         self, mock_Path_create, mock_Defaults
     ):
         mock_Defaults.get_runner_project_dir.return_value = \
@@ -419,14 +597,14 @@ class TestCBScheduler:
         mock_Defaults.get_runner_package_root.return_value = \
             Defaults.get_runner_package_root()
         request = {
-            'action': 'package source and its meta changed',
+            'action': self.status_flags.package_source_rebuild_clean,
             'package': {
                 'arch': 'x86_64',
                 'dist': 'TW'
             },
             'project': 'projects/MS/vim',
             'request_id': 'c8becd30-a5f6-43a6-a4f4-598ec1115b17',
-            'schema_version': 0.1
+            'schema_version': 0.2
         }
         script_code = dedent('''
             #!/bin/bash
@@ -458,7 +636,7 @@ class TestCBScheduler:
         with patch('builtins.open', create=True) as mock_open:
             mock_open.return_value = MagicMock(spec=io.IOBase)
             file_handle = mock_open.return_value.__enter__.return_value
-            create_run_script(request, True)
+            create_package_run_script(request, True)
             mock_Path_create.assert_called_once_with('/var/tmp/CB/projects/MS')
             mock_open.assert_called_once_with(
                 '/var/tmp/CB/projects/MS/vim@TW.x86_64.sh', 'w'

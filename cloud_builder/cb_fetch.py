@@ -40,8 +40,8 @@ from cloud_builder.cloud_logger import CBCloudLogger
 from cloud_builder.identity import CBIdentity
 from cloud_builder.exceptions import exception_handler
 from cloud_builder.defaults import Defaults
-from cloud_builder.package_metadata.package_metadata import CBPackageMetaData
-from cloud_builder.package_request.package_request import CBPackageRequest
+from cloud_builder.project_metadata.project_metadata import CBProjectMetaData
+from cloud_builder.build_request.build_request import CBBuildRequest
 from cloud_builder.broker import CBMessageBroker
 from cloud_builder.response.response import CBResponse
 from kiwi.command import Command
@@ -138,12 +138,12 @@ def update_project(log: CBCloudLogger) -> None:
     )
     for package_source_path in sorted(changed_packages.keys()):
         log.set_id(os.path.basename(package_source_path))
-        package_config = CBPackageMetaData.get_package_config(
+        project_config = CBProjectMetaData.get_project_config(
             os.path.join(
                 Defaults.get_runner_project_dir(), package_source_path
             ), log, CBIdentity.get_request_id()
         )
-        if package_config:
+        if project_config:
             status_flags = Defaults.get_status_flags()
             request_action = status_flags.package_source_rebuild
             buildroot_config = Defaults.get_cloud_builder_kiwi_file_name()
@@ -151,8 +151,8 @@ def update_project(log: CBCloudLogger) -> None:
                 # buildroot setup is part of changes list. This
                 # triggers a new build of the package buildroot
                 request_action = status_flags.package_source_rebuild_clean
-            for target in package_config.get('distributions') or []:
-                package_request = CBPackageRequest()
+            for target in project_config.get('distributions') or []:
+                package_request = CBBuildRequest()
                 package_request.set_package_build_request(
                     package_source_path, target['arch'], target['dist'],
                     target['runner_group'], request_action

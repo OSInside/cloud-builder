@@ -49,7 +49,7 @@ from cloud_builder.cloud_logger import CBCloudLogger
 from cloud_builder.identity import CBIdentity
 from cloud_builder.exceptions import exception_handler
 from cloud_builder.defaults import Defaults
-from cloud_builder.package_metadata.package_metadata import CBPackageMetaData
+from cloud_builder.project_metadata.project_metadata import CBProjectMetaData
 from cloud_builder.info_request.info_request import CBInfoRequest
 from cloud_builder.broker import CBMessageBroker
 from kiwi.command import Command
@@ -168,11 +168,11 @@ def send_package_info_requests(broker: Any, log: CBCloudLogger) -> List[str]:
     for project in sorted(project_tree.keys()):
         for package in project_tree[project]:
             package_path = os.path.join(project, package)
-            package_config = CBPackageMetaData.get_package_config(
+            project_config = CBProjectMetaData.get_project_config(
                 package_path, log, CBIdentity.get_request_id()
             )
-            if package_config:
-                for target in package_config.get('distributions') or []:
+            if project_config:
+                for target in project_config.get('distributions') or []:
                     info_request = CBInfoRequest()
                     info_request.set_package_info_request(
                         package_path.replace(
