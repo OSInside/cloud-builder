@@ -6,7 +6,7 @@ from mock import (
     patch, Mock
 )
 import yaml
-from cloud_builder.package_request.package_request import CBPackageRequest
+from cloud_builder.build_request.build_request import CBBuildRequest
 from cloud_builder.info_request.info_request import CBInfoRequest
 from cloud_builder.response.response import CBResponse
 from cloud_builder.info_response.info_response import CBInfoResponse
@@ -56,8 +56,8 @@ class TestCBMessageBrokerKafka:
     @patch('cloud_builder.broker.kafka.KafkaProducer')
     def test_send_package_request(self, mock_KafkaProducer):
         producer = mock_KafkaProducer.return_value
-        request = CBPackageRequest()
-        request.package_request_dict['runner_group'] = 'runner_group'
+        request = CBBuildRequest()
+        request.build_request_dict['runner_group'] = 'runner_group'
         self.kafka.send_package_request(request)
         producer.send.assert_called_once_with(
             request.get_data()['runner_group'],
@@ -110,7 +110,7 @@ class TestCBMessageBrokerKafka:
     def test_get_runner_group(self):
         assert self.kafka.get_runner_group() == 'fedora'
         self.kafka.config = {}
-        assert self.kafka.get_runner_group() == 'cb-package-request'
+        assert self.kafka.get_runner_group() == 'cb-build-request'
 
     def test_close(self):
         self.kafka.consumer = Mock()

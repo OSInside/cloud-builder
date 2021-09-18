@@ -1,13 +1,13 @@
 from mock import patch
 
-from cloud_builder.package_request.package_request import CBPackageRequest
+from cloud_builder.build_request.build_request import CBBuildRequest
 
 
-class TestCBPackageRequest:
+class TestCBBuildRequest:
     def setup(self):
-        self.request = CBPackageRequest()
+        self.request = CBBuildRequest()
 
-    @patch('cloud_builder.package_request.package_request.CBIdentity')
+    @patch('cloud_builder.build_request.build_request.CBIdentity')
     def test_set_package_build_request(self, mock_CBIdentity):
         self.request.set_package_build_request(
             'vim', 'x86_64', 'TW', 'runner_group', 'action'

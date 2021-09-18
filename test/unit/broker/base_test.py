@@ -8,8 +8,8 @@ from pytest import (
 
 from cloud_builder.broker.base import CBMessageBrokerBase
 from cloud_builder.exceptions import CBConfigFileNotFoundError
-from cloud_builder.package_request.package_request_schema import (
-    package_request_schema
+from cloud_builder.build_request.build_request_schema import (
+    build_request_schema
 )
 from cloud_builder.response.response_schema import response_schema
 from cloud_builder.info_request.info_request_schema import info_request_schema
@@ -39,9 +39,9 @@ class TestCBMessageBrokerBase:
 
     @patch.object(CBMessageBrokerBase, 'validate_message_with_schema')
     def test_validate_package_request(self, mock_validate_message_with_schema):
-        self.broker.validate_package_request('message')
+        self.broker.validate_build_request('message')
         mock_validate_message_with_schema.assert_called_once_with(
-            'message', package_request_schema
+            'message', build_request_schema
         )
 
     @patch.object(CBMessageBrokerBase, 'validate_message_with_schema')
@@ -69,7 +69,7 @@ class TestCBMessageBrokerBase:
     def test_validate_message_with_schema_broken_yaml(self, mock_acknowledge):
         with self._caplog.at_level(logging.DEBUG):
             assert self.broker.validate_message_with_schema(
-                'invalid_yaml', package_request_schema
+                'invalid_yaml', build_request_schema
             ) == {}
             assert format('DocumentError') in self._caplog.text
             mock_acknowledge.assert_called_once_with()
@@ -78,7 +78,7 @@ class TestCBMessageBrokerBase:
     def test_validate_message_with_schema_invalid_yaml(self, mock_acknowledge):
         with self._caplog.at_level(logging.DEBUG):
             assert self.broker.validate_message_with_schema(
-                "{'foo': 'bar'}", package_request_schema
+                "{'foo': 'bar'}", build_request_schema
             ) == {}
             assert format('ValidationError') in self._caplog.text
             mock_acknowledge.assert_called_once_with()
@@ -89,7 +89,7 @@ class TestCBMessageBrokerBase:
             "{'schema_version': 0.2, 'request_id': 'uuid', "
             "'project': 'vim', 'package': {'arch': 'x86_64', 'dist': 'TW'}, "
             "'runner_group': 'suse', 'action': 'action'}",
-            package_request_schema
+            build_request_schema
         ) == {
             'action': 'action',
             'package': {

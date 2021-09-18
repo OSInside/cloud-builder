@@ -18,8 +18,8 @@
 import os
 import yaml
 from cerberus import Validator
-from cloud_builder.package_metadata.package_metadata_schema import (
-    package_metadata_schema
+from cloud_builder.project_metadata.project_metadata_schema import (
+    project_metadata_schema
 )
 from cloud_builder.cloud_logger import CBCloudLogger
 from cloud_builder.broker import CBMessageBroker
@@ -28,12 +28,12 @@ from cloud_builder.defaults import Defaults
 from typing import Dict
 
 
-class CBPackageMetaData:
+class CBProjectMetaData:
     """
     Implements Cloud Builder metadata handling
     """
     @staticmethod
-    def get_package_config(
+    def get_project_config(
         package_path: str, log: CBCloudLogger = None, request_id: str = '',
         filename: str = None
     ) -> Dict:
@@ -59,13 +59,13 @@ class CBPackageMetaData:
             with open(config_file, 'r') as config:
                 try:
                     config_data = yaml.safe_load(config) or {}
-                    validator = Validator(package_metadata_schema)
+                    validator = Validator(project_metadata_schema)
                     validator.validate(
-                        config_data, package_metadata_schema
+                        config_data, project_metadata_schema
                     )
                     if validator.errors:
                         if log:
-                            CBPackageMetaData._send_log_response(
+                            CBProjectMetaData._send_log_response(
                                 'ValidationError in {0!r}: {1!r}'.format(
                                     config_file, validator.errors
                                 ), package_path, request_id, log
@@ -73,7 +73,7 @@ class CBPackageMetaData:
                         config_data = {}
                 except Exception as issue:
                     if log:
-                        CBPackageMetaData._send_log_response(
+                        CBProjectMetaData._send_log_response(
                             'YAMLError in {0!r}: {1!r}'.format(
                                 config_file, issue
                             ), package_path, request_id, log

@@ -126,7 +126,7 @@ class CBSchedulerIntervalError(CBError):
     """
 
 
-class CBPackageMetadataError(CBError):
+class CBProjectMetadataError(CBError):
     """
-    Exception raised if no package metadata could be read
+    Exception raised if no package/image metadata could be read
     """

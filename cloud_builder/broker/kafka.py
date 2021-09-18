@@ -23,7 +23,7 @@ from kafka import KafkaProducer
 from cerberus import Validator
 
 from cloud_builder.defaults import Defaults
-from cloud_builder.package_request.package_request import CBPackageRequest
+from cloud_builder.build_request.build_request import CBBuildRequest
 from cloud_builder.info_request.info_request import CBInfoRequest
 from cloud_builder.response.response import CBResponse
 from cloud_builder.info_response.info_response import CBInfoResponse
@@ -71,15 +71,15 @@ class CBMessageBrokerKafka(CBMessageBrokerBase):
         self.consumer: KafkaConsumer = None
         self.producer: KafkaProducer = None
 
-    def send_package_request(self, request: CBPackageRequest) -> None:
+    def send_package_request(self, request: CBBuildRequest) -> None:
         """
         Send a package build request
 
-        Send a message conforming to the package_request_schema
+        Send a message conforming to the build_request_schema
         to kafka. The information for the message is taken from
-        an instance of CBPackageRequest
+        an instance of CBBuildRequest
 
-        :param CBPackageRequest request: Instance of CBPackageRequest
+        :param CBBuildRequest request: Instance of CBBuildRequest
         """
         self._create_producer()
         message = yaml.dump(request.get_data()).encode()
@@ -157,7 +157,7 @@ class CBMessageBrokerKafka(CBMessageBrokerBase):
         """
         if self.config.get('runner'):
             return self.config['runner']['group']
-        return Defaults.get_package_request_queue_name()
+        return Defaults.get_build_request_queue_name()
 
     def close(self) -> None:
         """

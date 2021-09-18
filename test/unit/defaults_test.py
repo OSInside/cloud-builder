@@ -39,10 +39,10 @@ class TestDefaults:
             'incompatible build arch'
         assert flags.reset_running_build == \
             'reset running build'
-        assert flags.package_not_existing == \
-            'package does not exist'
-        assert flags.package_metadata_not_existing == \
-            'package metadata does not exist'
+        assert flags.project_not_existing == \
+            'project does not exist'
+        assert flags.project_metadata_not_existing == \
+            'project metadata does not exist'
         assert flags.invalid_metadata == \
             'invalid package metadata'
         assert flags.package_target_not_configured == \
@@ -61,8 +61,8 @@ class TestDefaults:
             assert Defaults.get_cb_ctl_config() == \
                 'users_home/.config/cb/cbctl.yml'
 
-    def test_get_package_request_queue_name(self):
-        assert Defaults.get_package_request_queue_name() == 'cb-package-request'
+    def test_get_build_request_queue_name(self):
+        assert Defaults.get_build_request_queue_name() == 'cb-build-request'
 
     def test_get_response_queue_name(self):
         assert Defaults.get_response_queue_name() == 'cb-response'

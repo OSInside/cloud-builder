@@ -19,19 +19,19 @@ from typing import Dict
 from cloud_builder.identity import CBIdentity
 
 
-class CBPackageRequest:
+class CBBuildRequest:
     """
     Implement creation of request schema valid data dict
     """
     def __init__(self) -> None:
-        self.package_request_dict: Dict = {}
-        self.package_request_schema_version = 0.2
+        self.build_request_dict: Dict = {}
+        self.build_request_schema_version = 0.2
 
     def set_package_build_request(
         self, package: str, arch: str, dist: str, runner_group: str, action: str
     ) -> None:
-        self.package_request_dict = {
-            'schema_version': self.package_request_schema_version,
+        self.build_request_dict = {
+            'schema_version': self.build_request_schema_version,
             'request_id': CBIdentity.get_request_id(),
             'project': package,
             'runner_group': runner_group,
@@ -43,4 +43,4 @@ class CBPackageRequest:
         }
 
     def get_data(self) -> Dict:
-        return self.package_request_dict
+        return self.build_request_dict
