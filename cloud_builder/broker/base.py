@@ -167,9 +167,9 @@ class CBMessageBrokerBase(metaclass=ABCMeta):
         return message_as_yaml
 
     @abstractmethod
-    def send_package_request(self, request: CBBuildRequest) -> None:
+    def send_build_request(self, request: CBBuildRequest) -> None:
         """
-        Send a package build request
+        Send a package/image build request
 
         Implementation in specialized broker class
 

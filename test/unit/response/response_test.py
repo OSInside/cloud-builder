@@ -57,6 +57,20 @@ class TestCBResponse:
             }
         }
 
+    def test_set_image_update_request_response(self):
+        self.response.set_image_update_request_response(
+            'message', 'response_code', 'project', 'arch'
+        )
+        assert self.response.get_data() == {
+            **self.response.response_dict,
+            'message': 'message',
+            'response_code': 'response_code',
+            'project': 'project',
+            'target': {
+                'arch': 'arch'
+            }
+        }
+
     def test_set_package_build_scheduled_response(self):
         self.response.set_package_build_scheduled_response(
             'message', 'response_code', 'package', 'arch', 'dist'
@@ -100,44 +114,44 @@ class TestCBResponse:
 
     def test_set_project_not_existing_response(self):
         self.response.set_project_not_existing_response(
-            'message', 'response_code', 'package'
+            'message', 'response_code', 'project'
         )
         assert self.response.get_data() == {
             **self.response.response_dict,
             'message': 'message',
             'response_code': 'response_code',
-            'project': 'package'
+            'project': 'project'
         }
 
     def test_set_project_invalid_metadata_response(self):
         self.response.set_project_invalid_metadata_response(
-            'message', 'response_code', 'package'
+            'message', 'response_code', 'project'
         )
         assert self.response.get_data() == {
             **self.response.response_dict,
             'message': 'message',
             'response_code': 'response_code',
-            'project': 'package'
+            'project': 'project'
         }
 
     def test_set_project_invalid_target_response(self):
         self.response.set_project_invalid_target_response(
-            'message', 'response_code', 'package'
+            'message', 'response_code', 'project'
         )
         assert self.response.get_data() == {
             **self.response.response_dict,
             'message': 'message',
             'response_code': 'response_code',
-            'project': 'package'
+            'project': 'project'
         }
 
     def test_set_project_metadata_not_existing_response(self):
         self.response.set_project_metadata_not_existing_response(
-            'message', 'response_code', 'package'
+            'message', 'response_code', 'project'
         )
         assert self.response.get_data() == {
             **self.response.response_dict,
             'message': 'message',
             'response_code': 'response_code',
-            'project': 'package'
+            'project': 'project'
         }

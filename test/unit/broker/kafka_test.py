@@ -54,11 +54,11 @@ class TestCBMessageBrokerKafka:
             self.kafka._create_consumer('topic', 'client', 'group')
 
     @patch('cloud_builder.broker.kafka.KafkaProducer')
-    def test_send_package_request(self, mock_KafkaProducer):
+    def test_send_build_request(self, mock_KafkaProducer):
         producer = mock_KafkaProducer.return_value
         request = CBBuildRequest()
         request.build_request_dict['runner_group'] = 'runner_group'
-        self.kafka.send_package_request(request)
+        self.kafka.send_build_request(request)
         producer.send.assert_called_once_with(
             request.get_data()['runner_group'],
             yaml.dump(request.get_data()).encode()

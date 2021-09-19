@@ -36,6 +36,7 @@ status_flags = NamedTuple(
         ('project_metadata_not_existing', str),
         ('package_target_not_configured', str),
         ('image_target_not_configured', str),
+        ('image_source_rebuild', str),
         ('invalid_metadata', str),
         ('package_local', str)
     ]
@@ -185,6 +186,7 @@ class Defaults:
             invalid_metadata='invalid package metadata',
             package_target_not_configured='package target not configured',
             image_target_not_configured='image target not configured',
+            image_source_rebuild='image rebuild due to source change',
             package_local='package build on localhost requested'
         )
 
