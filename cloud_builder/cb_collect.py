@@ -64,7 +64,7 @@ from typing import (
 def main() -> None:
     """
     cb-collect - fetches/updates a git repository and
-    collects build results of package sources as organized
+    collects build results of package/image sources as organized
     in the git tree. Each project in the git tree will
     be represented as a package repository.
 
@@ -122,12 +122,12 @@ def build_project_tree() -> Dict[str, List]:
     Represent the git project tree to be simply consumable
 
     :return:
-        Dictionary with package names per project e.g
+        Dictionary with package/image names per project e.g
 
         .. code:: python
 
            {
-               'cloud-builder-packages/projects/MS': [
+               'cloud-builder-projects/projects/MS': [
                    'python-kiwi_boxed_plugin',
                    'xclock'
                ]
@@ -143,17 +143,17 @@ def build_project_tree() -> Dict[str, List]:
         for name in files:
             if name == Defaults.get_cloud_builder_metadata_file_name():
                 project_name = os.path.dirname(root)
-                package_name = os.path.basename(root)
+                package_or_image_name = os.path.basename(root)
                 if project_name in projects_tree:
-                    projects_tree[project_name].append(package_name)
+                    projects_tree[project_name].append(package_or_image_name)
                 else:
-                    projects_tree[project_name] = [package_name]
+                    projects_tree[project_name] = [package_or_image_name]
     return projects_tree
 
 
-def send_package_info_requests(broker: Any, log: CBCloudLogger) -> List[str]:
+def send_project_info_requests(broker: Any, log: CBCloudLogger) -> List[str]:
     """
-    Walk through the packages and send info requests
+    Walk through the packages/images and send info requests
 
     :param Any broker: Instance of broker factory
 
@@ -162,20 +162,20 @@ def send_package_info_requests(broker: Any, log: CBCloudLogger) -> List[str]:
     :rtype: List
     """
     update_project()
-    project_tree = build_project_tree()
+    projects_tree = build_project_tree()
 
     requuest_ids: List[str] = []
-    for project in sorted(project_tree.keys()):
-        for package in project_tree[project]:
-            package_path = os.path.join(project, package)
+    for project in sorted(projects_tree.keys()):
+        for package_or_image in projects_tree[project]:
+            project_path = os.path.join(project, package_or_image)
             project_config = CBProjectMetaData.get_project_config(
-                package_path, log, CBIdentity.get_request_id()
+                project_path, log, CBIdentity.get_request_id()
             )
             if project_config:
                 for target in project_config.get('distributions') or []:
                     info_request = CBInfoRequest()
                     info_request.set_package_info_request(
-                        package_path.replace(
+                        project_path.replace(
                             Defaults.get_runner_project_dir(), ''
                         ), target['arch'], target['dist']
                     )
@@ -183,6 +183,9 @@ def send_package_info_requests(broker: Any, log: CBCloudLogger) -> List[str]:
                     requuest_ids.append(
                         info_request.get_data()['request_id']
                     )
+                for target in project_config.get('images') or []:
+                    # TODO: send for image info
+                    pass
     return requuest_ids
 
 
@@ -229,29 +232,37 @@ def group_info_response(
                 response = broker.validate_info_response(
                     message.value
                 )
-                if response and 'package' in response:
+                if response:
                     broker.acknowledge()
                     if response['request_id'] in request_id_list:
-                        package_id = '{0}_{1}_{2}'.format(
-                            response['project'],
-                            response['package']['arch'],
-                            response['package']['dist']
-                        )
-                        if package_id in info_records:
-                            info_records[package_id].append(response)
-                        else:
-                            info_records[package_id] = [response]
+                        project_id = None
+                        if 'package' in response:
+                            project_id = '{0}_{1}_{2}'.format(
+                                response['project'],
+                                response['package']['arch'],
+                                response['package']['dist']
+                            )
+                        elif 'image' in response:
+                            project_id = '{0}_{1}_{2}'.format(
+                                response['project'],
+                                response['image']['arch'],
+                                'image'
+                            )
+                        if project_id and project_id in info_records:
+                            info_records[project_id].append(response)
+                        elif project_id:
+                            info_records[project_id] = [response]
             if not message:
                 break
     except Exception as issue:
         log.error(format(issue))
         return {}
 
-    # Walk through package_id grouped responses and take out the
+    # Walk through project_id grouped responses and take out the
     # latest available build. Group all data by project_path/source_ip
     runner_responses: Dict[str, Dict[str, List]] = {}
-    for package in info_records.keys():
-        response_list = info_records[package]
+    for project in info_records.keys():
+        response_list = info_records[project]
         if len(response_list) == 1:
             final_response = response_list[0]
         else:
@@ -269,8 +280,20 @@ def group_info_response(
                 ):
                     final_response = response
 
+        if 'package' in final_response:
+            target = final_response['package']['dist']
+        elif 'image' in final_response:
+            target = 'image'
+        else:
+            # not a package and not an image, ignore
+            log.error(
+                'project {0} is not a package or image, ignored'.format(
+                    final_response['project']
+                )
+            )
+            continue
         project_path = os.path.join(
-            os.path.dirname(final_response['package']), final_response['dist']
+            os.path.dirname(final_response['project']), target
         )
         if project_path not in runner_responses:
             runner_responses[project_path] = {}
@@ -296,7 +319,7 @@ def build_repos(
     :param int timeout: Read timeout on info response queue
     """
     while(True):
-        request_id_list = send_package_info_requests(broker, log)
+        request_id_list = send_project_info_requests(broker, log)
         runner_responses = group_info_response(
             broker, request_id_list, timeout, log
         )
@@ -383,7 +406,7 @@ def _get_repo_type(source_file: str) -> Optional[str]:
     return None
 
 
-def _create_rpm_repo(target_path: str):
+def _create_rpm_repo(target_path: str) -> None:
     for file_name in glob.iglob(f'{target_path}/*.rpm'):
         if file_name.endswith('.src.rpm'):
             rpm_target_dir = f'{target_path}/src'
