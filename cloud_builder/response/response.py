@@ -76,6 +76,13 @@ class CBResponse:
             message, response_code, package, arch, dist
         )
 
+    def set_image_update_request_response(
+        self, message: str, response_code: str, image: str, arch: str
+    ) -> None:
+        self._set_arch_standard_response(
+            message, response_code, image, arch
+        )
+
     def set_package_build_scheduled_response(
         self, message: str, response_code: str, package: str,
         arch: str, dist: str
@@ -121,24 +128,37 @@ class CBResponse:
         return self.response_dict
 
     def _set_standard_response(
-        self, message: str, response_code: str, package: str
+        self, message: str, response_code: str, project: str
     ) -> None:
         self.response_dict = {
             **self.response_dict,
             'message': message,
             'response_code': response_code,
-            'project': package
+            'project': project
+        }
+
+    def _set_arch_standard_response(
+        self, message: str, response_code: str, project: str, arch: str
+    ) -> None:
+        self.response_dict = {
+            **self.response_dict,
+            'message': message,
+            'response_code': response_code,
+            'project': project,
+            'target': {
+                'arch': arch
+            }
         }
 
     def _set_dist_standard_response(
-        self, message: str, response_code: str, package: str,
+        self, message: str, response_code: str, project: str,
         arch: str, dist: str
     ) -> None:
         self.response_dict = {
             **self.response_dict,
             'message': message,
             'response_code': response_code,
-            'project': package,
+            'project': project,
             'target': {
                 'arch': arch,
                 'dist': dist

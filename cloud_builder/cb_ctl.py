@@ -272,7 +272,7 @@ def build_package(
         status_flags.package_rebuild_clean if clean_buildroot else
         status_flags.package_rebuild
     )
-    broker.send_package_request(package_request)
+    broker.send_build_request(package_request)
     CBDisplay.print_json(package_request.get_data())
     broker.close()
 

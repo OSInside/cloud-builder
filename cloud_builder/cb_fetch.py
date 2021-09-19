@@ -150,11 +150,13 @@ def update_project(log: CBCloudLogger) -> None:
         if project_config:
             if 'distributions' in project_config:
                 send_package_update_request(
-                    project_config, changed_projects, project_source_path, broker, log
+                    project_config, changed_projects,
+                    project_source_path, broker, log
                 )
             elif 'images' in project_config:
                 send_image_update_request(
-                    project_config, changed_projects, project_source_path, broker, log
+                    project_config, changed_projects,
+                    project_source_path, broker, log
                 )
 
 
@@ -162,8 +164,26 @@ def send_image_update_request(
     project_config: Dict, changed_projects: Dict, project_source_path: str,
     broker: Any, log: CBCloudLogger
 ) -> None:
-    # TODO
-    pass
+    status_flags = Defaults.get_status_flags()
+    request_action = status_flags.image_source_rebuild
+    for target in project_config.get('images') or []:
+        image_request = CBBuildRequest()
+        image_request.set_image_build_request(
+            project_source_path, target['arch'],
+            target['runner_group'], request_action
+        )
+        broker.send_build_request(image_request)
+        request = image_request.get_data()
+        response = CBResponse(
+            request['request_id'], log.get_id()
+        )
+        response.set_image_update_request_response(
+            message='Image update request scheduled',
+            response_code=request_action,
+            image=request['project'],
+            arch=request['image']['arch'],
+        )
+        log.response(response, broker)
 
 
 def send_package_update_request(
@@ -185,7 +205,7 @@ def send_package_update_request(
             project_source_path, target['arch'], target['dist'],
             target['runner_group'], request_action
         )
-        broker.send_package_request(package_request)
+        broker.send_build_request(package_request)
         request = package_request.get_data()
         response = CBResponse(
             request['request_id'], log.get_id()

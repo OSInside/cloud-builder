@@ -103,9 +103,9 @@ class TestCBMessageBrokerBase:
         }
         assert not mock_acknowledge.called
 
-    def test_send_package_request(self):
+    def test_send_build_request(self):
         with raises(NotImplementedError):
-            self.broker.send_package_request(Mock())
+            self.broker.send_build_request(Mock())
 
     def test_send_info_request(self):
         with raises(NotImplementedError):

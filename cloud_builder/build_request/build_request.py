@@ -30,17 +30,30 @@ class CBBuildRequest:
     def set_package_build_request(
         self, package: str, arch: str, dist: str, runner_group: str, action: str
     ) -> None:
+        self._set_base_request(package, runner_group, action)
+        self.build_request_dict['package'] = {
+            'arch': arch,
+            'dist': dist
+        }
+
+    def set_image_build_request(
+        self, package: str, arch: str, runner_group: str, action: str
+    ) -> None:
+        self._set_base_request(package, runner_group, action)
+        self.build_request_dict['image'] = {
+            'arch': arch
+        }
+
+    def get_data(self) -> Dict:
+        return self.build_request_dict
+
+    def _set_base_request(
+        self, package: str, runner_group: str, action: str
+    ) -> None:
         self.build_request_dict = {
             'schema_version': self.build_request_schema_version,
             'request_id': CBIdentity.get_request_id(),
             'project': package,
             'runner_group': runner_group,
-            'action': action,
-            'package': {
-                'arch': arch,
-                'dist': dist
-            }
+            'action': action
         }
-
-    def get_data(self) -> Dict:
-        return self.build_request_dict

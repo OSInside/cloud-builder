@@ -71,9 +71,9 @@ class CBMessageBrokerKafka(CBMessageBrokerBase):
         self.consumer: KafkaConsumer = None
         self.producer: KafkaProducer = None
 
-    def send_package_request(self, request: CBBuildRequest) -> None:
+    def send_build_request(self, request: CBBuildRequest) -> None:
         """
-        Send a package build request
+        Send a package/image build request
 
         Send a message conforming to the build_request_schema
         to kafka. The information for the message is taken from
