@@ -48,7 +48,7 @@ from kiwi.command import Command
 from apscheduler.schedulers.background import BlockingScheduler
 from kiwi.privileges import Privileges
 from typing import (
-    Dict, List
+    Dict, List, Any
 )
 
 
@@ -68,12 +68,16 @@ def main() -> None:
     │   └── SUB_PROJECT
     │       └── ...
     └── PROJECT_B
-        └── PACKAGE
+        ├── PACKAGE
+        │   ├── _Defaults.get_cloud_builder_metadata_file_name()_
+        │   ├── _Defaults.get_cloud_builder_kiwi_file_name()_
+        │   ├── PACKAGE.changes
+        │   ├── PACKAGE.spec
+        │   └── PACKAGE.tar.xz
+        │ 
+        └── IMAGE
             ├── _Defaults.get_cloud_builder_metadata_file_name()_
-            ├── _Defaults.get_cloud_builder_kiwi_file_name()_
-            ├── PACKAGE.changes
-            ├── PACKAGE.spec
-            └── PACKAGE.tar.xz
+            └── IMAGE.kiwi
     """
     args = docopt(
         __doc__,
@@ -116,18 +120,18 @@ def update_project(log: CBCloudLogger) -> None:
         ]
     )
     changed_files = []
-    changed_packages: Dict[str, List[str]] = {}
+    changed_projects: Dict[str, List[str]] = {}
     if git_changes.output:
         changed_files = git_changes.output.strip().split(os.linesep)
     for changed_file in changed_files:
         if changed_file.startswith('projects'):
             package_dir = os.path.dirname(changed_file)
-            if package_dir in changed_packages:
-                changed_packages[package_dir].append(
+            if package_dir in changed_projects:
+                changed_projects[package_dir].append(
                     os.path.basename(changed_file)
                 )
             else:
-                changed_packages[package_dir] = [
+                changed_projects[package_dir] = [
                     os.path.basename(changed_file)
                 ]
     Command.run(
@@ -136,37 +140,61 @@ def update_project(log: CBCloudLogger) -> None:
     broker = CBMessageBroker.new(
         'kafka', config_file=Defaults.get_broker_config()
     )
-    for package_source_path in sorted(changed_packages.keys()):
-        log.set_id(os.path.basename(package_source_path))
+    for project_source_path in sorted(changed_projects.keys()):
+        log.set_id(os.path.basename(project_source_path))
         project_config = CBProjectMetaData.get_project_config(
             os.path.join(
-                Defaults.get_runner_project_dir(), package_source_path
+                Defaults.get_runner_project_dir(), project_source_path
             ), log, CBIdentity.get_request_id()
         )
         if project_config:
-            status_flags = Defaults.get_status_flags()
-            request_action = status_flags.package_source_rebuild
-            buildroot_config = Defaults.get_cloud_builder_kiwi_file_name()
-            if buildroot_config in changed_packages[package_source_path]:
-                # buildroot setup is part of changes list. This
-                # triggers a new build of the package buildroot
-                request_action = status_flags.package_source_rebuild_clean
-            for target in project_config.get('distributions') or []:
-                package_request = CBBuildRequest()
-                package_request.set_package_build_request(
-                    package_source_path, target['arch'], target['dist'],
-                    target['runner_group'], request_action
+            if 'distributions' in project_config:
+                send_package_update_request(
+                    project_config, changed_projects, project_source_path, broker, log
                 )
-                broker.send_package_request(package_request)
-                request = package_request.get_data()
-                response = CBResponse(
-                    request['request_id'], log.get_id()
+            elif 'images' in project_config:
+                send_image_update_request(
+                    project_config, changed_projects, project_source_path, broker, log
                 )
-                response.set_package_update_request_response(
-                    message='Package update request scheduled',
-                    response_code=request_action,
-                    package=request['project'],
-                    arch=request['package']['arch'],
-                    dist=request['package']['dist']
-                )
-                log.response(response, broker)
+
+
+def send_image_update_request(
+    project_config: Dict, changed_projects: Dict, project_source_path: str,
+    broker: Any, log: CBCloudLogger
+) -> None:
+    # TODO
+    pass
+
+
+def send_package_update_request(
+    project_config: Dict, changed_projects: Dict, project_source_path: str,
+    broker: Any, log: CBCloudLogger
+) -> None:
+    status_flags = Defaults.get_status_flags()
+    request_action = status_flags.package_source_rebuild
+    buildroot_config = Defaults.get_cloud_builder_kiwi_file_name()
+
+    if buildroot_config in changed_projects[project_source_path]:
+        # buildroot setup is part of changes list. This
+        # triggers a new build of the package buildroot
+        request_action = status_flags.package_source_rebuild_clean
+
+    for target in project_config.get('distributions') or []:
+        package_request = CBBuildRequest()
+        package_request.set_package_build_request(
+            project_source_path, target['arch'], target['dist'],
+            target['runner_group'], request_action
+        )
+        broker.send_package_request(package_request)
+        request = package_request.get_data()
+        response = CBResponse(
+            request['request_id'], log.get_id()
+        )
+        response.set_package_update_request_response(
+            message='Package update request scheduled',
+            response_code=request_action,
+            package=request['project'],
+            arch=request['package']['arch'],
+            dist=request['package']['dist']
+        )
+        log.response(response, broker)
