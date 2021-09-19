@@ -14,7 +14,7 @@ SYNOPSIS
 DESCRIPTION
 -----------
 
-cb-info - lookup package information. The package
+cb-info - lookup package/image information. The package/image
 builds on a runner contains a number of files like
 the following example:
 
@@ -28,11 +28,18 @@ the following example:
        ├── package@DIST.ARCH.result.yml
        ├── package@DIST.ARCH.run.log
        ├── package@DIST.ARCH.sh
-       └── package@DIST.ARCH.solver.json
+       ├── package@DIST.ARCH.solver.json
+       ├── ...
+       ├── image@ARCH/
+       ├── image@ARCH.build.log
+       ├── image@ARCH.pid
+       ├── image@ARCH.result.yml
+       ├── image@ARCH.sh
+       └── image@ARCH.solver.json
 
 The local file information is used to construct
 a response record with information about the
-package build:
+package/image build:
 
 OPTIONS
 -------

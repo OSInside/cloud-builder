@@ -9,7 +9,8 @@ from cloud_builder.defaults import Defaults
 from cloud_builder.cb_info import (
     main,
     handle_info_requests,
-    lookup,
+    lookup_package,
+    lookup_image,
     get_result_modification_time,
     get_package_status,
     is_building
@@ -55,13 +56,57 @@ class TestCBInfo:
         main()
         mock_sys_exit.assert_called_once_with(1)
 
-    @patch('cloud_builder.cb_info.lookup')
+    @patch('cloud_builder.cb_info.lookup_image')
     @patch('cloud_builder.cb_info.CBCloudLogger')
     @patch('cloud_builder.cb_info.CBMessageBroker')
     @patch('cloud_builder.cb_info.CBIdentity')
-    def test_handle_info_requests(
+    def test_handle_info_requests_for_image_build(
         self, mock_CBIdentity, mock_CBMessageBroker,
-        mock_CBCloudLogger, mock_lookup
+        mock_CBCloudLogger, mock_lookup_image
+    ):
+        log = Mock()
+        request = {
+            'image': {
+                'arch': 'x86_64'
+            },
+            'project': 'myimage',
+            'request_id': 'uuid',
+            'schema_version': 0.2
+        }
+        broker = Mock()
+        broker_read_return = [
+            [Mock(value=request)]
+        ]
+
+        def broker_read_call(**args):
+            return broker_read_return.pop()
+
+        broker.read.side_effect = broker_read_call
+
+        broker.validate_info_request.return_value = request
+        mock_CBCloudLogger.return_value = log
+        mock_CBMessageBroker.new.return_value = broker
+
+        with raises(IndexError):
+            handle_info_requests(5000, log)
+
+        assert broker.read.call_args_list[0] == call(
+            topic='cb-info-request',
+            group=mock_CBIdentity.get_external_ip.return_value,
+            timeout_ms=5000
+        )
+        mock_lookup_image.assert_called_once_with(
+            'myimage', 'x86_64', 'uuid', broker, log
+        )
+        broker.close.assert_called_once_with()
+
+    @patch('cloud_builder.cb_info.lookup_package')
+    @patch('cloud_builder.cb_info.CBCloudLogger')
+    @patch('cloud_builder.cb_info.CBMessageBroker')
+    @patch('cloud_builder.cb_info.CBIdentity')
+    def test_handle_info_requests_for_package_build(
+        self, mock_CBIdentity, mock_CBMessageBroker,
+        mock_CBCloudLogger, mock_lookup_package
     ):
         log = Mock()
         request = {
@@ -95,10 +140,16 @@ class TestCBInfo:
             group=mock_CBIdentity.get_external_ip.return_value,
             timeout_ms=5000
         )
-        mock_lookup.assert_called_once_with(
+        mock_lookup_package.assert_called_once_with(
             'vim', 'x86_64', 'TW', 'uuid', broker, log
         )
         broker.close.assert_called_once_with()
+
+    def test_lookup_image(self):
+        # TODO
+        log = Mock()
+        broker = Mock()
+        lookup_image('myimage', 'x86_64', 'uuid', broker, log)
 
     @patch('cloud_builder.cb_info.CBCloudLogger')
     @patch('cloud_builder.cb_info.CBInfoResponse')
@@ -106,7 +157,7 @@ class TestCBInfo:
     @patch('cloud_builder.cb_info.is_building')
     @patch('cloud_builder.cb_info.get_package_status')
     @patch('os.path.isfile')
-    def test_lookup(
+    def test_lookup_package(
         self, mock_os_path_isfile, mock_get_package_status,
         mock_is_building, mock_get_result_modification_time,
         mock_CBInfoResponse, mock_CBCloudLogger
@@ -130,7 +181,7 @@ class TestCBInfo:
         }
 
         with patch('builtins.open', create=True):
-            lookup('package', 'arch', 'dist', 'uuid', broker, log)
+            lookup_package('package', 'arch', 'dist', 'uuid', broker, log)
 
         broker.acknowledge.assert_called_once_with()
         result = broker.validate_package_response.return_value

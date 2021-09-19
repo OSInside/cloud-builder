@@ -53,7 +53,7 @@ from cloud_builder.exceptions import (
 @exception_handler
 def main() -> None:
     """
-    cb-info - lookup package information. The package
+    cb-info - lookup package/image information. The package/image
     builds on a runner contains a number of files like
     the following example:
 
@@ -65,11 +65,18 @@ def main() -> None:
        ├── package@DIST.ARCH.result.yml
        ├── package@DIST.ARCH.run.log
        ├── package@DIST.ARCH.sh
-       └── package@DIST.ARCH.solver.json
+       ├── package@DIST.ARCH.solver.json
+       ├── ...
+       ├── image@ARCH/
+       ├── image@ARCH.build.log
+       ├── image@ARCH.pid
+       ├── image@ARCH.result.yml
+       ├── image@ARCH.sh
+       └── image@ARCH.solver.json
 
     The local file information is used to construct
     a response record with information about the
-    package build:
+    package/image build:
     """
     args = docopt(
         __doc__,
@@ -135,23 +142,38 @@ def handle_info_requests(poll_timeout: int, log: CBCloudLogger) -> None:
             ):
                 request = broker.validate_info_request(message.value)
                 if request:
-                    lookup(
-                        request['project'],
-                        request['package']['arch'],
-                        request['package']['dist'],
-                        request['request_id'],
-                        broker,
-                        log
-                    )
+                    arch = None
+                    dist = None
+                    if 'package' in request:
+                        arch = request['package']['arch']
+                        dist = request['package']['dist']
+                        lookup_package(
+                            request['project'], arch, dist,
+                            request['request_id'], broker, log
+                        )
+                    elif 'image' in request:
+                        arch = request['image']['arch']
+                        lookup_image(
+                            request['project'], arch,
+                            request['request_id'], broker, log
+                        )
     finally:
         log.info('Closing message broker connection')
         broker.close()
 
 
-def lookup(
+def lookup_image(
+    package: str, arch: str, request_id: str,
+    broker: Any, log: CBCloudLogger
+) -> None:
+    # TODO
+    pass
+
+
+def lookup_package(
     package: str, arch: str, dist: str, request_id: str,
     broker: Any, log: CBCloudLogger
-):
+) -> None:
     log.set_id(package)
     build_pid_file = os.sep.join(
         [Defaults.get_runner_package_root(), f'{package}@{dist}.{arch}.pid']
