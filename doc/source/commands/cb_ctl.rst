@@ -7,8 +7,11 @@ SYNOPSIS
 .. code:: bash
 
    cb-ctl -h | --help
-   cb-ctl --build=<package> --project-path=<path> --arch=<name> --dist=<name> --runner-group=<name>
+   cb-ctl --build-package-local --dist=<name>
        [--clean]
+   cb-ctl --build-package=<package> --project-path=<path> --arch=<name> --dist=<name> --runner-group=<name>
+       [--clean]
+   cb-ctl --build-image=<image> --project-path=<path> --arch=<name> --runner-group=<name>
    cb-ctl --build-dependencies=<package> --project-path=<path> --arch=<name> --dist=<name>
        [--timeout=<time_sec>]
    cb-ctl --build-log=<package> --project-path=<path> --arch=<name> --dist=<name>
@@ -30,7 +33,7 @@ Control plane for accessing the Cloud Builder services.
 OPTIONS
 -------
 
---build=<package>
+--build-package=<package>
 
   Create a request to build the given package.
   The provided argument is appended to the
@@ -45,6 +48,18 @@ OPTIONS
 
   Please note, the root directory is by convention
   a fixed name set to 'projects'
+
+--build-package-local
+
+  Build package from local checkout. The package
+  sources will be looked up from the current working
+  directory
+
+--build-image=<image>
+
+  Create a request to build the given image.
+  The provided image argument is used in the same
+  way as the package argument from --build-package
 
 --project-path=<path>
 

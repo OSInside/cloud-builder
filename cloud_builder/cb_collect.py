@@ -174,7 +174,7 @@ def send_project_info_requests(broker: Any, log: CBCloudLogger) -> List[str]:
             if project_config:
                 for target in project_config.get('distributions') or []:
                     info_request = CBInfoRequest()
-                    info_request.set_package_info_request(
+                    info_request.set_info_request(
                         project_path.replace(
                             Defaults.get_runner_project_dir(), ''
                         ), target['arch'], target['dist']

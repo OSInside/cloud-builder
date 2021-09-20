@@ -17,18 +17,24 @@
 #
 """
 usage: cb-ctl -h | --help
-       cb-ctl --build-local --dist=<name>
+       cb-ctl --build-package-local --dist=<name>
            [--clean]
-       cb-ctl --build=<package> --project-path=<path> --arch=<name> --dist=<name> --runner-group=<name>
+       cb-ctl --build-package=<package> --project-path=<path> --arch=<name> --dist=<name> --runner-group=<name>
            [--clean]
-       cb-ctl --build-dependencies=<package> --project-path=<path> --arch=<name> --dist=<name>
+       cb-ctl --build-image=<image> --project-path=<path> --arch=<name> --runner-group=<name>
+       cb-ctl --build-dependencies=<package|image> --project-path=<path> --arch=<name>
+           [--dist=<name>]
            [--timeout=<time_sec>]
-       cb-ctl --build-dependencies-local --dist=<name>
-       cb-ctl --build-log=<package> --project-path=<path> --arch=<name> --dist=<name>
+       cb-ctl --build-dependencies-local
+           [--dist=<name>]
+       cb-ctl --build-log=<package│image> --project-path=<path> --arch=<name>
+           [--dist=<name>]
            [--timeout=<time_sec>]
-       cb-ctl --build-info=<package> --project-path=<path> --arch=<name> --dist=<name>
+       cb-ctl --build-info=<package│image> --project-path=<path> --arch=<name>
+           [--dist=<name>]
            [--timeout=<time_sec>]
-       cb-ctl --get-binaries=<package> --project-path=<path> --arch=<name> --dist=<name> --target-dir=<dir>
+       cb-ctl --get-binaries=<package│image> --project-path=<path> --arch=<name> --target-dir=<dir>
+           [--dist=<name>]
            [--timeout=<time_sec>]
        cb-ctl --watch
            [--filter-request-id=<uuid>]
@@ -36,23 +42,28 @@ usage: cb-ctl -h | --help
            [--timeout=<time_sec>]
 
 options:
-    --build=<package>
+    --build-package=<package>
         Create a request to build the given package.
         The provided argument is appended to the
         project-path and forms the directory path
         to the package in the git repository
 
         projects/
-        └── <project-path>/
+          └── <project-path>/
                     └── <package>/...
 
         Please note, the root directory is by convention
         a fixed name set to 'projects'
 
-    --build-local
+    --build-package-local
         Build package from local checkout. The package
         sources will be looked up from the current working
         directory
+
+    --build-image=<image>
+        Create a request to build the given image.
+        The provided image argument is used in the same
+        way as the package argument from --build-package
 
     --project-path=<path>
         Project path that points to the package in the git.
@@ -62,24 +73,25 @@ options:
         Target architecture name
 
     --dist=<name>
-        Target distribution name
+        Target distribution name. This option becomes
+        mandatory for fetching package information
 
     --runner-group=<name>
         Send build request to specified runner group
 
-    --build-dependencies=<package>
+    --build-dependencies=<package|image>
         Provide latest build root dependency information
 
     --build-dependencies-local
         Calculate build dependencies now and on the local system
 
-    --build-log=<package>
+    --build-log=<package│image>
         Provide latest raw package build log
 
-    --build-info=<package>
+    --build-info=<package│image>
         Provide latest build result and status information
 
-    --get-binaries=<package>
+    --get-binaries=<package│image>
         Download latest binary packages
 
     --target-dir=<dir>
@@ -99,6 +111,7 @@ options:
         * cb-run
         * cb-prepare
         * cb-scheduler
+        * cb-image
 
     --timeout=<time_sec>
         Wait time_sec seconds of inactivity on the message
@@ -160,20 +173,28 @@ def main() -> None:
         version='CB (ctl) version ' + __version__,
         options_first=True
     )
-    if args['--build']:
+    if args['--build-package']:
         build_package(
             get_broker(),
-            args['--build'],
+            args['--build-package'],
             args['--project-path'],
             args['--arch'],
             args['--dist'],
             args['--runner-group'],
             bool(args['--clean'])
         )
-    elif args['--build-local']:
+    elif args['--build-package-local']:
         build_package_local(
             args['--dist'],
             bool(args['--clean'])
+        )
+    elif args['--build-image']:
+        build_image(
+            get_broker(),
+            args['--build-image'],
+            args['--project-path'],
+            args['--arch'],
+            args['--runner-group']
         )
     elif args['--build-dependencies']:
         get_build_dependencies(
@@ -267,7 +288,7 @@ def build_package(
     status_flags = Defaults.get_status_flags()
     package_request = CBBuildRequest()
     package_request.set_package_build_request(
-        _get_package_path(project_path, package),
+        _get_target_path(project_path, package),
         arch, dist, runner_group,
         status_flags.package_rebuild_clean if clean_buildroot else
         status_flags.package_rebuild
@@ -291,7 +312,7 @@ def build_package_local(dist: str, clean_buildroot: bool) -> None:
         action=status_flags.package_local
     )
 
-    _check_package_config_from_working_directory()
+    _check_project_config_from_working_directory()
 
     package_build_run = [
         'bash', create_package_run_script(
@@ -305,12 +326,28 @@ def build_package_local(dist: str, clean_buildroot: bool) -> None:
     sys.exit(exit_code)
 
 
+def build_image(
+    broker: Any, image: str, project_path: str,
+    arch: str, runner_group: str
+) -> None:
+    status_flags = Defaults.get_status_flags()
+    image_request = CBBuildRequest()
+    image_request.set_image_build_request(
+        _get_target_path(project_path, image),
+        arch, runner_group,
+        status_flags.image_rebuild
+    )
+    broker.send_build_request(image_request)
+    CBDisplay.print_json(image_request.get_data())
+    broker.close()
+
+
 def get_build_dependencies(
-    broker: Any, package: str, project_path: str, arch: str, dist: str,
+    broker: Any, target: str, project_path: str, arch: str, dist: str,
     timeout_sec: int, config: Dict
 ) -> None:
     solver_data = _get_info_response_file(
-        broker, package, project_path, arch, dist,
+        broker, target, project_path, arch, dist,
         timeout_sec, config, 'solver_file'
     )
     if solver_data:
@@ -320,9 +357,9 @@ def get_build_dependencies(
 def get_build_dependencies_local(dist: str) -> None:
     Privileges.check_for_root_permissions()
 
-    package_source_path = _check_package_config_from_working_directory()
+    target_source_path = _check_project_config_from_working_directory()
     solver_result = resolve_build_dependencies(
-        package_source_path, [f'{dist}.{platform.machine()}']
+        target_source_path, [f'{dist}.{platform.machine()}']
     )
     if solver_result['solver_data']:
         CBDisplay.print_json(
@@ -335,11 +372,11 @@ def get_build_dependencies_local(dist: str) -> None:
 
 
 def get_build_log(
-    broker: Any, package: str, project_path: str, arch: str, dist: str,
+    broker: Any, target: str, project_path: str, arch: str, dist: str,
     timeout_sec: int, config: Dict
 ) -> None:
     build_log_data = _get_info_response_file(
-        broker, package, project_path, arch, dist,
+        broker, target, project_path, arch, dist,
         timeout_sec, config, 'log_file'
     )
     if build_log_data:
@@ -347,20 +384,20 @@ def get_build_log(
 
 
 def get_build_info(
-    broker: Any, package: str, project_path: str, arch: str, dist: str,
+    broker: Any, target: str, project_path: str, arch: str, dist: str,
     timeout_sec: int
 ) -> None:
     CBDisplay.print_json(
-        get_info(broker, package, project_path, arch, dist, timeout_sec)
+        get_info(broker, target, project_path, arch, dist, timeout_sec)
     )
 
 
 def fetch_binaries(
-    broker: Any, package: str, project_path: str, arch: str, dist: str,
+    broker: Any, target: str, project_path: str, arch: str, dist: str,
     timeout_sec: int, target_dir, config: Dict
 ) -> None:
     info_response = get_info(
-        broker, package, project_path, arch, dist, timeout_sec
+        broker, target, project_path, arch, dist, timeout_sec
     )
     if info_response:
         runner_ip = info_response['source_ip']
@@ -395,7 +432,8 @@ def watch_filter_service_name(service_name: str) -> Callable:
             'cb-info': 'CBInfo',
             'cb-run': 'CBRun',
             'cb-prepare': 'CBPrepare',
-            'cb-scheduler': 'CBScheduler'
+            'cb-scheduler': 'CBScheduler',
+            'cb-image': 'CBImage'
         }
         if response['identity'].startswith(service_id[service_name]):
             CBDisplay.print_json(response)
@@ -429,21 +467,21 @@ def watch_filter_none() -> Callable:
 
 
 def get_info(
-    broker: Any, package: str, project_path: str, arch: str, dist: str,
+    broker: Any, target: str, project_path: str, arch: str, dist: str,
     timeout_sec: int
 ) -> Dict:
     request_id = _send_info_request(
-        broker, _get_package_path(project_path, package), arch, dist
+        broker, _get_target_path(project_path, target), arch, dist
     )
     return _info_reader(broker, request_id, timeout_sec)
 
 
 def _get_info_response_file(
-    broker: Any, package: str, project_path: str, arch: str, dist: str,
+    broker: Any, target: str, project_path: str, arch: str, dist: str,
     timeout_sec: int, config: Dict, response_file_name
 ) -> str:
     info_response = get_info(
-        broker, package, project_path, arch, dist, timeout_sec
+        broker, target, project_path, arch, dist, timeout_sec
     )
     if info_response:
         response_file = info_response[response_file_name]
@@ -482,7 +520,7 @@ def _response_reader(
                 group=f'cb-ctl:{os.getpid()}',
                 timeout_ms=timeout_sec * 1000
             ):
-                response = broker.validate_package_response(
+                response = broker.validate_build_response(
                     message.value
                 )
                 if response:
@@ -495,10 +533,10 @@ def _response_reader(
 
 
 def _send_info_request(
-    broker: Any, package_path: str, arch: str, dist: str
+    broker: Any, target_path: str, arch: str, dist: str
 ) -> str:
     info_request = CBInfoRequest()
-    info_request.set_package_info_request(package_path, arch, dist)
+    info_request.set_info_request(target_path, arch, dist)
     broker.send_info_request(info_request)
     broker.close()
     return info_request.get_data()['request_id']
@@ -507,7 +545,7 @@ def _send_info_request(
 def _info_reader(broker: Any, request_id: str, timeout_sec: int) -> Dict:
     """
     Read from the cloud builder info response queue.
-    In case multiple info services responds to the package
+    In case multiple info services responds to the package/image
     only the record of the latest timestamp will be
     used
 
@@ -562,19 +600,19 @@ def _get_datetime_from_utc_timestamp(timestamp: str) -> datetime:
     return datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S.%f")
 
 
-def _get_package_path(project_path: str, package_name: str) -> str:
+def _get_target_path(project_path: str, target_name: str) -> str:
     return os.path.join(
-        'projects', project_path, package_name,
+        'projects', project_path, target_name,
     )
 
 
-def _check_package_config_from_working_directory() -> str:
-    package_source_path = os.getcwd()
+def _check_project_config_from_working_directory() -> str:
+    target_source_path = os.getcwd()
     project_config = CBProjectMetaData.get_project_config(
-        package_source_path
+        target_source_path
     )
     if not project_config:
         raise CBProjectMetadataError(
-            f'No package metadata found in {package_source_path}'
+            f'No package/image metadata found in {target_source_path}'
         )
-    return package_source_path
+    return target_source_path

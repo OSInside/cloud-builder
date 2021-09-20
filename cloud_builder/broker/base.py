@@ -78,9 +78,9 @@ class CBMessageBrokerBase(metaclass=ABCMeta):
             message, build_request_schema
         )
 
-    def validate_package_response(self, message: str) -> Dict:
+    def validate_build_response(self, message: str) -> Dict:
         """
-        Validate a package build response
+        Validate a build response
 
         Invalid messages will be auto committed such that they
         don't appear again

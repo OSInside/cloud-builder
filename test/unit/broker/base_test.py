@@ -45,8 +45,8 @@ class TestCBMessageBrokerBase:
         )
 
     @patch.object(CBMessageBrokerBase, 'validate_message_with_schema')
-    def test_validate_package_response(self, mock_validate_message_with_schema):
-        self.broker.validate_package_response('message')
+    def test_validate_build_response(self, mock_validate_message_with_schema):
+        self.broker.validate_build_response('message')
         mock_validate_message_with_schema.assert_called_once_with(
             'message', response_schema
         )

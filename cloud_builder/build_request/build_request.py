@@ -37,9 +37,9 @@ class CBBuildRequest:
         }
 
     def set_image_build_request(
-        self, package: str, arch: str, runner_group: str, action: str
+        self, image: str, arch: str, runner_group: str, action: str
     ) -> None:
-        self._set_base_request(package, runner_group, action)
+        self._set_base_request(image, runner_group, action)
         self.build_request_dict['image'] = {
             'arch': arch
         }
