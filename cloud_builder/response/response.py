@@ -91,6 +91,13 @@ class CBResponse:
             message, response_code, package, arch, dist
         )
 
+    def set_image_build_scheduled_response(
+        self, message: str, response_code: str, image: str, arch: str
+    ) -> None:
+        self._set_arch_standard_response(
+            message, response_code, image, arch
+        )
+
     def set_package_jobs_reset_response(
         self, message: str, response_code: str, package: str,
         arch: str, dist: str

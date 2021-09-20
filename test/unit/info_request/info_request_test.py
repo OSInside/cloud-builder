@@ -8,13 +8,25 @@ class TestCBInfoRequest:
         self.info_request = CBInfoRequest()
 
     @patch('cloud_builder.info_request.info_request.CBIdentity')
-    def test_set_package_info_request(self, mock_CBIdentity):
-        self.info_request.set_package_info_request('vim', 'x86_64', 'TW')
+    def test_set_info_request_package(self, mock_CBIdentity):
+        self.info_request.set_info_request('vim', 'x86_64', 'TW')
         assert self.info_request.get_data() == {
             'project': 'vim',
             'package': {
                 'arch': 'x86_64',
                 'dist': 'TW'
+            },
+            'request_id': mock_CBIdentity.get_request_id.return_value,
+            'schema_version': 0.2
+        }
+
+    @patch('cloud_builder.info_request.info_request.CBIdentity')
+    def test_set_info_request_image(self, mock_CBIdentity):
+        self.info_request.set_info_request('myimage', 'x86_64')
+        assert self.info_request.get_data() == {
+            'project': 'myimage',
+            'image': {
+                'arch': 'x86_64'
             },
             'request_id': mock_CBIdentity.get_request_id.return_value,
             'schema_version': 0.2

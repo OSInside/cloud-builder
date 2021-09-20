@@ -18,12 +18,16 @@ function _cbctl {
         cmd=$(getCBCommand)
         for comp in $prev $cmd;do
             case "$comp" in
-                "--build")
+                "--build-package")
                     __comp_reply "--project-path --arch --dist --runner-group --clean"
                     return 0
                     ;;
-                "--build-local")
+                "--build-package-local")
                     __comp_reply "--dist --clean"
+                    return 0
+                    ;;
+                "--build-image")
+                    __comp_reply "--project-path --arch --runner-group"
                     return 0
                     ;;
                 "--build-dependencies")

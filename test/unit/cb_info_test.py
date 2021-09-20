@@ -170,7 +170,7 @@ class TestCBInfo:
         mock_CBCloudLogger.return_value = log
         mock_CBInfoResponse.return_value = response
         broker = Mock()
-        broker.validate_package_response.return_value = {
+        broker.validate_build_response.return_value = {
             'package': {
                 'binary_packages': [],
                 'prepare_log_file': 'prepare_log_file',
@@ -184,7 +184,7 @@ class TestCBInfo:
             lookup_package('package', 'arch', 'dist', 'uuid', broker, log)
 
         broker.acknowledge.assert_called_once_with()
-        result = broker.validate_package_response.return_value
+        result = broker.validate_build_response.return_value
         response.set_package_info_response_result.assert_called_once_with(
             result['package']['binary_packages'],
             result['package']['prepare_log_file'],

@@ -466,8 +466,12 @@ def is_request_valid(
             dist=request_dist
         )
     elif 'image' in request:
-        pass
-        # TODO
+        response.set_image_build_scheduled_response(
+            message='Accept image build request',
+            response_code=status_flags.image_request_accepted,
+            image=request['project'],
+            arch=request_arch
+        )
     log.response(response, broker)
     broker.acknowledge()
     return project_config

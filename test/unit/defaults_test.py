@@ -47,6 +47,12 @@ class TestDefaults:
             'invalid package metadata'
         assert flags.package_target_not_configured == \
             'package target not configured'
+        assert flags.image_target_not_configured == \
+            'image target not configured'
+        assert flags.image_source_rebuild == \
+            'image rebuild due to source change'
+        assert flags.image_request_accepted == \
+            'package request accepted'
 
     def test_get_runner_project_dir(self):
         with patch.dict('os.environ', {'HOME': 'users_home'}):

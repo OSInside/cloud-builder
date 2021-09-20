@@ -86,6 +86,20 @@ class TestCBResponse:
             }
         }
 
+    def test_set_image_build_scheduled_response(self):
+        self.response.set_image_build_scheduled_response(
+            'message', 'response_code', 'image', 'arch'
+        )
+        assert self.response.get_data() == {
+            **self.response.response_dict,
+            'message': 'message',
+            'response_code': 'response_code',
+            'project': 'image',
+            'target': {
+                'arch': 'arch'
+            }
+        }
+
     def test_set_buildhost_arch_incompatible_response(self):
         self.response.set_buildhost_arch_incompatible_response(
             'message', 'response_code', 'package'

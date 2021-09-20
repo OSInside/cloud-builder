@@ -198,7 +198,7 @@ def lookup_package(
                 package_result_file
             )
             with open(package_result_file) as result_file:
-                result = broker.validate_package_response(result_file.read())
+                result = broker.validate_build_response(result_file.read())
                 response.set_package_info_response_result(
                     result['package']['binary_packages'],
                     result['package']['prepare_log_file'],
