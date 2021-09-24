@@ -92,9 +92,8 @@ class TestCBScheduler:
         mock_CBResponse
     ):
         log = Mock()
-        # TODO: correct action setting
         request = {
-            'action': 'image source changed',
+            'action': self.status_flags.image_source_rebuild,
             'image': {
                 'arch': 'x86_64'
             },
@@ -188,9 +187,8 @@ class TestCBScheduler:
     ):
         log = Mock()
         broker = Mock()
-        # TODO: correct action setting
         request = {
-            'action': 'image rebuild on source change',
+            'action': self.status_flags.image_source_rebuild,
             'image': {
                 'arch': 'x86_64'
             },
@@ -198,8 +196,23 @@ class TestCBScheduler:
             'request_id': 'c8becd30-a5f6-43a6-a4f4-598ec1115b17',
             'schema_version': 0.2
         }
-        # TODO
         build_image(request, broker, log)
+        mock_reset_build_if_running.assert_called_once_with(
+            request, log, broker
+        )
+        mock_create_image_run_script.assert_called_once_with(request)
+        assert mock_Command_run.call_args_list == [
+            call(
+                [
+                    'git', '-C',
+                    mock_Defaults_get_runner_project_dir.return_value,
+                    'pull'
+                ]
+            ),
+            call(
+                ['bash', mock_create_image_run_script.return_value]
+            )
+        ]
 
     @patch('cloud_builder.cb_scheduler.CBCloudLogger')
     @patch('cloud_builder.cb_scheduler.Command.run')
@@ -377,9 +390,8 @@ class TestCBScheduler:
         mock_CBProjectMetaData.get_project_config.return_value = package_config
         response = Mock()
         mock_CBResponse.return_value = response
-        # TODO: correct action setting
         request = {
-            'action': self.status_flags.package_source_rebuild,
+            'action': self.status_flags.image_source_rebuild,
             'image': {
                 'arch': 'x86_64'
             },
@@ -486,9 +498,8 @@ class TestCBScheduler:
         mock_CBProjectMetaData.get_project_config.return_value = package_config
         response = Mock()
         mock_CBResponse.return_value = response
-        # TODO: correct action setting
         request = {
-            'action': self.status_flags.package_source_rebuild,
+            'action': self.status_flags.image_source_rebuild,
             'image': {
                 'arch': 'x86_64'
             },
@@ -597,15 +608,28 @@ class TestCBScheduler:
             'request_id': 'c8becd30-a5f6-43a6-a4f4-598ec1115b17',
             'schema_version': 0.2
         }
-        # script_code = dedent('''
-        # ''')
+        script_code = dedent('''
+            #!/bin/bash
+            set -e
+            rm -rf /var/tmp/CB/projects/MS/myimage@default.x86_64
+            cb-image \\
+                --request-id c8becd30-a5f6-43a6-a4f4-598ec1115b17 \\
+                --bundle-id 0 \\
+                --description cloud_builder_sources/projects/MS/myimage \\
+                --target-dir /var/tmp/CB/projects/MS/myimage@default.x86_64 \\
+                {0} {1}
+
+            echo $! > /var/tmp/CB/projects/MS/myimage@default.x86_64.pid
+        ''').format('', '')
         with patch('builtins.open', create=True) as mock_open:
             mock_open.return_value = MagicMock(spec=io.IOBase)
-            # file_handle = mock_open.return_value.__enter__.return_value
+            file_handle = mock_open.return_value.__enter__.return_value
             create_image_run_script(request)
-
-        # TODO: implementation not done
-        pass
+            mock_Path_create.assert_called_once_with('/var/tmp/CB/projects/MS')
+            mock_open.assert_called_once_with(
+                '/var/tmp/CB/projects/MS/myimage@default.x86_64.sh', 'w'
+            )
+            file_handle.write.assert_called_once_with(script_code)
 
     @patch('cloud_builder.cb_scheduler.Path.create')
     def test_create_package_run_script_for_local_build(self, mock_Path_create):

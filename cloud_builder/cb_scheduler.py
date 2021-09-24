@@ -253,8 +253,31 @@ def handle_build_requests(
 def build_image(
     request: Dict, broker: CBMessageBroker, log: CBCloudLogger
 ) -> None:
-    # TODO
-    pass
+    """
+    Update the image sources and run the script which
+    utilizes cb-image to build the image for the requested
+    target
+
+    :param dict request: yaml dict request record
+    :param CBMessageBroker broker: instance of CBMessageBroker
+    """
+    log.set_id(os.path.basename(request['project']))
+    reset_build_if_running(
+        request, log, broker
+    )
+    status_flags = Defaults.get_status_flags()
+    if request['action'] == status_flags.image_rebuild or \
+       request['action'] == status_flags.image_source_rebuild:
+        log.info('Update project git source repo prior build')
+        Command.run(
+            ['git', '-C', Defaults.get_runner_project_dir(), 'pull']
+        )
+
+    log.info('Starting image build process')
+    # TODO: support profile and build_arguments to be set in request
+    Command.run(
+        ['bash', create_image_run_script(request)]
+    )
 
 
 def build_package(
@@ -263,7 +286,7 @@ def build_package(
     """
     Update the package sources and run the script which
     utilizes cb-prepare/cb-run to build the package for
-    all configured targets
+    the requested target
 
     :param dict request: yaml dict request record
     :param CBMessageBroker broker: instance of CBMessageBroker
@@ -287,7 +310,7 @@ def build_package(
        request['action'] == status_flags.package_rebuild_clean:
         buildroot_rebuild = True
 
-    log.info('Starting build process')
+    log.info('Starting package build process')
     Command.run(
         ['bash', create_package_run_script(request, buildroot_rebuild)]
     )
@@ -511,6 +534,7 @@ def create_image_run_script(
         image_source_path = request['project']
         image_target_path = \
             f'{image_source_path}@{profile_tag}.{request["image"]["arch"]}'
+
         run_script = dedent('''
             #!/bin/bash
             set -e
@@ -531,13 +555,33 @@ def create_image_run_script(
             bundle_id=bundle_id
         )
     else:
-        # TODO
+        image_source_path = os.path.join(
+            Defaults.get_runner_project_dir(), request['project']
+        )
+        image_target_path = '{0}@{1}.{2}'.format(
+            os.path.join(Defaults.get_runner_root(), request['project']),
+            profile_tag, request['image']['arch']
+        )
         run_script = dedent('''
             #!/bin/bash
             set -e
-        ''')
-        image_target_path = ''
+            rm -rf {image_target_path}
+            cb-image \\
+                --request-id {request_id} \\
+                --bundle-id {bundle_id} \\
+                --description {image_source_path} \\
+                --target-dir {image_target_path} \\
+                {profile_opts} {custom_args}
 
+            echo $! > {image_target_path}.pid
+        ''').format(
+            image_source_path=image_source_path,
+            image_target_path=image_target_path,
+            profile_opts=' '.join(profile_opts) if profile_opts else '',
+            custom_args=' '.join(custom_args) if build_options else '',
+            request_id=request['request_id'],
+            bundle_id=bundle_id
+        )
     image_run_script = f'{image_target_path}.sh'
     Path.create(os.path.dirname(image_run_script))
     with open(image_run_script, 'w') as script:
