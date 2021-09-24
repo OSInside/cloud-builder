@@ -10,8 +10,8 @@ class TestDefaults:
     def test_get_cb_logfile(self):
         assert Defaults.get_cb_logfile() == '/var/log/cloud_builder.log'
 
-    def test_get_runner_package_root(self):
-        assert Defaults.get_runner_package_root() == '/var/tmp/CB'
+    def test_get_runner_root(self):
+        assert Defaults.get_runner_root() == '/var/tmp/CB'
 
     def test_get_status_flags(self):
         flags = Defaults.get_status_flags()

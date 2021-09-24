@@ -98,7 +98,7 @@ def main() -> None:
     package_name = os.path.basename(args['--package'])
     project_name = os.sep.join(
         [os.path.dirname(build_root), package_name]
-    ).replace(Defaults.get_runner_package_root(), '').lstrip(os.sep)
+    ).replace(Defaults.get_runner_root(), '').lstrip(os.sep)
 
     # Solve buildroot packages and create solver json
     prepare_log_file = f'{build_root}.prepare.log'

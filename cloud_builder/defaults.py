@@ -25,7 +25,9 @@ status_flags = NamedTuple(
         ('package_source_rebuild', str),
         ('package_source_rebuild_clean', str),
         ('package_build_failed', str),
+        ('image_build_failed', str),
         ('package_build_succeeded', str),
+        ('image_build_succeeded', str),
         ('package_build_running', str),
         ('buildroot_setup_failed', str),
         ('buildroot_setup_succeeded', str),
@@ -40,7 +42,8 @@ status_flags = NamedTuple(
         ('image_rebuild', str),
         ('image_request_accepted', str),
         ('invalid_metadata', str),
-        ('package_local', str)
+        ('package_local', str),
+        ('image_local', str)
     ]
 )
 
@@ -139,10 +142,9 @@ class Defaults:
         return '/var/log/cloud_builder.log'
 
     @staticmethod
-    def get_runner_package_root() -> str:
+    def get_runner_root() -> str:
         """
-        Return root path name to construct package build roots
-        for building the packages on the runner
+        Return root path name to build packages/images
 
         :return: directory path name
 
@@ -176,7 +178,9 @@ class Defaults:
             package_source_rebuild='package rebuild due to source change',
             package_source_rebuild_clean='package rebuild on new buildroot due to source change',
             package_build_failed='package build failed',
+            image_build_failed='image build failed',
             package_build_succeeded='package build succeeded',
+            image_build_succeeded='image build succeeded',
             package_build_running='package build running',
             buildroot_setup_failed='build root setup failed',
             buildroot_setup_succeeded='build root setup succeeded',
@@ -191,7 +195,8 @@ class Defaults:
             image_source_rebuild='image rebuild due to source change',
             image_rebuild='image rebuild requested',
             image_request_accepted='package request accepted',
-            package_local='package build on localhost requested'
+            package_local='package build on localhost requested',
+            image_local='image build on localhost requested'
         )
 
     @staticmethod

@@ -52,7 +52,7 @@ from kiwi.privileges import Privileges
 from kiwi.path import Path
 from apscheduler.schedulers.background import BlockingScheduler
 from typing import (
-    Dict, Any
+    Dict, Any, List
 )
 
 from cloud_builder.exceptions import (
@@ -170,7 +170,7 @@ def main() -> None:
     log.set_logfile()
 
     Path.create(
-        Defaults.get_runner_package_root()
+        Defaults.get_runner_root()
     )
 
     running_limit = int(args['--package-limit'] or 10)
@@ -305,7 +305,7 @@ def reset_build_if_running(
     :param CBMessageBroker broker: instance of CBMessageBroker
     """
     package_root = os.path.join(
-        Defaults.get_runner_package_root(), request['project']
+        Defaults.get_runner_root(), request['project']
     )
     dist_profile = f'{request["package"]["dist"]}.{request["package"]["arch"]}'
     build_root = f'{package_root}@{dist_profile}'
@@ -478,10 +478,71 @@ def is_request_valid(
 
 
 def create_image_run_script(
-    request: Dict, local_build: bool = False
+    request: Dict, profiles: List[str] = [], build_options: List[str] = [],
+    bundle_id: str = '0', local_build: bool = False
 ) -> str:
-    # TODO
-    pass
+    """
+    Create script to call cb-image
+
+    :param dict request: yaml dict request record
+    :param list profiles: optional profile name(s) to use for building
+    :param list build_options: optional list of additional build options
+    :param str bundle_id: optional package bundle ID, defaults to '0'
+    :param bool local_build:
+        create script for build on localhost. This keeps
+        the script in the foreground and prints all information
+        to stdout instead of writing log files
+
+    :return: script file path name
+
+    :rtype: str
+    """
+    profile_opts = []
+    for profile in profiles:
+        profile_opts.extend(['--profile', profile])
+
+    profile_tag = '_'.join(profiles) if profiles else 'default'
+
+    custom_args = ['--']
+    for argument in build_options:
+        custom_args.append(argument)
+
+    if local_build:
+        image_source_path = request['project']
+        image_target_path = \
+            f'{image_source_path}@{profile_tag}.{request["image"]["arch"]}'
+        run_script = dedent('''
+            #!/bin/bash
+            set -e
+            rm -rf {image_target_path}
+            cb-image \\
+                --request-id {request_id} \\
+                --bundle-id {bundle_id} \\
+                --description {image_source_path} \\
+                --target-dir {image_target_path} \\
+                --local \\
+                {profile_opts} {custom_args}
+        ''').format(
+            image_source_path=image_source_path,
+            image_target_path=image_target_path,
+            profile_opts=' '.join(profile_opts) if profile_opts else '',
+            custom_args=' '.join(custom_args) if build_options else '',
+            request_id=request['request_id'],
+            bundle_id=bundle_id
+        )
+    else:
+        # TODO
+        run_script = dedent('''
+            #!/bin/bash
+            set -e
+        ''')
+        image_target_path = ''
+
+    image_run_script = f'{image_target_path}.sh'
+    Path.create(os.path.dirname(image_run_script))
+    with open(image_run_script, 'w') as script:
+        script.write(run_script)
+    return image_run_script
 
 
 def create_package_run_script(
@@ -536,7 +597,7 @@ def create_package_run_script(
             Defaults.get_runner_project_dir(), request['project']
         )
         package_root = os.path.join(
-            Defaults.get_runner_package_root(), request['project']
+            Defaults.get_runner_root(), request['project']
         )
         build_root = f'{package_root}@{dist_profile}'
         run_script = dedent('''

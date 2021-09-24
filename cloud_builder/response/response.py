@@ -51,6 +51,24 @@ class CBResponse:
             }
         }
 
+    def set_image_build_response(
+        self, message: str, response_code: str, image: str,
+        log_file: str, solver_file: str, binary_packages: List[str],
+        exit_code: int
+    ) -> None:
+        self.response_dict = {
+            **self.response_dict,
+            'message': message,
+            'response_code': response_code,
+            'project': image,
+            'image': {
+                'log_file': log_file,
+                'solver_file': solver_file,
+                'binary_packages': binary_packages,
+                'exit_code': exit_code
+            }
+        }
+
     def set_package_buildroot_response(
         self, message: str, response_code: str, package: str,
         log_file: str, solver_file: str, build_root: str, exit_code: int

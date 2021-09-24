@@ -18,6 +18,7 @@
 """
 usage: cb-image -h | --help
        cb-image --description=<image_description_path> --target-dir=<target_path> --bundle-id=<ID> --request-id=<UUID>
+           [--local]
            [--profile=<name>...]
            [-- <kiwi_custom_build_command_args>...]
 
@@ -34,26 +35,33 @@ options:
     --profile=<name>...
         List of optional profile names to use for building
 
+    --request-id=<UUID>
+        UUID for this image build process
+
+    --local
+        Operate locally:
+        * do not send results to the message broker
+        * do not create dependency graph
+        * run operations in debug mode
+
     -- <kiwi_custom_build_command_args>...
         List of additional kiwi build command arguments
         See 'kiwi-ng system build --help' for details
-
-    --request-id=<UUID>
-        UUID for this image build process
 """
 import os
 import sys
 import json
+import glob
 from docopt import docopt
 from tempfile import TemporaryDirectory
 
 from cloud_builder.version import __version__
 from cloud_builder.cloud_logger import CBCloudLogger
-# from cloud_builder.broker import CBMessageBroker
-# from cloud_builder.response.response import CBResponse
+from cloud_builder.broker import CBMessageBroker
+from cloud_builder.response.response import CBResponse
 from cloud_builder.exceptions import exception_handler
 from cloud_builder.cb_prepare import resolve_build_dependencies
-# from cloud_builder.defaults import Defaults
+from cloud_builder.defaults import Defaults
 
 from kiwi.privileges import Privileges
 from kiwi.path import Path
@@ -84,10 +92,12 @@ def main() -> None:
 
     Privileges.check_for_root_permissions()
 
-    log = CBCloudLogger('CBImage', os.path.basename(args['--description']))
+    image_name = os.path.basename(args['--description'])
+
+    log = CBCloudLogger('CBImage', image_name)
     log.set_logfile()
 
-    # status_flags = Defaults.get_status_flags()
+    status_flags = Defaults.get_status_flags()
 
     profiles = []
     for profile in args['--profile']:
@@ -104,29 +114,33 @@ def main() -> None:
     solver_json_file = f'{target_dir}.solver.json'
 
     # Solve image packages and create solver json
-    log.info(
-        'Solving image package list for {0}. Details in: {1}'.format(
-            args['--description'], solver_json_file
-        )
-    )
-    solver_result = resolve_build_dependencies(
-        args['--description'], args['--profile'], build_log_file
-    )
-    with open(solver_json_file, 'w') as solve_result:
-        solve_result.write(
-            json.dumps(
-                solver_result['solver_data'], sort_keys=True, indent=4
+    if not args['--local']:
+        log.info(
+            'Solving image package list for {0}. Details in: {1}'.format(
+                args['--description'], solver_json_file
             )
         )
+        solver_result = resolve_build_dependencies(
+            args['--description'], args['--profile'], build_log_file
+        )
+        with open(solver_json_file, 'w') as solve_result:
+            solve_result.write(
+                json.dumps(
+                    solver_result['solver_data'], sort_keys=True, indent=4
+                )
+            )
 
     # Build and package image
     kiwi_binary = Path.which(
         'kiwi-ng', alternative_lookup_paths=['/usr/local/bin']
     )
-    kiwi_build = [
-        kiwi_binary, '--debug',
-        '--logfile', build_log_file
-    ]
+    kiwi_build = [kiwi_binary]
+    if not args['--local']:
+        kiwi_build.extend(
+            ['--logfile', build_log_file]
+        )
+    else:
+        kiwi_build.append('--debug')
     if profiles:
         kiwi_build.extend(profiles)
     kiwi_build.extend(
@@ -151,42 +165,48 @@ def main() -> None:
                 target_dir, build_log_file
             )
         )
-        kiwi_bundle = [
-            kiwi_binary,
-            '--debug',
-            'result', 'bundle',
-            '--target-dir', image_build_target_dir.name,
-            '--id', args['--bundle-id'],
-            '--bundle-dir', target_dir,
-            '--package-as-rpm'
-        ]
+        kiwi_bundle = [kiwi_binary]
+        if not args['--local']:
+            kiwi_bundle.extend(
+                ['--logfile', build_log_file]
+            )
+        else:
+            kiwi_bundle.append('--debug')
+        kiwi_bundle.extend(
+            [
+                'result', 'bundle',
+                '--target-dir', image_build_target_dir.name,
+                '--id', args['--bundle-id'],
+                '--bundle-dir', target_dir,
+                '--package-as-rpm'
+            ]
+        )
         exit_code = os.WEXITSTATUS(
             os.system(' '.join(kiwi_bundle))
         )
 
     if exit_code != 0:
-        # status = status_flags.buildroot_setup_failed
-        # message = 'Failed, see logfile for details'
-        pass
+        status = status_flags.image_build_failed
+        message = 'Failed, see logfile for details'
     else:
-        # status = status_flags.buildroot_setup_succeeded
-        # message = 'Image build bundled as RPM package'
-        pass
+        status = status_flags.image_build_succeeded
+        message = 'Image build bundled as RPM package'
 
     # Send result response to the message broker
-    # response = CBResponse(args['--request-id'], log.get_id())
-    # response.set_package_buildroot_response(
-    #     message=message,
-    #     response_code=status,
-    #     package=package_name,
-    #     log_file=prepare_log_file,
-    #     solver_file=solver_json_file,
-    #     build_root=build_root,
-    #     exit_code=exit_code
-    # )
-    # broker = CBMessageBroker.new(
-    #     'kafka', config_file=Defaults.get_broker_config()
-    # )
-    # log.response(response, broker)
+    if not args['--local']:
+        response = CBResponse(args['--request-id'], log.get_id())
+        response.set_image_build_response(
+            message=message,
+            response_code=status,
+            image=image_name,
+            log_file=build_log_file,
+            solver_file=solver_json_file,
+            binary_packages=list(glob.iglob(f'{target_dir}/*')),
+            exit_code=exit_code
+        )
+        broker = CBMessageBroker.new(
+            'kafka', config_file=Defaults.get_broker_config()
+        )
+        log.response(response, broker)
 
     sys.exit(exit_code)

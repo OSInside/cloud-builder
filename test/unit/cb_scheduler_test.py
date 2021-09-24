@@ -44,7 +44,7 @@ class TestCBScheduler:
         main()
         mock_Privileges_check_for_root_permissions.assert_called_once_with()
         mock_Path_create.assert_called_once_with(
-            mock_Defaults.get_runner_package_root.return_value
+            mock_Defaults.get_runner_root.return_value
         )
         mock_handle_build_requests.assert_called_once_with(
             5000, 10, mock_CBCloudLogger.return_value
@@ -544,6 +544,70 @@ class TestCBScheduler:
         broker.acknowledge.assert_called_once_with()
 
     @patch('cloud_builder.cb_scheduler.Path.create')
+    def test_create_image_run_script_for_local_build(self, mock_Path_create):
+        request = {
+            'action': self.status_flags.image_local,
+            'image': {
+                'arch': 'x86_64'
+            },
+            'project': 'projects/MS/myimage',
+            'request_id': 'c8becd30-a5f6-43a6-a4f4-598ec1115b17',
+            'schema_version': 0.2
+        }
+        script_code = dedent('''
+            #!/bin/bash
+            set -e
+            rm -rf projects/MS/myimage@profile.x86_64
+            cb-image \\
+                --request-id c8becd30-a5f6-43a6-a4f4-598ec1115b17 \\
+                --bundle-id 0 \\
+                --description projects/MS/myimage \\
+                --target-dir projects/MS/myimage@profile.x86_64 \\
+                --local \\
+                --profile profile -- --opt a
+        ''')
+        with patch('builtins.open', create=True) as mock_open:
+            mock_open.return_value = MagicMock(spec=io.IOBase)
+            file_handle = mock_open.return_value.__enter__.return_value
+            create_image_run_script(
+                request, ['profile'], ['--opt', 'a'],
+                local_build=True
+            )
+            mock_Path_create.assert_called_once_with('projects/MS')
+            mock_open.assert_called_once_with(
+                'projects/MS/myimage@profile.x86_64.sh', 'w'
+            )
+            file_handle.write.assert_called_once_with(script_code)
+
+    @patch('cloud_builder.cb_scheduler.Defaults')
+    @patch('cloud_builder.cb_scheduler.Path.create')
+    def test_create_image_run_script_for_runner_build(
+        self, mock_Path_create, mock_Defaults
+    ):
+        mock_Defaults.get_runner_project_dir.return_value = \
+            'cloud_builder_sources'
+        mock_Defaults.get_runner_root.return_value = \
+            Defaults.get_runner_root()
+        request = {
+            'action': self.status_flags.image_local,
+            'image': {
+                'arch': 'x86_64'
+            },
+            'project': 'projects/MS/myimage',
+            'request_id': 'c8becd30-a5f6-43a6-a4f4-598ec1115b17',
+            'schema_version': 0.2
+        }
+        # script_code = dedent('''
+        # ''')
+        with patch('builtins.open', create=True) as mock_open:
+            mock_open.return_value = MagicMock(spec=io.IOBase)
+            # file_handle = mock_open.return_value.__enter__.return_value
+            create_image_run_script(request)
+
+        # TODO: implementation not done
+        pass
+
+    @patch('cloud_builder.cb_scheduler.Path.create')
     def test_create_package_run_script_for_local_build(self, mock_Path_create):
         request = {
             'action': self.status_flags.package_local,
@@ -583,10 +647,6 @@ class TestCBScheduler:
             )
             file_handle.write.assert_called_once_with(script_code)
 
-    def test_create_image_run_script_for_runner_build(self):
-        # TODO
-        create_image_run_script({})
-
     @patch('cloud_builder.cb_scheduler.Defaults')
     @patch('cloud_builder.cb_scheduler.Path.create')
     def test_create_package_run_script_for_runner_build(
@@ -594,8 +654,8 @@ class TestCBScheduler:
     ):
         mock_Defaults.get_runner_project_dir.return_value = \
             'cloud_builder_sources'
-        mock_Defaults.get_runner_package_root.return_value = \
-            Defaults.get_runner_package_root()
+        mock_Defaults.get_runner_root.return_value = \
+            Defaults.get_runner_root()
         request = {
             'action': self.status_flags.package_source_rebuild_clean,
             'package': {

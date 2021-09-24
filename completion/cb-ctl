@@ -26,6 +26,10 @@ function _cbctl {
                     __comp_reply "--dist --clean"
                     return 0
                     ;;
+                "--build-image-local")
+                    __comp_reply ""
+                    return 0
+                    ;;
                 "--build-image")
                     __comp_reply "--project-path --arch --runner-group"
                     return 0

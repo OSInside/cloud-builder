@@ -24,6 +24,24 @@ class TestCBResponse:
             }
         }
 
+    def test_set_image_build_response(self):
+        self.response.set_image_build_response(
+            'message', 'response_code', 'image', 'log_file',
+            'solver_file', [], 0
+        )
+        assert self.response.get_data() == {
+            **self.response.response_dict,
+            'message': 'message',
+            'response_code': 'response_code',
+            'project': 'image',
+            'image': {
+                'log_file': 'log_file',
+                'solver_file': 'solver_file',
+                'binary_packages': [],
+                'exit_code': 0
+            }
+        }
+
     def test_set_package_buildroot_response(self):
         self.response.set_package_buildroot_response(
             'message', 'response_code', 'package', 'prepare_log_file',
