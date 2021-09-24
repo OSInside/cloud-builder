@@ -314,6 +314,7 @@ def build_image_local() -> None:
     status_flags = Defaults.get_status_flags()
     image_source_path = os.getcwd()
     image_request = CBBuildRequest()
+    # TODO: support profile and build_arguments to be set in request
     image_request.set_image_build_request(
         image=image_source_path,
         arch=platform.machine(),
@@ -322,8 +323,6 @@ def build_image_local() -> None:
     )
 
     _check_project_config_from_working_directory()
-
-    # TODO: make sure profile, build_options and bundle_id are used from config
 
     image_build_run = [
         'bash', create_image_run_script(
@@ -370,6 +369,7 @@ def build_image(
 ) -> None:
     status_flags = Defaults.get_status_flags()
     image_request = CBBuildRequest()
+    # TODO: support profile and build_arguments to be set in request
     image_request.set_image_build_request(
         _get_target_path(project_path, image),
         arch, runner_group,
