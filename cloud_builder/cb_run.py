@@ -77,7 +77,7 @@ def main() -> None:
     Privileges.check_for_root_permissions()
 
     package_name = args.get('--root').replace(
-        Defaults.get_runner_package_root(), ''
+        Defaults.get_runner_root(), ''
     ).split('@')[0].strip(os.sep)
 
     log = CBCloudLogger('CBRun', package_name)

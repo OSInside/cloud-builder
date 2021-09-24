@@ -176,7 +176,7 @@ def lookup_package(
 ) -> None:
     log.set_id(package)
     build_pid_file = os.sep.join(
-        [Defaults.get_runner_package_root(), f'{package}@{dist}.{arch}.pid']
+        [Defaults.get_runner_root(), f'{package}@{dist}.{arch}.pid']
     )
     if os.path.isfile(build_pid_file):
         broker.acknowledge()
@@ -189,7 +189,7 @@ def lookup_package(
         )
         package_result_file = os.sep.join(
             [
-                Defaults.get_runner_package_root(),
+                Defaults.get_runner_root(),
                 f'{package}@{dist}.{arch}.result.yml'
             ]
         )

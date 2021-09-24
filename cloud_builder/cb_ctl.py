@@ -21,6 +21,7 @@ usage: cb-ctl -h | --help
            [--clean]
        cb-ctl --build-package=<package> --project-path=<path> --arch=<name> --dist=<name> --runner-group=<name>
            [--clean]
+       cb-ctl --build-image-local
        cb-ctl --build-image=<image> --project-path=<path> --arch=<name> --runner-group=<name>
        cb-ctl --build-dependencies=<package|image> --project-path=<path> --arch=<name>
            [--dist=<name>]
@@ -59,6 +60,10 @@ options:
         Build package from local checkout. The package
         sources will be looked up from the current working
         directory
+
+    --build-image-local
+        Build image from local checkout. The image sources
+        will be looked up from the current working directory
 
     --build-image=<image>
         Create a request to build the given image.
@@ -142,7 +147,10 @@ from cloud_builder.project_metadata.project_metadata import CBProjectMetaData
 from cloud_builder.info_request.info_request import CBInfoRequest
 from cloud_builder.utils.display import CBDisplay
 from cloud_builder.config.cbctl_schema import cbctl_config_schema
-from cloud_builder.cb_scheduler import create_package_run_script
+from cloud_builder.cb_scheduler import (
+    create_package_run_script,
+    create_image_run_script
+)
 from cloud_builder.cb_prepare import resolve_build_dependencies
 
 from cloud_builder.exceptions import (
@@ -188,6 +196,8 @@ def main() -> None:
             args['--dist'],
             bool(args['--clean'])
         )
+    elif args['--build-image-local']:
+        build_image_local()
     elif args['--build-image']:
         build_image(
             get_broker(),
@@ -296,6 +306,34 @@ def build_package(
     broker.send_build_request(package_request)
     CBDisplay.print_json(package_request.get_data())
     broker.close()
+
+
+def build_image_local() -> None:
+    Privileges.check_for_root_permissions()
+
+    status_flags = Defaults.get_status_flags()
+    image_source_path = os.getcwd()
+    image_request = CBBuildRequest()
+    image_request.set_image_build_request(
+        image=image_source_path,
+        arch=platform.machine(),
+        runner_group='local',
+        action=status_flags.image_local
+    )
+
+    _check_project_config_from_working_directory()
+
+    # TODO: make sure profile, build_options and bundle_id are used from config
+
+    image_build_run = [
+        'bash', create_image_run_script(
+            image_request.get_data(), local_build=True
+        )
+    ]
+    exit_code = os.WEXITSTATUS(
+        os.system(' '.join(image_build_run))
+    )
+    sys.exit(exit_code)
 
 
 def build_package_local(dist: str, clean_buildroot: bool) -> None:
