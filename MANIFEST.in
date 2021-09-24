@@ -2,11 +2,11 @@
 
 graft completion
 graft cloud_builder/broker
+graft cloud_builder/build_request
 graft cloud_builder/config
 graft cloud_builder/info_request
 graft cloud_builder/info_response
-graft cloud_builder/package_metadata
-graft cloud_builder/package_request
+graft cloud_builder/project_metadata
 graft cloud_builder/response
 graft cloud_builder/utils
 graft systemd
