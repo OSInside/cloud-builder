@@ -146,6 +146,21 @@ class TestCBResponse:
             }
         }
 
+    def test_set_image_jobs_reset_response(self):
+        self.response.set_image_jobs_reset_response(
+            'message', 'response_code', 'image', 'arch', 'selection'
+        )
+        assert self.response.get_data() == {
+            **self.response.response_dict,
+            'message': 'message',
+            'response_code': 'response_code',
+            'project': 'image',
+            'target': {
+                'arch': 'arch',
+                'selection': 'selection'
+            }
+        }
+
     def test_set_project_not_existing_response(self):
         self.response.set_project_not_existing_response(
             'message', 'response_code', 'project'

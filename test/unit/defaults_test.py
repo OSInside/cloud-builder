@@ -52,7 +52,7 @@ class TestDefaults:
         assert flags.image_source_rebuild == \
             'image rebuild due to source change'
         assert flags.image_request_accepted == \
-            'package request accepted'
+            'image request accepted'
 
     def test_get_runner_project_dir(self):
         with patch.dict('os.environ', {'HOME': 'users_home'}):

@@ -347,23 +347,18 @@ def reset_build_if_running(
     :param CBCloudLogger log: logger instance
     :param CBMessageBroker broker: instance of CBMessageBroker
     """
-    package_root = os.path.join(
+    build_pid = 0
+    status_flags = Defaults.get_status_flags()
+    response = CBResponse(request['request_id'], log.get_id())
+    project_root = os.path.join(
         Defaults.get_runner_root(), request['project']
     )
-    dist_profile = f'{request["package"]["dist"]}.{request["package"]["arch"]}'
-    build_root = f'{package_root}@{dist_profile}'
-    package_run_pid = f'{build_root}.pid'
-    if os.path.isfile(package_run_pid):
-        with open(package_run_pid) as pid_fd:
-            build_pid = int(pid_fd.read().strip())
-        log.info(
-            'Checking state of former build with PID:{0}'.format(
-                build_pid
-            )
-        )
-        if psutil.pid_exists(build_pid):
-            status_flags = Defaults.get_status_flags()
-            response = CBResponse(request['request_id'], log.get_id())
+    if 'package' in request:
+        dist_profile = \
+            f'{request["package"]["dist"]}.{request["package"]["arch"]}'
+        build_root = f'{project_root}@{dist_profile}'
+        build_pid = is_active(f'{build_root}.pid', log)
+        if build_pid:
             response.set_package_jobs_reset_response(
                 message='Kill job group for PID:{0} prior rebuild'.format(
                     build_pid
@@ -373,8 +368,24 @@ def reset_build_if_running(
                 arch=request['package']['arch'],
                 dist=request['package']['dist']
             )
-            log.response(response, broker)
-            os.kill(build_pid, signal.SIGTERM)
+    elif 'image' in request:
+        selection = \
+            f'{request["image"]["selection"]}.{request["image"]["arch"]}'
+        image_root = f'{project_root}@{selection}'
+        build_pid = is_active(f'{image_root}.pid', log)
+        if build_pid:
+            response.set_image_jobs_reset_response(
+                message='Kill job group for PID:{0} prior rebuild'.format(
+                    build_pid
+                ),
+                response_code=status_flags.reset_running_build,
+                image=request['project'],
+                arch=request['image']['arch'],
+                selection=request['image']['selection']
+            )
+    if build_pid:
+        log.response(response, broker)
+        os.kill(build_pid, signal.SIGTERM)
 
 
 def get_running_builds() -> int:
@@ -735,3 +746,17 @@ def create_package_run_script(
     with open(package_run_script, 'w') as script:
         script.write(run_script)
     return package_run_script
+
+
+def is_active(pid_file: str, log: CBCloudLogger) -> int:
+    if os.path.isfile(pid_file):
+        with open(pid_file) as pid_fd:
+            build_pid = int(pid_fd.read().strip())
+        log.info(
+            'Checking state of former build with PID:{0}'.format(
+                build_pid
+            )
+        )
+        if psutil.pid_exists(build_pid):
+            return build_pid
+    return 0
