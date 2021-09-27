@@ -11,19 +11,22 @@ SYNOPSIS
        [--clean]
    cb-ctl --build-package=<package> --project-path=<path> --arch=<name> --dist=<name> --runner-group=<name>
        [--clean]
-   cb-ctl --build-image=<image> --project-path=<path> --arch=<name> --runner-group=<name>
-   cb-ctl --build-dependencies=<package> --project-path=<path> --arch=<name> --dist=<name>
+   cb-ctl --build-image-local --selection=<name>
+   cb-ctl --build-image=<image> --project-path=<path> --arch=<name> --runner-group=<name> --selection=<name>
+   cb-ctl --build-dependencies=<package│image> --project-path=<path> --arch=<name> (--dist=<name>|--selection=<name>)
        [--timeout=<time_sec>]
-   cb-ctl --build-log=<package> --project-path=<path> --arch=<name> --dist=<name>
+   cb-ctl --build-dependencies-local (--dist=<name>|--selection=<name>)
+   cb-ctl --build-log=<package│image> --project-path=<path> --arch=<name> (--dist=<name>|--selection=<name>)
        [--timeout=<time_sec>]
-   cb-ctl --build-info=<package> --project-path=<path> --arch=<name> --dist=<name>
+   cb-ctl --build-info=<package│image> --project-path=<path> --arch=<name> (--dist=<name>|--selection=<name>)
        [--timeout=<time_sec>]
-   cb-ctl --get-binaries=<package> --project-path=<path> --arch=<name> --dist=<name> --target-dir=<dir>
+   cb-ctl --get-binaries=<package│image> --project-path=<path> --arch=<name> --target-dir=<dir> (--dist=<name>|--selection=<name>)
        [--timeout=<time_sec>]
    cb-ctl --watch
        [--filter-request-id=<uuid>]
        [--filter-service-name=<name>]
        [--timeout=<time_sec>]
+
 
 DESCRIPTION
 -----------
@@ -55,6 +58,11 @@ OPTIONS
   sources will be looked up from the current working
   directory
 
+--build-image-local
+
+  Build image from local checkout. The image sources
+  will be looked up from the current working directory
+
 --build-image=<image>
 
   Create a request to build the given image.
@@ -72,7 +80,11 @@ OPTIONS
 
 --dist=<name>
 
-  Target distribution name
+  Target distribution name for package builds
+
+--selection=<name>
+
+  Image selection name for image builds
 
 --runner-group=<name>
 
@@ -116,6 +128,7 @@ OPTIONS
   * cb-run
   * cb-prepare
   * cb-scheduler
+  * cb-image
 
 --timeout=<time_sec>
 
