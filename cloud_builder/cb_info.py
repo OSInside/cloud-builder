@@ -67,12 +67,12 @@ def main() -> None:
        ├── package@DIST.ARCH.sh
        ├── package@DIST.ARCH.solver.json
        ├── ...
-       ├── image@ARCH/
-       ├── image@ARCH.build.log
-       ├── image@ARCH.pid
-       ├── image@ARCH.result.yml
-       ├── image@ARCH.sh
-       └── image@ARCH.solver.json
+       ├── image@SELECTION.ARCH/
+       ├── image@SELECTION.ARCH.build.log
+       ├── image@SELECTION.ARCH.pid
+       ├── image@SELECTION.ARCH.result.yml
+       ├── image@SELECTION.ARCH.sh
+       └── image@SELECTION.ARCH.solver.json
 
     The local file information is used to construct
     a response record with information about the

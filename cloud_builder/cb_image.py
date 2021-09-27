@@ -111,6 +111,7 @@ def main() -> None:
 
     target_dir = args['--target-dir']
     build_log_file = f'{target_dir}.build.log'
+    build_result_file = f'{target_dir}.result.yml'
     solver_json_file = f'{target_dir}.solver.json'
 
     # Solve image packages and create solver json
@@ -210,6 +211,6 @@ def main() -> None:
         broker = CBMessageBroker.new(
             'kafka', config_file=Defaults.get_broker_config()
         )
-        log.response(response, broker)
+        log.response(response, broker, build_result_file)
 
     sys.exit(exit_code)
