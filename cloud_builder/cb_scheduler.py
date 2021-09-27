@@ -143,11 +143,14 @@ def main() -> None:
 
         images:
           -
-            profile: myprofile
-            build_arguments:
-              - "--clear-cache"
             arch: x86_64
             runner_group: suse
+            selection:
+              name: standard
+              profiles:
+                - myprofile
+              build_arguments:
+                - "--clear-cache"
 
     The above instructs the scheduler to build one image for the
     myprofile profile and the x86_64 achitecture on a runner in the
