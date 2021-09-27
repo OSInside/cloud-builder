@@ -146,7 +146,8 @@ from cloud_builder.utils.display import CBDisplay
 from cloud_builder.config.cbctl_schema import cbctl_config_schema
 from cloud_builder.cb_scheduler import (
     create_package_run_script,
-    create_image_run_script
+    create_image_run_script,
+    is_request_valid
 )
 from cloud_builder.cb_prepare import resolve_build_dependencies
 
@@ -321,7 +322,9 @@ def build_image_local(selection: str) -> None:
         action=status_flags.image_local
     )
 
-    project_config = _check_project_config_from_working_directory()
+    project_config = _check_project_config_from_working_directory(
+        image_request
+    )
 
     image_build_run = [
         'bash', create_image_run_script(
@@ -348,7 +351,7 @@ def build_package_local(dist: str, clean_buildroot: bool) -> None:
         action=status_flags.package_local
     )
 
-    _check_project_config_from_working_directory()
+    _check_project_config_from_working_directory(package_request)
 
     package_build_run = [
         'bash', create_package_run_script(
@@ -645,13 +648,24 @@ def _get_target_path(project_path: str, target_name: str) -> str:
     )
 
 
-def _check_project_config_from_working_directory() -> Dict:
+def _check_project_config_from_working_directory(
+    request: CBBuildRequest = None
+) -> Dict:
     target_source_path = os.getcwd()
-    project_config = CBProjectMetaData.get_project_config(
-        target_source_path
-    )
+    if request:
+        validated_request = is_request_valid(
+            target_source_path, request.get_data()
+        )
+        if not validated_request.is_valid \
+           and validated_request.response:
+            CBDisplay.print_json(validated_request.response.get_data())
+        project_config = validated_request.project_config
+    else:
+        project_config = CBProjectMetaData.get_project_config(
+            target_source_path
+        )
     if not project_config:
         raise CBProjectMetadataError(
-            f'No package/image metadata found in {target_source_path}'
+            f'No or invalid package/image metadata in {target_source_path}'
         )
     return project_config
