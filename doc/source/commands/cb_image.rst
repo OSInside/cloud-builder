@@ -43,11 +43,12 @@ OPTIONS
 
   Identifier added to the build result file names
 
---profile=<name>...
+--profile=<name>
 
-  List of optional profile names to use for building
+  List of optional profile names to use for building.
+  This option can be specified multiple times
 
--- <kiwi_custom_build_command_args>...
+-- <kiwi_custom_build_command_args>
 
   List of additional kiwi build command arguments
   See 'kiwi-ng system build --help' for details
