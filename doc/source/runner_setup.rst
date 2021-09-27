@@ -42,6 +42,19 @@ created and configured as follows:
                 --subnet-id subnet-MySubNet;
         done
 
+   .. note::
+
+      Runner instances requires storage RAM and CPU power.
+      In the cloud all of these components are cost factors.
+      With {CB} it's possible to differentiate runner groups
+      which can be designed such that there are some powerful
+      and some less powerful machines. For package and/or
+      image builds which are known to consume a lot of resources
+      a runner group can be used that meets these requirements.
+      That way the costs can be balanced. The selected free
+      (no costs) instance type `t2.micro` used in the example
+      above, is not sufficient for a production system.
+
 2. **Install {CB} on the runners**
 
    Login to each of the created Leap runner instances and install

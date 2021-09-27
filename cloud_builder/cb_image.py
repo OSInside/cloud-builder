@@ -194,6 +194,9 @@ def main() -> None:
 
     # Send result response to the message broker
     if not args['--local']:
+        binary_packages = []
+        if exit_code == 0:
+            binary_packages = list(glob.iglob(f'{target_dir}/*'))
         response = CBResponse(args['--request-id'], log.get_id())
         response.set_image_build_response(
             message=message,
@@ -201,7 +204,7 @@ def main() -> None:
             image=image_name,
             log_file=build_log_file,
             solver_file=solver_json_file,
-            binary_packages=list(glob.iglob(f'{target_dir}/*')),
+            binary_packages=binary_packages,
             exit_code=exit_code
         )
         broker = CBMessageBroker.new(
