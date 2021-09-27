@@ -27,11 +27,12 @@ class TestCBBuildRequest:
     @patch('cloud_builder.build_request.build_request.CBIdentity')
     def test_set_image_build_request(self, mock_CBIdentity):
         self.request.set_image_build_request(
-            'myimage', 'x86_64', 'runner_group', 'action'
+            'myimage', 'x86_64', 'selection', 'runner_group', 'action'
         )
         assert self.request.get_data() == {
             'image': {
-                'arch': 'x86_64'
+                'arch': 'x86_64',
+                'selection': 'selection'
             },
             'action': 'action',
             'project': 'myimage',

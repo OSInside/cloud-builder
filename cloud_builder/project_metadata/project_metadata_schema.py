@@ -58,16 +58,6 @@ project_metadata_schema = {
         'schema': {
             'type': 'dict',
             'schema': {
-                'profile': {
-                    'required': False,
-                    'type': 'string',
-                    'nullable': False
-                },
-                'build_arguments': {
-                    'required': False,
-                    'type': 'list',
-                    'nullable': False,
-                },
                 'arch': {
                     'required': True,
                     'type': 'string',
@@ -77,6 +67,29 @@ project_metadata_schema = {
                     'required': True,
                     'type': 'string',
                     'nullable': False
+                },
+                'selection': {
+                    'required': True,
+                    'schema': {
+                        'type': 'dict',
+                        'schema': {
+                            'name': {
+                                'required': True,
+                                'type': 'string',
+                                'nullable': False
+                            },
+                            'profiles': {
+                                'required': False,
+                                'type': 'list',
+                                'nullable': False
+                            },
+                            'build_arguments': {
+                                'required': False,
+                                'type': 'list',
+                                'nullable': False,
+                            }
+                        }
+                    }
                 }
             }
         }

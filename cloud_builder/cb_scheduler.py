@@ -244,14 +244,15 @@ def handle_build_requests(
                     if build_config and 'distributions' in build_config:
                         build_package(request, broker, log)
                     elif build_config and 'images' in build_config:
-                        build_image(request, broker, log)
+                        build_image(request, build_config, broker, log)
     finally:
         log.info('Closing message broker connection')
         broker.close()
 
 
 def build_image(
-    request: Dict, broker: CBMessageBroker, log: CBCloudLogger
+    request: Dict, build_config: Dict, broker: CBMessageBroker,
+    log: CBCloudLogger
 ) -> None:
     """
     Update the image sources and run the script which
@@ -259,6 +260,7 @@ def build_image(
     target
 
     :param dict request: yaml dict request record
+    :param dict build_config: yaml dict project configuration
     :param CBMessageBroker broker: instance of CBMessageBroker
     """
     log.set_id(os.path.basename(request['project']))
@@ -274,9 +276,8 @@ def build_image(
         )
 
     log.info('Starting image build process')
-    # TODO: support profile and build_arguments to be set in request
     Command.run(
-        ['bash', create_image_run_script(request)]
+        ['bash', create_image_run_script(request, build_config)]
     )
 
 
@@ -426,6 +427,7 @@ def is_request_valid(
         return {}
     request_arch = 'none'
     request_dist = 'none'
+    request_selection = 'none'
     if 'package' in request:
         target_ok = False
         request_arch = request['package']['arch']
@@ -448,20 +450,23 @@ def is_request_valid(
             log.response(response, broker)
             return {}
 
-    # 4. Check if requested image arch+runner_group is configured
+    # 4. Check if requested image arch+runner_group+selection is configured
     if 'image' in request:
         target_ok = False
         request_arch = request['image']['arch']
+        request_selection = request['image']['selection']
         request_runner_group = request['runner_group']
         for target in project_config.get('images') or []:
             if request_arch == target.get('arch') and \
+               request_selection == target.get('selection').get('name') and \
                request_runner_group == target.get('runner_group'):
                 target_ok = True
                 break
         if not target_ok:
             response.set_project_invalid_target_response(
-                message='No {0} config for: {1} in runner group {2}'.format(
-                    'image', request_arch, request_runner_group
+                message='No {0} config for: {1}.{2} in runner group {3}'.format(
+                    'image', request_selection, request_arch,
+                    request_runner_group
                 ),
                 response_code=status_flags.image_target_not_configured,
                 project=request['project']
@@ -493,7 +498,8 @@ def is_request_valid(
             message='Accept image build request',
             response_code=status_flags.image_request_accepted,
             image=request['project'],
-            arch=request_arch
+            arch=request_arch,
+            selection=request_selection
         )
     log.response(response, broker)
     broker.acknowledge()
@@ -501,15 +507,14 @@ def is_request_valid(
 
 
 def create_image_run_script(
-    request: Dict, profiles: List[str] = [], build_options: List[str] = [],
+    request: Dict, build_config: Dict,
     bundle_id: str = '0', local_build: bool = False
 ) -> str:
     """
     Create script to call cb-image
 
     :param dict request: yaml dict request record
-    :param list profiles: optional profile name(s) to use for building
-    :param list build_options: optional list of additional build options
+    :param dict build_config: yaml dict project configuration
     :param str bundle_id: optional package bundle ID, defaults to '0'
     :param bool local_build:
         create script for build on localhost. This keeps
@@ -520,11 +525,19 @@ def create_image_run_script(
 
     :rtype: str
     """
+    build_options: List[str] = []
+    profiles: List[str] = []
+    for target in build_config.get('images') or []:
+        selection = target['selection']
+        if selection['name'] == request['image']['selection']:
+            build_options = selection.get('build_arguments') or []
+            profiles = selection.get('profiles') or []
+
     profile_opts = []
     for profile in profiles:
         profile_opts.extend(['--profile', profile])
 
-    profile_tag = '_'.join(profiles) if profiles else 'default'
+    selection = request['image']['selection']
 
     custom_args = ['--']
     for argument in build_options:
@@ -533,7 +546,7 @@ def create_image_run_script(
     if local_build:
         image_source_path = request['project']
         image_target_path = \
-            f'{image_source_path}@{profile_tag}.{request["image"]["arch"]}'
+            f'{image_source_path}@{selection}.{request["image"]["arch"]}'
 
         run_script = dedent('''
             #!/bin/bash
@@ -560,7 +573,7 @@ def create_image_run_script(
         )
         image_target_path = '{0}@{1}.{2}'.format(
             os.path.join(Defaults.get_runner_root(), request['project']),
-            profile_tag, request['image']['arch']
+            selection, request['image']['arch']
         )
         run_script = dedent('''
             #!/bin/bash
