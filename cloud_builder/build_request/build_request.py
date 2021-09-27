@@ -28,7 +28,8 @@ class CBBuildRequest:
         self.build_request_schema_version = 0.2
 
     def set_package_build_request(
-        self, package: str, arch: str, dist: str, runner_group: str, action: str
+        self, package: str, arch: str, dist: str, runner_group: str,
+        action: str
     ) -> None:
         self._set_base_request(package, runner_group, action)
         self.build_request_dict['package'] = {
@@ -37,11 +38,13 @@ class CBBuildRequest:
         }
 
     def set_image_build_request(
-        self, image: str, arch: str, runner_group: str, action: str
+        self, image: str, arch: str, selection: str, runner_group: str,
+        action: str
     ) -> None:
         self._set_base_request(image, runner_group, action)
         self.build_request_dict['image'] = {
-            'arch': arch
+            'arch': arch,
+            'selection': selection
         }
 
     def get_data(self) -> Dict:

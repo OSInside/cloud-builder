@@ -95,10 +95,11 @@ class CBResponse:
         )
 
     def set_image_update_request_response(
-        self, message: str, response_code: str, image: str, arch: str
+        self, message: str, response_code: str, image: str, arch: str,
+        selection: str
     ) -> None:
-        self._set_arch_standard_response(
-            message, response_code, image, arch
+        self._set_selection_standard_response(
+            message, response_code, image, arch, selection
         )
 
     def set_package_build_scheduled_response(
@@ -110,10 +111,11 @@ class CBResponse:
         )
 
     def set_image_build_scheduled_response(
-        self, message: str, response_code: str, image: str, arch: str
+        self, message: str, response_code: str, image: str, arch: str,
+        selection: str
     ) -> None:
-        self._set_arch_standard_response(
-            message, response_code, image, arch
+        self._set_selection_standard_response(
+            message, response_code, image, arch, selection
         )
 
     def set_package_jobs_reset_response(
@@ -162,8 +164,9 @@ class CBResponse:
             'project': project
         }
 
-    def _set_arch_standard_response(
-        self, message: str, response_code: str, project: str, arch: str
+    def _set_selection_standard_response(
+        self, message: str, response_code: str, project: str, arch: str,
+        selection: str
     ) -> None:
         self.response_dict = {
             **self.response_dict,
@@ -171,7 +174,8 @@ class CBResponse:
             'response_code': response_code,
             'project': project,
             'target': {
-                'arch': arch
+                'arch': arch,
+                'selection': selection
             }
         }
 

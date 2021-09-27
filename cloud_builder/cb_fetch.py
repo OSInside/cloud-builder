@@ -169,7 +169,7 @@ def send_image_update_request(
     for target in project_config.get('images') or []:
         image_request = CBBuildRequest()
         image_request.set_image_build_request(
-            project_source_path, target['arch'],
+            project_source_path, target['arch'], target['selection']['name'],
             target['runner_group'], request_action
         )
         broker.send_build_request(image_request)
@@ -182,6 +182,7 @@ def send_image_update_request(
             response_code=request_action,
             image=request['project'],
             arch=request['image']['arch'],
+            selection=request['image']['selection']
         )
         log.response(response, broker)
 

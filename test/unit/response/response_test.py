@@ -77,7 +77,7 @@ class TestCBResponse:
 
     def test_set_image_update_request_response(self):
         self.response.set_image_update_request_response(
-            'message', 'response_code', 'project', 'arch'
+            'message', 'response_code', 'project', 'arch', 'selection'
         )
         assert self.response.get_data() == {
             **self.response.response_dict,
@@ -85,7 +85,8 @@ class TestCBResponse:
             'response_code': 'response_code',
             'project': 'project',
             'target': {
-                'arch': 'arch'
+                'arch': 'arch',
+                'selection': 'selection'
             }
         }
 
@@ -106,7 +107,7 @@ class TestCBResponse:
 
     def test_set_image_build_scheduled_response(self):
         self.response.set_image_build_scheduled_response(
-            'message', 'response_code', 'image', 'arch'
+            'message', 'response_code', 'image', 'arch', 'selection'
         )
         assert self.response.get_data() == {
             **self.response.response_dict,
@@ -114,7 +115,8 @@ class TestCBResponse:
             'response_code': 'response_code',
             'project': 'image',
             'target': {
-                'arch': 'arch'
+                'arch': 'arch',
+                'selection': 'selection'
             }
         }
 

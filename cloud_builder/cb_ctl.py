@@ -21,21 +21,16 @@ usage: cb-ctl -h | --help
            [--clean]
        cb-ctl --build-package=<package> --project-path=<path> --arch=<name> --dist=<name> --runner-group=<name>
            [--clean]
-       cb-ctl --build-image-local
-       cb-ctl --build-image=<image> --project-path=<path> --arch=<name> --runner-group=<name>
-       cb-ctl --build-dependencies=<package|image> --project-path=<path> --arch=<name>
-           [--dist=<name>]
+       cb-ctl --build-image-local --selection=<name>
+       cb-ctl --build-image=<image> --project-path=<path> --arch=<name> --runner-group=<name> --selection=<name>
+       cb-ctl --build-dependencies=<package│image> --project-path=<path> --arch=<name> (--dist=<name>|--selection=<name>)
            [--timeout=<time_sec>]
-       cb-ctl --build-dependencies-local
-           [--dist=<name>]
-       cb-ctl --build-log=<package│image> --project-path=<path> --arch=<name>
-           [--dist=<name>]
+       cb-ctl --build-dependencies-local (--dist=<name>|--selection=<name>)
+       cb-ctl --build-log=<package│image> --project-path=<path> --arch=<name> (--dist=<name>|--selection=<name>)
            [--timeout=<time_sec>]
-       cb-ctl --build-info=<package│image> --project-path=<path> --arch=<name>
-           [--dist=<name>]
+       cb-ctl --build-info=<package│image> --project-path=<path> --arch=<name> (--dist=<name>|--selection=<name>)
            [--timeout=<time_sec>]
-       cb-ctl --get-binaries=<package│image> --project-path=<path> --arch=<name> --target-dir=<dir>
-           [--dist=<name>]
+       cb-ctl --get-binaries=<package│image> --project-path=<path> --arch=<name> --target-dir=<dir> (--dist=<name>|--selection=<name>)
            [--timeout=<time_sec>]
        cb-ctl --watch
            [--filter-request-id=<uuid>]
@@ -78,8 +73,10 @@ options:
         Target architecture name
 
     --dist=<name>
-        Target distribution name. This option becomes
-        mandatory for fetching package information
+        Target distribution name for package builds
+
+    --selection=<name>
+        Image selection name for image builds
 
     --runner-group=<name>
         Send build request to specified runner group
@@ -120,7 +117,7 @@ options:
 
     --timeout=<time_sec>
         Wait time_sec seconds of inactivity on the message
-        broker before return. Default: 30sec
+        broker before return. Default: 10sec
 
     --clean
         Delete package buildroot if present on the runner
@@ -181,6 +178,7 @@ def main() -> None:
         version='CB (ctl) version ' + __version__,
         options_first=True
     )
+    default_timeout = 10
     if args['--build-package']:
         build_package(
             get_broker(),
@@ -197,13 +195,14 @@ def main() -> None:
             bool(args['--clean'])
         )
     elif args['--build-image-local']:
-        build_image_local()
+        build_image_local(args['--selection'])
     elif args['--build-image']:
         build_image(
             get_broker(),
             args['--build-image'],
             args['--project-path'],
             args['--arch'],
+            args['--selection'],
             args['--runner-group']
         )
     elif args['--build-dependencies']:
@@ -213,7 +212,7 @@ def main() -> None:
             args['--project-path'],
             args['--arch'],
             args['--dist'],
-            int(args['--timeout'] or 30),
+            int(args['--timeout'] or default_timeout),
             get_config()
         )
     elif args['--build-dependencies-local']:
@@ -227,7 +226,7 @@ def main() -> None:
             args['--project-path'],
             args['--arch'],
             args['--dist'],
-            int(args['--timeout'] or 30),
+            int(args['--timeout'] or default_timeout),
             get_config()
         )
     elif args['--build-info']:
@@ -237,7 +236,7 @@ def main() -> None:
             args['--project-path'],
             args['--arch'],
             args['--dist'],
-            int(args['--timeout'] or 30)
+            int(args['--timeout'] or default_timeout)
         )
     elif args['--get-binaries']:
         fetch_binaries(
@@ -246,12 +245,12 @@ def main() -> None:
             args['--project-path'],
             args['--arch'],
             args['--dist'],
-            int(args['--timeout'] or 30),
+            int(args['--timeout'] or default_timeout),
             args['--target-dir'],
             get_config()
         )
     elif args['--watch']:
-        timeout = int(args['--timeout'] or 30)
+        timeout = int(args['--timeout'] or default_timeout)
         if args['--filter-request-id']:
             _response_reader(
                 get_broker(), timeout, watch_filter_request_id(
@@ -308,25 +307,25 @@ def build_package(
     broker.close()
 
 
-def build_image_local() -> None:
+def build_image_local(selection: str) -> None:
     Privileges.check_for_root_permissions()
 
     status_flags = Defaults.get_status_flags()
     image_source_path = os.getcwd()
     image_request = CBBuildRequest()
-    # TODO: support profile and build_arguments to be set in request
     image_request.set_image_build_request(
         image=image_source_path,
         arch=platform.machine(),
+        selection=selection,
         runner_group='local',
         action=status_flags.image_local
     )
 
-    _check_project_config_from_working_directory()
+    project_config = _check_project_config_from_working_directory()
 
     image_build_run = [
         'bash', create_image_run_script(
-            image_request.get_data(), local_build=True
+            image_request.get_data(), project_config, local_build=True
         )
     ]
     exit_code = os.WEXITSTATUS(
@@ -365,14 +364,13 @@ def build_package_local(dist: str, clean_buildroot: bool) -> None:
 
 def build_image(
     broker: Any, image: str, project_path: str,
-    arch: str, runner_group: str
+    arch: str, selection: str, runner_group: str
 ) -> None:
     status_flags = Defaults.get_status_flags()
     image_request = CBBuildRequest()
-    # TODO: support profile and build_arguments to be set in request
     image_request.set_image_build_request(
         _get_target_path(project_path, image),
-        arch, runner_group,
+        arch, selection, runner_group,
         status_flags.image_rebuild
     )
     broker.send_build_request(image_request)
@@ -395,7 +393,10 @@ def get_build_dependencies(
 def get_build_dependencies_local(dist: str) -> None:
     Privileges.check_for_root_permissions()
 
-    target_source_path = _check_project_config_from_working_directory()
+    target_source_path = os.getcwd()
+
+    _check_project_config_from_working_directory()
+
     solver_result = resolve_build_dependencies(
         target_source_path, [f'{dist}.{platform.machine()}']
     )
@@ -644,7 +645,7 @@ def _get_target_path(project_path: str, target_name: str) -> str:
     )
 
 
-def _check_project_config_from_working_directory() -> str:
+def _check_project_config_from_working_directory() -> Dict:
     target_source_path = os.getcwd()
     project_config = CBProjectMetaData.get_project_config(
         target_source_path
@@ -653,4 +654,4 @@ def _check_project_config_from_working_directory() -> str:
         raise CBProjectMetadataError(
             f'No package/image metadata found in {target_source_path}'
         )
-    return target_source_path
+    return project_config

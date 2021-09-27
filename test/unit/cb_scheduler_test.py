@@ -95,14 +95,22 @@ class TestCBScheduler:
         request = {
             'action': self.status_flags.image_source_rebuild,
             'image': {
-                'arch': 'x86_64'
+                'arch': 'x86_64',
+                'selection': 'standard'
             },
             'project': 'myimage',
             'request_id': 'c8becd30-a5f6-43a6-a4f4-598ec1115b17',
             'schema_version': 0.2
         }
         project_config = {
-            'name': 'myimage', 'images': []
+            'name': 'myimage',
+            'images': [
+                {
+                    'selection': {
+                        'name': 'standard'
+                    }
+                }
+            ]
         }
         broker = Mock()
         broker.read.return_value = [Mock(value=request)]
@@ -122,7 +130,7 @@ class TestCBScheduler:
         handle_build_requests(5000, 10, log)
 
         mock_build_image.assert_called_once_with(
-            request, broker, log
+            request, project_config, broker, log
         )
 
         broker.close.assert_called_once_with()
@@ -190,17 +198,30 @@ class TestCBScheduler:
         request = {
             'action': self.status_flags.image_source_rebuild,
             'image': {
-                'arch': 'x86_64'
+                'arch': 'x86_64',
+                'selection': 'standard'
             },
             'project': 'myimage',
             'request_id': 'c8becd30-a5f6-43a6-a4f4-598ec1115b17',
             'schema_version': 0.2
         }
-        build_image(request, broker, log)
+        project_config = {
+            'name': 'myimage',
+            'images': [
+                {
+                    'selection': {
+                        'name': 'standard'
+                    }
+                }
+            ]
+        }
+        build_image(request, project_config, broker, log)
         mock_reset_build_if_running.assert_called_once_with(
             request, log, broker
         )
-        mock_create_image_run_script.assert_called_once_with(request)
+        mock_create_image_run_script.assert_called_once_with(
+            request, project_config
+        )
         assert mock_Command_run.call_args_list == [
             call(
                 [
@@ -384,7 +405,13 @@ class TestCBScheduler:
         package_config = {
             'name': 'myimage',
             'images': [
-                {'arch': 'x86_64', 'runner_group': 'FOO'}
+                {
+                    'arch': 'x86_64',
+                    'runner_group': 'FOO',
+                    'selection': {
+                        'name': 'standard'
+                    }
+                }
             ]
         }
         mock_CBProjectMetaData.get_project_config.return_value = package_config
@@ -393,7 +420,8 @@ class TestCBScheduler:
         request = {
             'action': self.status_flags.image_source_rebuild,
             'image': {
-                'arch': 'x86_64'
+                'arch': 'x86_64',
+                'selection': 'standard'
             },
             'runner_group': 'suse',
             'project': 'myimage',
@@ -492,7 +520,13 @@ class TestCBScheduler:
         package_config = {
             'name': 'myimage',
             'images': [
-                {'arch': 'x86_64', 'runner_group': 'suse'}
+                {
+                    'arch': 'x86_64',
+                    'runner_group': 'suse',
+                    'selection': {
+                        'name': 'standard'
+                    }
+                }
             ]
         }
         mock_CBProjectMetaData.get_project_config.return_value = package_config
@@ -501,7 +535,8 @@ class TestCBScheduler:
         request = {
             'action': self.status_flags.image_source_rebuild,
             'image': {
-                'arch': 'x86_64'
+                'arch': 'x86_64',
+                'selection': 'standard'
             },
             'runner_group': 'suse',
             'project': 'myimage',
@@ -559,21 +594,34 @@ class TestCBScheduler:
         request = {
             'action': self.status_flags.image_local,
             'image': {
-                'arch': 'x86_64'
+                'arch': 'x86_64',
+                'selection': 'standard'
             },
             'project': 'projects/MS/myimage',
             'request_id': 'c8becd30-a5f6-43a6-a4f4-598ec1115b17',
             'schema_version': 0.2
         }
+        project_config = {
+            'name': 'myimage',
+            'images': [
+                {
+                    'selection': {
+                        'name': 'standard',
+                        'profiles': ['profile'],
+                        'build_arguments': ['--opt', 'a']
+                    }
+                }
+            ]
+        }
         script_code = dedent('''
             #!/bin/bash
             set -e
-            rm -rf projects/MS/myimage@profile.x86_64
+            rm -rf projects/MS/myimage@standard.x86_64
             cb-image \\
                 --request-id c8becd30-a5f6-43a6-a4f4-598ec1115b17 \\
                 --bundle-id 0 \\
                 --description projects/MS/myimage \\
-                --target-dir projects/MS/myimage@profile.x86_64 \\
+                --target-dir projects/MS/myimage@standard.x86_64 \\
                 --local \\
                 --profile profile -- --opt a
         ''')
@@ -581,12 +629,11 @@ class TestCBScheduler:
             mock_open.return_value = MagicMock(spec=io.IOBase)
             file_handle = mock_open.return_value.__enter__.return_value
             create_image_run_script(
-                request, ['profile'], ['--opt', 'a'],
-                local_build=True
+                request, project_config, local_build=True
             )
             mock_Path_create.assert_called_once_with('projects/MS')
             mock_open.assert_called_once_with(
-                'projects/MS/myimage@profile.x86_64.sh', 'w'
+                'projects/MS/myimage@standard.x86_64.sh', 'w'
             )
             file_handle.write.assert_called_once_with(script_code)
 
@@ -602,32 +649,43 @@ class TestCBScheduler:
         request = {
             'action': self.status_flags.image_local,
             'image': {
-                'arch': 'x86_64'
+                'arch': 'x86_64',
+                'selection': 'standard'
             },
             'project': 'projects/MS/myimage',
             'request_id': 'c8becd30-a5f6-43a6-a4f4-598ec1115b17',
             'schema_version': 0.2
         }
+        project_config = {
+            'name': 'myimage',
+            'images': [
+                {
+                    'selection': {
+                        'name': 'standard'
+                    }
+                }
+            ]
+        }
         script_code = dedent('''
             #!/bin/bash
             set -e
-            rm -rf /var/tmp/CB/projects/MS/myimage@default.x86_64
+            rm -rf /var/tmp/CB/projects/MS/myimage@standard.x86_64
             cb-image \\
                 --request-id c8becd30-a5f6-43a6-a4f4-598ec1115b17 \\
                 --bundle-id 0 \\
                 --description cloud_builder_sources/projects/MS/myimage \\
-                --target-dir /var/tmp/CB/projects/MS/myimage@default.x86_64 \\
+                --target-dir /var/tmp/CB/projects/MS/myimage@standard.x86_64 \\
                 {0} {1}
 
-            echo $! > /var/tmp/CB/projects/MS/myimage@default.x86_64.pid
+            echo $! > /var/tmp/CB/projects/MS/myimage@standard.x86_64.pid
         ''').format('', '')
         with patch('builtins.open', create=True) as mock_open:
             mock_open.return_value = MagicMock(spec=io.IOBase)
             file_handle = mock_open.return_value.__enter__.return_value
-            create_image_run_script(request)
+            create_image_run_script(request, project_config)
             mock_Path_create.assert_called_once_with('/var/tmp/CB/projects/MS')
             mock_open.assert_called_once_with(
-                '/var/tmp/CB/projects/MS/myimage@default.x86_64.sh', 'w'
+                '/var/tmp/CB/projects/MS/myimage@standard.x86_64.sh', 'w'
             )
             file_handle.write.assert_called_once_with(script_code)
 

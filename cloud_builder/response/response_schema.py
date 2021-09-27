@@ -59,6 +59,11 @@ response_schema = {
                 'required': False,
                 'type': 'string',
                 'nullable': False
+            },
+            'selection': {
+                'required': False,
+                'type': 'string',
+                'nullable': False
             }
         }
     },
