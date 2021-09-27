@@ -104,6 +104,7 @@ created and configured as follows:
 
       broker:
         host: BootstrapServersString
+      this_host: external_IP_or_Hostname_of_this_instance
 
    See the '**Configure** `cb-ctl`' list item in the :ref:`control-plane-setup`
    for details how to obtain the broker credentials.
