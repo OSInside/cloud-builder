@@ -17,7 +17,8 @@ from cloud_builder.cb_scheduler import (
     create_package_run_script,
     create_image_run_script,
     get_running_builds,
-    request_validation_type
+    request_validation_type,
+    is_active
 )
 
 
@@ -297,7 +298,7 @@ class TestCBScheduler:
     @patch('psutil.pid_exists')
     @patch('os.kill')
     @patch('cloud_builder.cb_scheduler.CBResponse')
-    def test_reset_build_if_running(
+    def test_reset_build_if_running_for_package_build(
         self, mock_CBResponse, mock_os_kill,
         mock_psutil_pid_exists, mock_path_isfile
     ):
@@ -322,6 +323,44 @@ class TestCBScheduler:
             reset_build_if_running(request, log, broker)
             mock_open.assert_called_once_with(
                 '/var/tmp/CB/projects/MS/vim@TW.x86_64.pid'
+            )
+            mock_os_kill.assert_called_once_with(
+                1234, signal.SIGTERM
+            )
+            log.response.assert_called_once_with(
+                mock_CBResponse.return_value, broker
+            )
+
+    @patch('os.path.isfile')
+    @patch('psutil.pid_exists')
+    @patch('os.kill')
+    @patch('cloud_builder.cb_scheduler.CBResponse')
+    def test_reset_build_if_running_for_image_build(
+        self, mock_CBResponse, mock_os_kill,
+        mock_psutil_pid_exists, mock_path_isfile
+    ):
+        mock_path_isfile.return_value = True
+        mock_psutil_pid_exists.return_value = True
+        request = {
+            'action': self.status_flags.package_source_rebuild,
+            'image': {
+                'arch': 'x86_64',
+                'selection': 'standard'
+            },
+            'project': 'projects/images/leap/test-image-disk',
+            'request_id': 'c8becd30-a5f6-43a6-a4f4-598ec1115b17',
+            'schema_version': 0.2
+        }
+        log = Mock()
+        broker = Mock()
+        with patch('builtins.open', create=True) as mock_open:
+            mock_open.return_value = MagicMock(spec=io.IOBase)
+            file_handle = mock_open.return_value.__enter__.return_value
+            file_handle.read.return_value = '1234'
+            reset_build_if_running(request, log, broker)
+            mock_open.assert_called_once_with(
+                '/var/tmp/CB/projects/'
+                'images/leap/test-image-disk@standard.x86_64.pid'
             )
             mock_os_kill.assert_called_once_with(
                 1234, signal.SIGTERM
@@ -778,3 +817,16 @@ class TestCBScheduler:
                 '/var/tmp/CB/projects/MS/vim@TW.x86_64.sh', 'w'
             )
             file_handle.write.assert_called_once_with(script_code)
+
+    @patch('os.path.isfile')
+    @patch('psutil.pid_exists')
+    def test_is_active(self, mock_psutil_pid_exists, mock_os_path_is_file):
+        mock_os_path_is_file.return_value = False
+        assert is_active('/some/file.pid', Mock()) == 0
+        mock_os_path_is_file.return_value = True
+        mock_psutil_pid_exists.return_value = False
+        with patch('builtins.open', create=True) as mock_open:
+            mock_open.return_value = MagicMock(spec=io.IOBase)
+            file_handle = mock_open.return_value.__enter__.return_value
+            file_handle.read.return_value = '1234'
+            assert is_active('/some/file.pid', Mock()) == 0

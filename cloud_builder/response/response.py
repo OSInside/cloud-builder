@@ -126,6 +126,14 @@ class CBResponse:
             message, response_code, package, arch, dist
         )
 
+    def set_image_jobs_reset_response(
+        self, message: str, response_code: str, image: str,
+        arch: str, selection: str
+    ) -> None:
+        self._set_selection_standard_response(
+            message, response_code, image, arch, selection
+        )
+
     def set_buildhost_arch_incompatible_response(
         self, message: str, response_code: str, package: str
     ) -> None:

@@ -194,7 +194,7 @@ class Defaults:
             image_target_not_configured='image target not configured',
             image_source_rebuild='image rebuild due to source change',
             image_rebuild='image rebuild requested',
-            image_request_accepted='package request accepted',
+            image_request_accepted='image request accepted',
             package_local='package build on localhost requested',
             image_local='image build on localhost requested'
         )
