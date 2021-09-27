@@ -74,6 +74,7 @@ Group:          Development/Languages/Python
 Requires:       git
 Requires:       rsync
 Requires:       createrepo_c
+Requires:       rpm-build
 Requires:       python%{python3_pkgversion}-docopt
 Requires:       python%{python3_pkgversion}-kiwi >= 9.21.21
 Requires:       python%{python3_pkgversion}-requests
