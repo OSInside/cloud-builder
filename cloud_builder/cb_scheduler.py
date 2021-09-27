@@ -52,12 +52,20 @@ from kiwi.privileges import Privileges
 from kiwi.path import Path
 from apscheduler.schedulers.background import BlockingScheduler
 from typing import (
-    Dict, Any, List
+    Dict, List, NamedTuple, Optional
 )
 
 from cloud_builder.exceptions import (
     exception_handler,
     CBSchedulerIntervalError
+)
+
+request_validation_type = NamedTuple(
+    'request_validation_type', [
+        ('project_config', Dict),
+        ('response', Optional[CBResponse]),
+        ('is_valid', bool)
+    ]
 )
 
 
@@ -238,9 +246,17 @@ def handle_build_requests(
                         Defaults.get_runner_project_dir(),
                         format(request['project'])
                     )
-                    build_config = is_request_valid(
-                        project_source_path, request, log, broker
+                    validated_request = is_request_valid(
+                        project_source_path, request, log
                     )
+                    if validated_request.is_valid:
+                        broker.acknowledge()
+
+                    if validated_request.response:
+                        log.response(validated_request.response, broker)
+
+                    build_config = validated_request.project_config
+
                     if build_config and 'distributions' in build_config:
                         build_package(request, broker, log)
                     elif build_config and 'images' in build_config:
@@ -371,8 +387,8 @@ def get_running_builds() -> int:
 
 
 def is_request_valid(
-    project_source_path: str, request: Dict, log: CBCloudLogger, broker: Any
-) -> Dict:
+    project_source_path: str, request: Dict, log: CBCloudLogger
+) -> request_validation_type:
     """
     Sanity checks between the request and the package sources
 
@@ -385,12 +401,10 @@ def is_request_valid(
 
     :param str project_source_path: path to package/image sources
     :param dict request: yaml dict request record
-    :param CBCloudLogger log: logger instance
-    :param CBMessageBroker broker: instance of CBMessageBroker
 
-    :return: metadata config dict
+    :return: request_validation_type
 
-    :rtype: dict
+    :rtype: tuple
     """
     status_flags = Defaults.get_status_flags()
     response = CBResponse(
@@ -403,8 +417,11 @@ def is_request_valid(
             response_code=status_flags.project_not_existing,
             project=request['project']
         )
-        log.response(response, broker)
-        return {}
+        return request_validation_type(
+            project_config={},
+            response=response,
+            is_valid=False
+        )
 
     # 2. Check on project metadata to exist
     project_metadata = os.path.join(
@@ -416,15 +433,22 @@ def is_request_valid(
             response_code=status_flags.project_metadata_not_existing,
             project=request['project']
         )
-        log.response(response, broker)
-        return {}
+        return request_validation_type(
+            project_config={},
+            response=response,
+            is_valid=False
+        )
 
     # 3. Check if requested package arch+dist+runner_group is configured
     project_config = CBProjectMetaData.get_project_config(
         project_source_path, log, request['request_id']
     )
     if not project_config:
-        return {}
+        return request_validation_type(
+            project_config={},
+            response=None,
+            is_valid=False
+        )
     request_arch = 'none'
     request_dist = 'none'
     request_selection = 'none'
@@ -447,8 +471,11 @@ def is_request_valid(
                 response_code=status_flags.package_target_not_configured,
                 project=request['project']
             )
-            log.response(response, broker)
-            return {}
+            return request_validation_type(
+                project_config={},
+                response=response,
+                is_valid=False
+            )
 
     # 4. Check if requested image arch+runner_group+selection is configured
     if 'image' in request:
@@ -471,8 +498,11 @@ def is_request_valid(
                 response_code=status_flags.image_target_not_configured,
                 project=request['project']
             )
-            log.response(response, broker)
-            return {}
+            return request_validation_type(
+                project_config={},
+                response=response,
+                is_valid=False
+            )
 
     # 5. Check if host architecture is compatbile
     if request_arch and request_arch != platform.machine():
@@ -481,8 +511,11 @@ def is_request_valid(
             response_code=status_flags.incompatible_build_arch,
             package=request['project']
         )
-        log.response(response, broker)
-        return {}
+        return request_validation_type(
+            project_config={},
+            response=response,
+            is_valid=False
+        )
 
     # All good...
     if 'package' in request:
@@ -501,9 +534,11 @@ def is_request_valid(
             arch=request_arch,
             selection=request_selection
         )
-    log.response(response, broker)
-    broker.acknowledge()
-    return project_config
+    return request_validation_type(
+        project_config=project_config,
+        response=response,
+        is_valid=True
+    )
 
 
 def create_image_run_script(

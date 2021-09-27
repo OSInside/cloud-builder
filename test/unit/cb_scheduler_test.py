@@ -16,7 +16,8 @@ from cloud_builder.cb_scheduler import (
     is_request_valid,
     create_package_run_script,
     create_image_run_script,
-    get_running_builds
+    get_running_builds,
+    request_validation_type
 )
 
 
@@ -117,7 +118,11 @@ class TestCBScheduler:
         broker.validate_build_request.return_value = request
         mock_CBCloudLogger.return_value = log
         mock_CBMessageBroker.new.return_value = broker
-        mock_is_request_valid.return_value = project_config
+        mock_is_request_valid.return_value = request_validation_type(
+            project_config=project_config,
+            response=Mock(),
+            is_valid=True
+        )
         build_instances = [
             20, 8, 5
         ]
@@ -128,6 +133,12 @@ class TestCBScheduler:
         mock_get_running_builds.side_effect = running_limit
 
         handle_build_requests(5000, 10, log)
+
+        log.response.assert_called_once_with(
+            mock_is_request_valid.return_value.response, broker
+        )
+
+        broker.acknowledge.assert_called_once_with()
 
         mock_build_image.assert_called_once_with(
             request, project_config, broker, log
@@ -165,7 +176,11 @@ class TestCBScheduler:
         broker.validate_build_request.return_value = request
         mock_CBCloudLogger.return_value = log
         mock_CBMessageBroker.new.return_value = broker
-        mock_is_request_valid.return_value = package_config
+        mock_is_request_valid.return_value = request_validation_type(
+            project_config=package_config,
+            response=Mock(),
+            is_valid=True
+        )
         build_instances = [
             20, 8, 5
         ]
@@ -335,11 +350,8 @@ class TestCBScheduler:
             'request_id': 'c8becd30-a5f6-43a6-a4f4-598ec1115b17',
             'schema_version': 0.2
         }
-        log = Mock()
-        broker = Mock()
         mock_os_path_isdir.return_value = False
-        assert is_request_valid('path', request, log, broker) == {}
-        log.response.assert_called_once_with(response, broker)
+        assert is_request_valid('path', request, Mock()).project_config == {}
 
     @patch('os.path.isdir')
     @patch('os.path.isfile')
@@ -359,12 +371,9 @@ class TestCBScheduler:
             'request_id': 'c8becd30-a5f6-43a6-a4f4-598ec1115b17',
             'schema_version': 0.2
         }
-        log = Mock()
-        broker = Mock()
         mock_os_path_isdir.return_value = True
         mock_os_path_isfile.return_value = False
-        assert is_request_valid('path', request, log, broker) == {}
-        log.response.assert_called_once_with(response, broker)
+        assert is_request_valid('path', request, Mock()).project_config == {}
 
     @patch('os.path.isdir')
     @patch('os.path.isfile')
@@ -388,11 +397,9 @@ class TestCBScheduler:
             'request_id': 'c8becd30-a5f6-43a6-a4f4-598ec1115b17',
             'schema_version': 0.2
         }
-        log = Mock()
-        broker = Mock()
         mock_os_path_isdir.return_value = True
         mock_os_path_isfile.return_value = True
-        assert is_request_valid('path', request, log, broker) == {}
+        assert is_request_valid('path', request, Mock()).project_config == {}
 
     @patch('os.path.isdir')
     @patch('os.path.isfile')
@@ -428,12 +435,9 @@ class TestCBScheduler:
             'request_id': 'c8becd30-a5f6-43a6-a4f4-598ec1115b17',
             'schema_version': 0.2
         }
-        log = Mock()
-        broker = Mock()
         mock_os_path_isdir.return_value = True
         mock_os_path_isfile.return_value = True
-        assert is_request_valid('path', request, log, broker) == {}
-        log.response.assert_called_once_with(response, broker)
+        assert is_request_valid('path', request, Mock()).project_config == {}
 
     @patch('os.path.isdir')
     @patch('os.path.isfile')
@@ -463,12 +467,9 @@ class TestCBScheduler:
             'request_id': 'c8becd30-a5f6-43a6-a4f4-598ec1115b17',
             'schema_version': 0.2
         }
-        log = Mock()
-        broker = Mock()
         mock_os_path_isdir.return_value = True
         mock_os_path_isfile.return_value = True
-        assert is_request_valid('path', request, log, broker) == {}
-        log.response.assert_called_once_with(response, broker)
+        assert is_request_valid('path', request, Mock()).project_config == {}
 
     @patch('os.path.isdir')
     @patch('os.path.isfile')
@@ -500,12 +501,9 @@ class TestCBScheduler:
             'request_id': 'c8becd30-a5f6-43a6-a4f4-598ec1115b17',
             'schema_version': 0.2
         }
-        log = Mock()
-        broker = Mock()
         mock_os_path_isdir.return_value = True
         mock_os_path_isfile.return_value = True
-        assert is_request_valid('path', request, log, broker) == {}
-        log.response.assert_called_once_with(response, broker)
+        assert is_request_valid('path', request, Mock()).project_config == {}
 
     @patch('os.path.isdir')
     @patch('os.path.isfile')
@@ -543,13 +541,11 @@ class TestCBScheduler:
             'request_id': 'c8becd30-a5f6-43a6-a4f4-598ec1115b17',
             'schema_version': 0.2
         }
-        log = Mock()
-        broker = Mock()
         mock_os_path_isdir.return_value = True
         mock_os_path_isfile.return_value = True
-        assert is_request_valid('path', request, log, broker) == package_config
-        log.response.assert_called_once_with(response, broker)
-        broker.acknowledge.assert_called_once_with()
+        assert is_request_valid(
+            'path', request, Mock()
+        ).project_config == package_config
 
     @patch('os.path.isdir')
     @patch('os.path.isfile')
@@ -581,13 +577,11 @@ class TestCBScheduler:
             'request_id': 'c8becd30-a5f6-43a6-a4f4-598ec1115b17',
             'schema_version': 0.2
         }
-        log = Mock()
-        broker = Mock()
         mock_os_path_isdir.return_value = True
         mock_os_path_isfile.return_value = True
-        assert is_request_valid('path', request, log, broker) == package_config
-        log.response.assert_called_once_with(response, broker)
-        broker.acknowledge.assert_called_once_with()
+        assert is_request_valid(
+            'path', request, Mock()
+        ).project_config == package_config
 
     @patch('cloud_builder.cb_scheduler.Path.create')
     def test_create_image_run_script_for_local_build(self, mock_Path_create):
