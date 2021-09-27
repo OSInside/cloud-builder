@@ -130,3 +130,9 @@ class CBProjectMetadataError(CBError):
     """
     Exception raised if no package/image metadata could be read
     """
+
+
+class CBExecutionError(CBError):
+    """
+    Exception raised if an os execution failed
+    """

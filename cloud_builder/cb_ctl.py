@@ -155,7 +155,8 @@ from cloud_builder.exceptions import (
     exception_handler,
     CBConfigFileNotFoundError,
     CBConfigFileValidationError,
-    CBProjectMetadataError
+    CBProjectMetadataError,
+    CBExecutionError
 )
 
 from kiwi.command import Command
@@ -447,15 +448,21 @@ def fetch_binaries(
         ssh_pkey_file = config['runner']['ssh_pkey_file']
         Path.create(target_dir)
         for binary in info_response['binary_packages']:
-            log.info(f'Fetching {binary} -> {target_dir}')
-            Command.run(
-                [
-                    'scp', '-i', ssh_pkey_file,
-                    '-o', 'StrictHostKeyChecking=accept-new',
-                    f'{ssh_user}@{runner_ip}:{binary}',
-                    target_dir
-                ]
+            log.debug(f'Fetching {binary} -> {target_dir}')
+            scp_call = [
+                'scp', '-i', ssh_pkey_file,
+                '-o', 'StrictHostKeyChecking=accept-new',
+                f'{ssh_user}@{runner_ip}:{binary}',
+                target_dir
+            ]
+            scp_call_command = ' '.join(scp_call)
+            exit_code = os.WEXITSTATUS(
+                os.system(scp_call_command)
             )
+            if exit_code != 0:
+                raise CBExecutionError(
+                    f'Failed to run: {scp_call_command}'
+                )
 
 
 def watch_filter_service_name(service_name: str) -> Callable:
