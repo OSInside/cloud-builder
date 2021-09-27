@@ -17,8 +17,8 @@
 #
 import os
 import uuid
-import requests
-from requests.exceptions import HTTPError
+import yaml
+from cloud_builder.defaults import Defaults
 
 
 class CBIdentity:
@@ -58,18 +58,14 @@ class CBIdentity:
     @staticmethod
     def get_external_ip() -> str:
         """
-        Lookup external IP of the system
+        Read host IP/name from the broker configuration
 
-        Return the IPv4 address or unknown if no public address
-        lookup was possible
-
-        :return: IP address format
+        :return: host IP/location or 'unknown'
 
         :rtype: str
         """
         try:
-            return requests.get('https://api.ipify.org').content.decode()
-        except HTTPError:
-            # if external service IP retrieval failed for some
-            # reason continue with an unknown state
+            with open(Defaults.get_broker_config()) as config:
+                return yaml.safe_load(config)['this_host']
+        except Exception:
             return 'unknown'

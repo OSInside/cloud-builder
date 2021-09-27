@@ -200,6 +200,7 @@ Now that the control plane runs the following configurations are required:
 
       broker:
         host: BootstrapServersString
+      this_host: external_IP_or_Hostname_of_this_instance
 
 Congrats, the control plane is now running, the kafka message broker
 is up and configured and `cb-ctl` would be ready for a first package

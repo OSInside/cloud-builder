@@ -58,5 +58,10 @@ cloud_builder_broker_schema = {
                 'nullable': False
             }
         }
+    },
+    'this_host': {
+        'required': True,
+        'type': 'string',
+        'nullable': False
     }
 }
