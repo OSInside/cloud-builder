@@ -629,13 +629,22 @@ def create_image_run_script(
         run_script = dedent('''
             #!/bin/bash
             set -e
+
             rm -rf {image_target_path}
-            cb-image \\
-                --request-id {request_id} \\
-                --bundle-id {bundle_id} \\
-                --description {image_source_path} \\
-                --target-dir {image_target_path} \\
-                {profile_opts} {custom_args}
+
+            function finish {{
+                kill $(jobs -p) &>/dev/null
+            }}
+
+            {{
+                trap finish EXIT
+                cb-image \\
+                    --request-id {request_id} \\
+                    --bundle-id {bundle_id} \\
+                    --description {image_source_path} \\
+                    --target-dir {image_target_path} \\
+                    {profile_opts} {custom_args}
+            }} &>>{image_target_path}.run.log &
 
             echo $! > {image_target_path}.pid
         ''').format(
