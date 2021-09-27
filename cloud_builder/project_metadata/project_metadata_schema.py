@@ -70,24 +70,23 @@ project_metadata_schema = {
                 },
                 'selection': {
                     'required': True,
+                    'nullable': True,
+                    'type': 'dict',
                     'schema': {
-                        'type': 'dict',
-                        'schema': {
-                            'name': {
-                                'required': True,
-                                'type': 'string',
-                                'nullable': False
-                            },
-                            'profiles': {
-                                'required': False,
-                                'type': 'list',
-                                'nullable': False
-                            },
-                            'build_arguments': {
-                                'required': False,
-                                'type': 'list',
-                                'nullable': False,
-                            }
+                        'name': {
+                            'required': True,
+                            'type': 'string',
+                            'nullable': False
+                        },
+                        'profiles': {
+                            'required': False,
+                            'type': 'list',
+                            'nullable': False
+                        },
+                        'build_arguments': {
+                            'required': False,
+                            'type': 'list',
+                            'nullable': False,
                         }
                     }
                 }
