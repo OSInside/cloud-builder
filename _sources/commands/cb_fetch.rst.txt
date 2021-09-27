@@ -24,17 +24,21 @@ a predefined layout like in the following example:
 .. code:: bash
 
    projects
-   ├── ...
-   ├── PROJECT_A
-   │   └── SUB_PROJECT
-   │       └── ...
-   └── PROJECT_B
-       └── PACKAGE
-           ├── _Defaults.get_cloud_builder_metadata_file_name()_
-           ├── _Defaults.get_cloud_builder_kiwi_file_name()_
-           ├── PACKAGE.changes
-           ├── PACKAGE.spec
-           └── PACKAGE.tar.xz
+    ├── ...
+    ├── PROJECT_A
+    │   └── SUB_PROJECT
+    │       └── ...
+    └── PROJECT_B
+        ├── PACKAGE
+        │   ├── _Defaults.get_cloud_builder_metadata_file_name()_
+        │   ├── _Defaults.get_cloud_builder_kiwi_file_name()_
+        │   ├── PACKAGE.changes
+        │   ├── PACKAGE.spec
+        │   └── PACKAGE.tar.xz
+        │ 
+        └── IMAGE
+            ├── _Defaults.get_cloud_builder_metadata_file_name()_
+            └── IMAGE.kiwi
 
 OPTIONS
 -------

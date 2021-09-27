@@ -1,71 +1,35 @@
-
-
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" />
-  
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  
-  <title>Git Package Source Setup &mdash; Cloud Builder 0.2.1 documentation</title>
-  
-
-  
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="_static/css/custom.css" type="text/css" />
-
-  
-  
-
-  
-  
-
-  
-
-  
+  <title>Git Package Source Setup &mdash; Cloud Builder 0.2.2 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/custom.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-    
-      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
-    
-    <script type="text/javascript" src="_static/js/theme.js"></script>
-
-    
+    <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Kafka Message Broker Setup" href="kafka_broker_setup.html" />
     <link rel="prev" title="Infrastructure Setup" href="infrastructure_setup.html" /> 
 </head>
 
-<body class="wy-body-for-nav">
-
-   
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
-    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-          
-
-          
             <a href="index.html" class="icon icon-home"> Cloud Builder
-          
-
-          
           </a>
-
-          
-
-          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
@@ -73,18 +37,7 @@
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-
-          
-        </div>
-
-        
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-              
-            
-            
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="infrastructure_setup.html">Infrastructure Setup</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Git Package Source Setup</a><ul>
@@ -116,7 +69,11 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="commands/cb_scheduler.html">cb-scheduler</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="commands/cb_scheduler.html#synopsis">SYNOPSIS</a></li>
-<li class="toctree-l3"><a class="reference internal" href="commands/cb_scheduler.html#description">DESCRIPTION</a></li>
+<li class="toctree-l3"><a class="reference internal" href="commands/cb_scheduler.html#description">DESCRIPTION</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="commands/cb_scheduler.html#building-a-package">Building a package:</a></li>
+<li class="toctree-l4"><a class="reference internal" href="commands/cb_scheduler.html#build-an-os-image">Build an OS image:</a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="commands/cb_scheduler.html#options">OPTIONS</a></li>
 </ul>
 </li>
@@ -161,72 +118,31 @@
 </li>
 </ul>
 
-            
-          
         </div>
-        
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" aria-label="top navigation">
-        
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="index.html">Cloud Builder</a>
-        
       </nav>
 
-
       <div class="wy-nav-content">
-        
         <div class="rst-content">
-        
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    
       <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-        
       <li>Git Package Source Setup</li>
-    
-    
       <li class="wy-breadcrumbs-aside">
-        
-          
             <a href="_sources/git_package_source_setup.rst.txt" rel="nofollow"> View page source</a>
-          
-        
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-            
-  <div class="section" id="git-package-source-setup">
+             
+  <section id="git-package-source-setup">
 <span id="id1"></span><h1>Git Package Source Setup<a class="headerlink" href="#git-package-source-setup" title="Permalink to this headline">¶</a></h1>
 <p>Cloud Builder reads any information about a package and its metadata
 from a specified git repository. This includes the following
@@ -259,7 +175,7 @@ example <strong>cloud-builder-packages</strong> git repo from here:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ git clone https://github.com/OSInside/cloud-builder-packages.git
 </pre></div>
 </div>
-<div class="section" id="understanding-the-project-structure">
+<section id="understanding-the-project-structure">
 <h2>Understanding the project structure<a class="headerlink" href="#understanding-the-project-structure" title="Permalink to this headline">¶</a></h2>
 <p>By convention the Cloud Builder package sources need to follow a
 certain files/directory structure which is provided in the
@@ -289,8 +205,8 @@ directory called <code class="docutils literal notranslate"><span class="pre">pr
 Cloud Builder expects to be respected. Below <code class="docutils literal notranslate"><span class="pre">projects</span></code> any custom
 structure to store projects and package sources is allowed</p>
 </div>
-</div>
-<div class="section" id="understanding-cloud-builder-yml">
+</section>
+<section id="understanding-cloud-builder-yml">
 <h2>Understanding <code class="file docutils literal notranslate"><span class="pre">cloud_builder.yml</span></code><a class="headerlink" href="#understanding-cloud-builder-yml" title="Permalink to this headline">¶</a></h2>
 <p>In general <code class="file docutils literal notranslate"><span class="pre">cloud_builder.yml</span></code> contains information about
 the target distribution for which the package should be build.
@@ -352,8 +268,8 @@ Fedora34.x86_64
 following <code class="file docutils literal notranslate"><span class="pre">cloud_builder.kiwi</span></code> file.</p>
 </dd>
 </dl>
-</div>
-<div class="section" id="understanding-cloud-builder-kiwi">
+</section>
+<section id="understanding-cloud-builder-kiwi">
 <h2>Understanding <code class="file docutils literal notranslate"><span class="pre">cloud_builder.kiwi</span></code><a class="headerlink" href="#understanding-cloud-builder-kiwi" title="Permalink to this headline">¶</a></h2>
 <p>The <code class="file docutils literal notranslate"><span class="pre">cloud_builder.kiwi</span></code> describes how the package buildroot
 system should be installed. When Cloud Builder builds a package it does it
@@ -478,55 +394,38 @@ git repo and move to the real sources later.</p>
 </div>
 <p>Learn how to setup the message broker service
 <a class="reference internal" href="kafka_broker_setup.html#kafka-broker-setup"><span class="std std-ref">Kafka Message Broker Setup</span></a></p>
-</div>
-</div>
+</section>
+</section>
 
 
            </div>
-           
           </div>
-          <footer>
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="kafka_broker_setup.html" class="btn btn-neutral float-right" title="Kafka Message Broker Setup" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="infrastructure_setup.html" class="btn btn-neutral float-left" title="Infrastructure Setup" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="kafka_broker_setup.html" class="btn btn-neutral float-right" title="Kafka Message Broker Setup" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        &#169; Copyright 2021, Marcus Schäfer.
-
-    </p>
+    <p>&#169; Copyright 2021, Marcus Schäfer.</p>
   </div>
-    
-    
-    
-    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
-    
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
     <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    
-    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
 
 </footer>
         </div>
       </div>
-
     </section>
-
   </div>
-  
-
-  <script type="text/javascript">
+  <script>
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-
-  
-  
-    
-   
+  </script> 
 
 </body>
 </html>
