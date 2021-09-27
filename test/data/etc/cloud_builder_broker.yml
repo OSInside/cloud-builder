@@ -6,3 +6,4 @@ broker:
     ssl_keyfile: key_file
 runner:
   group: 'fedora'
+this_host: 10.10.0.1

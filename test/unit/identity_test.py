@@ -1,9 +1,6 @@
 import re
-from mock import (
-    patch, Mock
-)
+from mock import patch
 from cloud_builder.identity import CBIdentity
-from requests.exceptions import HTTPError
 
 
 class TestCBIdentity:
@@ -21,15 +18,13 @@ class TestCBIdentity:
             CBIdentity.get_request_id()
         ) is not None
 
-    @patch('requests.get')
-    def test_get_external_ip(self, mock_requests_get):
-        mock_requests_get.return_value = Mock(content=b'IP')
-        assert CBIdentity.get_external_ip() == 'IP'
-        mock_requests_get.assert_called_once_with(
-            'https://api.ipify.org'
-        )
+    @patch('cloud_builder.identity.Defaults.get_broker_config')
+    def test_get_external_ip(self, mock_get_broker_config):
+        mock_get_broker_config.return_value = \
+            '../data/etc/cloud_builder_broker.yml'
+        assert CBIdentity.get_external_ip() == '10.10.0.1'
 
-    @patch('requests.get')
-    def test_get_external_ip_not_obtainable(self, mock_requests_get):
-        mock_requests_get.side_effect = HTTPError
+    @patch('cloud_builder.identity.Defaults.get_broker_config')
+    def test_get_external_ip_not_obtainable(self, mock_get_broker_config):
+        mock_get_broker_config.side_effect = Exception
         assert CBIdentity.get_external_ip() == 'unknown'
