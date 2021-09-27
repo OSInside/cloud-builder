@@ -27,11 +27,11 @@ function _cbctl {
                     return 0
                     ;;
                 "--build-image-local")
-                    __comp_reply ""
+                    __comp_reply "--selection"
                     return 0
                     ;;
                 "--build-image")
-                    __comp_reply "--project-path --arch --runner-group"
+                    __comp_reply "--project-path --arch --runner-group --selection"
                     return 0
                     ;;
                 "--build-dependencies")
@@ -61,7 +61,7 @@ function _cbctl {
             esac
         done
     fi
-    __comp_reply "--help --version --build --build-dependencies --build-log --build-info --get-binaries --watch"
+    __comp_reply "--help --version --build-package --build-package-local --build-image-local --build-image --build-dependencies --build-dependencies-local --build-log --build-info --get-binaries --watch"
     return 0
 }
 
