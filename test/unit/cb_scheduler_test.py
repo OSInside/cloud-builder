@@ -702,13 +702,22 @@ class TestCBScheduler:
         script_code = dedent('''
             #!/bin/bash
             set -e
+
             rm -rf /var/tmp/CB/projects/MS/myimage@standard.x86_64
-            cb-image \\
-                --request-id c8becd30-a5f6-43a6-a4f4-598ec1115b17 \\
-                --bundle-id 0 \\
-                --description cloud_builder_sources/projects/MS/myimage \\
-                --target-dir /var/tmp/CB/projects/MS/myimage@standard.x86_64 \\
-                {0} {1}
+
+            function finish {{
+                kill $(jobs -p) &>/dev/null
+            }}
+
+            {{
+                trap finish EXIT
+                cb-image \\
+                    --request-id c8becd30-a5f6-43a6-a4f4-598ec1115b17 \\
+                    --bundle-id 0 \\
+                    --description cloud_builder_sources/projects/MS/myimage \\
+                    --target-dir /var/tmp/CB/projects/MS/myimage@standard.x86_64 \\
+                    {0} {1}
+            }} &>>/var/tmp/CB/projects/MS/myimage@standard.x86_64.run.log &
 
             echo $! > /var/tmp/CB/projects/MS/myimage@standard.x86_64.pid
         ''').format('', '')
