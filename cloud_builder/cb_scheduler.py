@@ -461,15 +461,15 @@ def is_request_valid(
         request_dist = request['package']['dist']
         request_runner_group = request['runner_group']
         for target in project_config.get('distributions') or []:
+            allowed_runner_groups = [target.get('runner_group'), 'local']
             if request_arch == target.get('arch') and \
                request_dist == target.get('dist') and \
-               request_runner_group == target.get('runner_group') or \
-               request_runner_group == 'local':
+               request_runner_group in allowed_runner_groups:
                 target_ok = True
                 break
         if not target_ok:
             response.set_project_invalid_target_response(
-                message='No {0} config for: {1}.{2} in runner group: {3}'.format(
+                message='No {0} config for: {1}.{2} in runner group {3}'.format(
                     'package', request_dist, request_arch, request_runner_group
                 ),
                 response_code=status_flags.package_target_not_configured,
@@ -488,15 +488,15 @@ def is_request_valid(
         request_selection = request['image']['selection']
         request_runner_group = request['runner_group']
         for target in project_config.get('images') or []:
+            allowed_runner_groups = [target.get('runner_group'), 'local']
             if request_arch == target.get('arch') and \
                request_selection == target.get('selection').get('name') and \
-               request_runner_group == target.get('runner_group') or \
-               request_runner_group == 'local':
+               request_runner_group in allowed_runner_groups:
                 target_ok = True
                 break
         if not target_ok:
             response.set_project_invalid_target_response(
-                message='No {0} config for: {1}.{2} in runner group: {3}'.format(
+                message='No {0} config for: {1}.{2} in runner group {3}'.format(
                     'image', request_selection, request_arch,
                     request_runner_group
                 ),
