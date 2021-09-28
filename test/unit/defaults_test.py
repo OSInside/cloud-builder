@@ -27,8 +27,6 @@ class TestDefaults:
             'package build failed'
         assert flags.package_build_succeeded == \
             'package build succeeded'
-        assert flags.package_build_running == \
-            'package build running'
         assert flags.buildroot_setup_failed == \
             'build root setup failed'
         assert flags.buildroot_setup_succeeded == \
