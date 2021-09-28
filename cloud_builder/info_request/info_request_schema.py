@@ -55,6 +55,11 @@ info_request_schema = {
                 'required': True,
                 'type': 'string',
                 'nullable': False
+            },
+            'selection': {
+                'required': True,
+                'type': 'string',
+                'nullable': False
             }
         }
     }

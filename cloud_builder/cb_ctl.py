@@ -214,13 +214,15 @@ def main() -> None:
             args['--build-dependencies'],
             args['--project-path'],
             args['--arch'],
-            args['--dist'] or args['--selection'],
+            args['--dist'],
+            args['--selection'],
             int(args['--timeout'] or default_timeout),
             get_config()
         )
     elif args['--build-dependencies-local']:
         get_build_dependencies_local(
-            args['--dist'], args['--selection']
+            args['--dist'],
+            args['--selection']
         )
     elif args['--build-log']:
         get_build_log(
@@ -229,6 +231,7 @@ def main() -> None:
             args['--project-path'],
             args['--arch'],
             args['--dist'],
+            args['--selection'],
             int(args['--timeout'] or default_timeout),
             get_config()
         )
@@ -239,6 +242,7 @@ def main() -> None:
             args['--project-path'],
             args['--arch'],
             args['--dist'],
+            args['--selection'],
             int(args['--timeout'] or default_timeout)
         )
     elif args['--get-binaries']:
@@ -248,6 +252,7 @@ def main() -> None:
             args['--project-path'],
             args['--arch'],
             args['--dist'],
+            args['--selection'],
             int(args['--timeout'] or default_timeout),
             args['--target-dir'],
             get_config()
@@ -385,10 +390,10 @@ def build_image(
 
 def get_build_dependencies(
     broker: Any, target: str, project_path: str, arch: str,
-    dist_or_selection: str, timeout_sec: int, config: Dict
+    dist: str, selection: str, timeout_sec: int, config: Dict
 ) -> None:
     solver_data = _get_info_response_file(
-        broker, target, project_path, arch, dist_or_selection,
+        broker, target, project_path, arch, dist, selection,
         timeout_sec, config, 'solver_file'
     )
     if solver_data:
@@ -424,11 +429,11 @@ def get_build_dependencies_local(dist: str, selection_name: str) -> None:
 
 
 def get_build_log(
-    broker: Any, target: str, project_path: str, arch: str, dist: str,
-    timeout_sec: int, config: Dict
+    broker: Any, target: str, project_path: str, arch: str,
+    dist: str, selection: str, timeout_sec: int, config: Dict
 ) -> None:
     build_log_data = _get_info_response_file(
-        broker, target, project_path, arch, dist,
+        broker, target, project_path, arch, dist, selection,
         timeout_sec, config, 'log_file'
     )
     if build_log_data:
@@ -436,20 +441,22 @@ def get_build_log(
 
 
 def get_build_info(
-    broker: Any, target: str, project_path: str, arch: str, dist: str,
-    timeout_sec: int
+    broker: Any, target: str, project_path: str, arch: str,
+    dist: str, selection: str, timeout_sec: int
 ) -> None:
     CBDisplay.print_json(
-        get_info(broker, target, project_path, arch, dist, timeout_sec)
+        get_info(
+            broker, target, project_path, arch, dist, selection, timeout_sec
+        )
     )
 
 
 def fetch_binaries(
-    broker: Any, target: str, project_path: str, arch: str, dist: str,
-    timeout_sec: int, target_dir, config: Dict
+    broker: Any, target: str, project_path: str, arch: str,
+    dist: str, selection: str, timeout_sec: int, target_dir, config: Dict
 ) -> None:
     info_response = get_info(
-        broker, target, project_path, arch, dist, timeout_sec
+        broker, target, project_path, arch, dist, selection, timeout_sec
     )
     if info_response:
         runner_ip = info_response['source_ip']
@@ -525,21 +532,27 @@ def watch_filter_none() -> Callable:
 
 
 def get_info(
-    broker: Any, target: str, project_path: str, arch: str, dist: str,
-    timeout_sec: int
+    broker: Any, target: str, project_path: str, arch: str,
+    dist: str, selection: str, timeout_sec: int
 ) -> Dict:
-    request_id = _send_info_request(
-        broker, _get_target_path(project_path, target), arch, dist
-    )
+    if dist:
+        request_id = _send_package_info_request(
+            broker, _get_target_path(project_path, target), arch, dist
+        )
+    else:
+        request_id = _send_image_info_request(
+            broker, _get_target_path(project_path, target), arch, selection
+        )
     return _info_reader(broker, request_id, timeout_sec)
 
 
 def _get_info_response_file(
-    broker: Any, target: str, project_path: str, arch: str, dist: str,
-    timeout_sec: int, config: Dict, response_file_name
+    broker: Any, target: str, project_path: str, arch: str,
+    dist: str, selection: str, timeout_sec: int,
+    config: Dict, response_file_name
 ) -> str:
     info_response = get_info(
-        broker, target, project_path, arch, dist, timeout_sec
+        broker, target, project_path, arch, dist, selection, timeout_sec
     )
     if info_response:
         response_file = info_response[response_file_name]
@@ -590,11 +603,21 @@ def _response_reader(
         broker.close()
 
 
-def _send_info_request(
+def _send_package_info_request(
     broker: Any, target_path: str, arch: str, dist: str
 ) -> str:
     info_request = CBInfoRequest()
-    info_request.set_info_request(target_path, arch, dist)
+    info_request.set_package_info_request(target_path, arch, dist)
+    broker.send_info_request(info_request)
+    broker.close()
+    return info_request.get_data()['request_id']
+
+
+def _send_image_info_request(
+    broker: Any, target_path: str, arch: str, selection: str
+) -> str:
+    info_request = CBInfoRequest()
+    info_request.set_image_info_request(target_path, arch, selection)
     broker.send_info_request(info_request)
     broker.close()
     return info_request.get_data()['request_id']
