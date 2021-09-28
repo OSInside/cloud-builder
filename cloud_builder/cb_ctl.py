@@ -123,6 +123,7 @@ options:
         Delete package buildroot if present on the runner
         before building the package
 """
+import time
 import os
 import sys
 import yaml
@@ -213,13 +214,13 @@ def main() -> None:
             args['--build-dependencies'],
             args['--project-path'],
             args['--arch'],
-            args['--dist'],
+            args['--dist'] or args['--selection'],
             int(args['--timeout'] or default_timeout),
             get_config()
         )
     elif args['--build-dependencies-local']:
         get_build_dependencies_local(
-            args['--dist']
+            args['--dist'], args['--selection']
         )
     elif args['--build-log']:
         get_build_log(
@@ -383,26 +384,34 @@ def build_image(
 
 
 def get_build_dependencies(
-    broker: Any, target: str, project_path: str, arch: str, dist: str,
-    timeout_sec: int, config: Dict
+    broker: Any, target: str, project_path: str, arch: str,
+    dist_or_selection: str, timeout_sec: int, config: Dict
 ) -> None:
     solver_data = _get_info_response_file(
-        broker, target, project_path, arch, dist,
+        broker, target, project_path, arch, dist_or_selection,
         timeout_sec, config, 'solver_file'
     )
     if solver_data:
         CBDisplay.print_json(json.loads(solver_data))
 
 
-def get_build_dependencies_local(dist: str) -> None:
+def get_build_dependencies_local(dist: str, selection_name: str) -> None:
     Privileges.check_for_root_permissions()
 
     target_source_path = os.getcwd()
 
-    _check_project_config_from_working_directory()
+    project_config = _check_project_config_from_working_directory()
+    if dist:
+        profile_list = [f'{dist}.{platform.machine()}']
+    elif selection_name:
+        profile_list = []
+        for target in project_config.get('images') or []:
+            selection = target['selection']
+            if selection['name'] == selection_name:
+                profile_list = selection.get('profiles') or []
 
     solver_result = resolve_build_dependencies(
-        target_source_path, [f'{dist}.{platform.machine()}']
+        target_source_path, profile_list
     )
     if solver_result['solver_data']:
         CBDisplay.print_json(
@@ -607,7 +616,8 @@ def _info_reader(broker: Any, request_id: str, timeout_sec: int) -> Dict:
     """
     info_records = []
     try:
-        while(True):
+        timeout_loop_start = time.time()
+        while time.time() < timeout_loop_start + timeout_sec + 1:
             message = None
             for message in broker.read(
                 topic=Defaults.get_info_response_queue_name(),
