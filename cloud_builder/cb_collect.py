@@ -184,8 +184,16 @@ def send_project_info_requests(broker: Any, log: CBCloudLogger) -> List[str]:
                         info_request.get_data()['request_id']
                     )
                 for target in project_config.get('images') or []:
-                    # TODO: send for image info
-                    pass
+                    info_request = CBInfoRequest()
+                    info_request.set_image_info_request(
+                        project_path.replace(
+                            Defaults.get_runner_project_dir(), ''
+                        ), target['arch'], target['selection']['name']
+                    )
+                    broker.send_info_request(info_request)
+                    requuest_ids.append(
+                        info_request.get_data()['request_id']
+                    )
     return requuest_ids
 
 
@@ -375,6 +383,14 @@ def build_project_repo(
         if sync_call.error:
             log.error(sync_call.error)
     if not sync_call.error:
+        # TODO: this syncing with --delete is dangerous if the runners
+        # don't report about their packages. Consider the case a runner
+        # goes down. In this case it will not report about its packages
+        # and this can lead to the removal of the package in the repos.
+        # I think this behavior is unwanted. If no --delete option is
+        # used the repos will also contain old builds and deletion of
+        # packages will not have any effect on the repos. This needs
+        # further thinking
         log.info(f'Syncing repo for project: {repo_path}')
         Path.create(target_path)
         sync_call = Command.run(
