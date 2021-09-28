@@ -27,25 +27,31 @@ class CBInfoRequest:
         self.info_request_dict: Dict = {}
         self.info_request_schema_version = 0.2
 
-    def set_info_request(
-        self, target_path: str, arch: str, dist: str = ''
+    def set_package_info_request(
+        self, target_path: str, arch: str, dist: str
     ) -> None:
         self.info_request_dict = {
             'schema_version': self.info_request_schema_version,
             'request_id': CBIdentity.get_request_id(),
             'project': target_path
         }
-        if dist:
-            # dist setting is mandatory for package info requests
-            self.info_request_dict['package'] = {
-                'arch': arch,
-                'dist': dist
-            }
-        else:
-            # no dist setting indicates an image info request
-            self.info_request_dict['image'] = {
-                'arch': arch
-            }
+        self.info_request_dict['package'] = {
+            'arch': arch,
+            'dist': dist
+        }
+
+    def set_image_info_request(
+        self, target_path: str, arch: str, selection: str
+    ) -> None:
+        self.info_request_dict = {
+            'schema_version': self.info_request_schema_version,
+            'request_id': CBIdentity.get_request_id(),
+            'project': target_path
+        }
+        self.info_request_dict['image'] = {
+            'arch': arch,
+            'selection': selection
+        }
 
     def get_data(self) -> Dict:
         return self.info_request_dict
