@@ -223,7 +223,8 @@ def group_info_response(
     # Read package info responses and group them by a unique id
     # consisting out of: project-package-arch-dist information
     try:
-        while(True):
+        timeout_loop_start = time.time()
+        while time.time() < timeout_loop_start + timeout_sec + 1:
             message = None
             for message in broker.read(
                 topic=Defaults.get_info_response_queue_name(),
