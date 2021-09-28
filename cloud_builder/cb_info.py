@@ -153,8 +153,9 @@ def handle_info_requests(poll_timeout: int, log: CBCloudLogger) -> None:
                         )
                     elif 'image' in request:
                         arch = request['image']['arch']
+                        selection = request['image']['selection']
                         lookup_image(
-                            request['project'], arch,
+                            request['project'], arch, selection,
                             request['request_id'], broker, log
                         )
     finally:
@@ -163,11 +164,42 @@ def handle_info_requests(poll_timeout: int, log: CBCloudLogger) -> None:
 
 
 def lookup_image(
-    package: str, arch: str, request_id: str,
+    image: str, arch: str, selection: str, request_id: str,
     broker: Any, log: CBCloudLogger
 ) -> None:
-    # TODO
-    pass
+    log.set_id(image)
+    build_pid_file = os.sep.join(
+        [Defaults.get_runner_root(), f'{image}@{selection}.{arch}.pid']
+    )
+    if os.path.isfile(build_pid_file):
+        broker.acknowledge()
+        source_ip = log.get_id().split(':')[1]
+        response = CBInfoResponse(
+            request_id, log.get_id()
+        )
+        response.set_image_info_response(
+            image, source_ip, is_building(build_pid_file), arch, selection
+        )
+        image_result_file = os.sep.join(
+            [
+                Defaults.get_runner_root(),
+                f'{image}@{selection}.{arch}.result.yml'
+            ]
+        )
+        if os.path.isfile(image_result_file):
+            utc_modification_time = get_result_modification_time(
+                image_result_file
+            )
+            with open(image_result_file) as result_file:
+                result = broker.validate_build_response(result_file.read())
+                response.set_image_info_response_result(
+                    result['image']['binary_packages'],
+                    result['image']['log_file'],
+                    result['image']['solver_file'],
+                    format(utc_modification_time),
+                    get_image_status(result['response_code'])
+                )
+        log.info_response(response, broker)
 
 
 def lookup_package(
@@ -222,8 +254,16 @@ def get_package_status(response_code: str) -> str:
         return status_flags.package_build_succeeded
     elif response_code == status_flags.package_build_failed:
         return status_flags.package_build_failed
-    elif response_code == status_flags.package_build_running:
-        return status_flags.package_build_running
+    else:
+        return 'unknown'
+
+
+def get_image_status(response_code: str) -> str:
+    status_flags = Defaults.get_status_flags()
+    if response_code == status_flags.image_build_succeeded:
+        return status_flags.image_build_succeeded
+    elif response_code == status_flags.image_build_failed:
+        return status_flags.image_build_failed
     else:
         return 'unknown'
 

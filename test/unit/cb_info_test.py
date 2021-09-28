@@ -13,6 +13,7 @@ from cloud_builder.cb_info import (
     lookup_image,
     get_result_modification_time,
     get_package_status,
+    get_image_status,
     is_building
 )
 
@@ -67,7 +68,8 @@ class TestCBInfo:
         log = Mock()
         request = {
             'image': {
-                'arch': 'x86_64'
+                'arch': 'x86_64',
+                'selection': 'selection'
             },
             'project': 'myimage',
             'request_id': 'uuid',
@@ -96,7 +98,7 @@ class TestCBInfo:
             timeout_ms=5000
         )
         mock_lookup_image.assert_called_once_with(
-            'myimage', 'x86_64', 'uuid', broker, log
+            'myimage', 'x86_64', 'selection', 'uuid', broker, log
         )
         broker.close.assert_called_once_with()
 
@@ -145,11 +147,47 @@ class TestCBInfo:
         )
         broker.close.assert_called_once_with()
 
-    def test_lookup_image(self):
-        # TODO
+    @patch('cloud_builder.cb_info.CBCloudLogger')
+    @patch('cloud_builder.cb_info.CBInfoResponse')
+    @patch('cloud_builder.cb_info.get_result_modification_time')
+    @patch('cloud_builder.cb_info.is_building')
+    @patch('cloud_builder.cb_info.get_image_status')
+    @patch('os.path.isfile')
+    def test_lookup_image(
+        self, mock_os_path_isfile, mock_get_image_status,
+        mock_is_building, mock_get_result_modification_time,
+        mock_CBInfoResponse, mock_CBCloudLogger
+    ):
+        mock_os_path_isfile.return_value = True
+        mock_get_result_modification_time.return_value = 'utctime'
         log = Mock()
+        log.get_id.return_value = 'CBImage:18.193.45.127:...'
+        response = Mock()
+        mock_CBCloudLogger.return_value = log
+        mock_CBInfoResponse.return_value = response
         broker = Mock()
-        lookup_image('myimage', 'x86_64', 'uuid', broker, log)
+        broker.validate_build_response.return_value = {
+            'image': {
+                'binary_packages': [],
+                'log_file': 'log_file',
+                'solver_file': 'solver_file',
+            },
+            'response_code': 'response_code'
+        }
+
+        with patch('builtins.open', create=True):
+            lookup_image('image', 'arch', 'selection', 'uuid', broker, log)
+
+        broker.acknowledge.assert_called_once_with()
+        result = broker.validate_build_response.return_value
+        response.set_image_info_response_result.assert_called_once_with(
+            result['image']['binary_packages'],
+            result['image']['log_file'],
+            result['image']['solver_file'],
+            mock_get_result_modification_time.return_value,
+            mock_get_image_status.return_value
+        )
+        log.info_response.assert_called_once_with(response, broker)
 
     @patch('cloud_builder.cb_info.CBCloudLogger')
     @patch('cloud_builder.cb_info.CBInfoResponse')
@@ -211,9 +249,16 @@ class TestCBInfo:
             status_flags.package_build_succeeded
         assert get_package_status('package build failed') == \
             status_flags.package_build_failed
-        assert get_package_status('package build running') == \
-            status_flags.package_build_running
         assert get_package_status('foo') == \
+            'unknown'
+
+    def test_get_image_status(self):
+        status_flags = Defaults.get_status_flags()
+        assert get_image_status('image build succeeded') == \
+            status_flags.image_build_succeeded
+        assert get_image_status('image build failed') == \
+            status_flags.image_build_failed
+        assert get_image_status('foo') == \
             'unknown'
 
     @patch('psutil.pid_exists')
