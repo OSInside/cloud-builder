@@ -13,7 +13,7 @@
    :maxdepth: 1
 
    infrastructure_setup
-   git_package_source_setup
+   source_setup
    kafka_broker_setup
    runner_setup
    request_package_build

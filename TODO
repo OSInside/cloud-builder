@@ -1,3 +1,8 @@
+* change cb-info to react earlier, as soon as the .log file
+  exists the cb-info code should send information. Sending info
+  based on the .result.yml is very late and does not allow
+  to fetch intermediate build states
+
 * remind yourself on Fedora selinux is active which prevents
   several actions like rpm --initdb. To fix this call
 
