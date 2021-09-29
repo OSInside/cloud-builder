@@ -131,7 +131,7 @@ created and configured as follows:
    .. code:: bash
 
       CB_PROJECT="https://github.com/OSInside/cloud-builder-packages.git"
-      CB_PACKAGE_LIMIT=10
+      CB_BUILD_LIMIT=10
 
    The above settings are the default after install of {CB}.
    The used CB_PROJECT git repository is the {CB} provided example git
@@ -139,9 +139,9 @@ created and configured as follows:
    purpose to let users test and run {CB}. For production
    change this value to your git project
 
-   .. note:: CB_PACKAGE_LIMIT
+   .. note:: CB_BUILD_LIMIT
 
-      Every runner comes with a package build limit. This is the number
+      Every runner comes with a build limit. This is the number
       of simultaneously allowed build processes. If the limit is hit
       the runner closes its connection to the message broker until the
       number is below the maximum. For Apache kafka the close of the
