@@ -10,7 +10,7 @@ SYNOPSIS
    cb-scheduler
        [--update-interval=<time_sec>]
        [--poll-timeout=<time_msec>]
-       [--package-limit=<number>]
+       [--build-limit=<number>]
 
 DESCRIPTION
 -----------
@@ -129,7 +129,7 @@ OPTIONS
   Optional message broker poll timeout to return if no
   requests are available. Default: 5000msec
 
---package-limit=<number>
+--build-limit=<number>
 
-  Max number of package builds this scheduler handles
+  Max number of build processes this scheduler handles
   at the same time. Default: 10

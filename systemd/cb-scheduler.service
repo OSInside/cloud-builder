@@ -7,7 +7,7 @@ Requires=network-online.target
 EnvironmentFile=-/etc/cloud_builder
 Type=simple
 Restart=on-failure
-ExecStart=/bin/bash -c 'sudo cb-scheduler --package-limit ${CB_PACKAGE_LIMIT} --update-interval ${CB_UPDATE}'
+ExecStart=/bin/bash -c 'sudo cb-scheduler --build-limit ${CB_BUILD_LIMIT} --update-interval ${CB_UPDATE}'
 
 [Install]
 WantedBy=multi-user.target

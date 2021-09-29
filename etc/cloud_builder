@@ -3,24 +3,24 @@
 ## Type           : string
 ## Default        : ""
 #
-# Cloud Builder compatible github project with package sources
+# Cloud Builder compatible github packages/images source project
 #
 CB_PROJECT="https://github.com/OSInside/cloud-builder-packages.git"
 
 ## Type:        integer
 ## Default:     30
 #
-# Cloud Builder update intervall for package sources
+# Cloud Builder update intervall for sources update
 #
 CB_UPDATE=30
 
 ## Type:        integer
 ## Default:     10
 #
-# Cloud Builder package limit
-# Build up to CB_PACKAGE_LIMIT packages at the same time
+# Cloud Builder build limit
+# Allow up to CB_BUILD_LIMIT build processes at the same time
 #
-CB_PACKAGE_LIMIT=10
+CB_BUILD_LIMIT=10
 
 ## Type:        integer
 ## Default:     30

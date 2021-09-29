@@ -20,7 +20,7 @@ usage: cb-scheduler -h | --help
        cb-scheduler
            [--update-interval=<time_sec>]
            [--poll-timeout=<time_msec>]
-           [--package-limit=<number>]
+           [--build-limit=<number>]
 
 options:
     --update-interval=<time_sec>
@@ -31,8 +31,8 @@ options:
         Optional message broker poll timeout to return if no
         requests are available. Default: 5000msec
 
-    --package-limit=<number>
-        Max number of package builds this scheduler handles
+    --build-limit=<number>
+        Max number of build processes this scheduler handles
         at the same time. Default: 10
 """
 import os
@@ -184,7 +184,7 @@ def main() -> None:
         Defaults.get_runner_root()
     )
 
-    running_limit = int(args['--package-limit'] or 10)
+    running_limit = int(args['--build-limit'] or 10)
     update_interval = int(args['--update-interval'] or 10)
     poll_timeout = int(args['--poll-timeout'] or 5000)
 
