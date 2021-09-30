@@ -169,8 +169,8 @@ class TestCBInfo:
         broker.validate_build_response.return_value = {
             'image': {
                 'binary_packages': [],
-                'log_file': 'log_file',
-                'solver_file': 'solver_file',
+                'log_file': '/var/tmp/CB/image@selection.arch.build.log',
+                'solver_file': '/var/tmp/CB/image@selection.arch.solver.json',
             },
             'response_code': 'response_code'
         }
@@ -211,9 +211,9 @@ class TestCBInfo:
         broker.validate_build_response.return_value = {
             'package': {
                 'binary_packages': [],
-                'prepare_log_file': 'prepare_log_file',
-                'log_file': 'log_file',
-                'solver_file': 'solver_file',
+                'prepare_log_file': '/var/tmp/CB/package@dist.arch.prepare.log',
+                'log_file': '/var/tmp/CB/package@dist.arch.build.log',
+                'solver_file': '/var/tmp/CB/package@dist.arch.solver.json',
             },
             'response_code': 'response_code'
         }
