@@ -136,3 +136,9 @@ class CBExecutionError(CBError):
     """
     Exception raised if an os execution failed
     """
+
+
+class CBFileUnknownError(CBError):
+    """
+    Exception raised if file to lookup is none
+    """

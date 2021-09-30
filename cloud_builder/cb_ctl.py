@@ -157,7 +157,8 @@ from cloud_builder.exceptions import (
     CBConfigFileNotFoundError,
     CBConfigFileValidationError,
     CBProjectMetadataError,
-    CBExecutionError
+    CBExecutionError,
+    CBFileUnknownError
 )
 
 from kiwi.command import Command
@@ -556,6 +557,10 @@ def _get_info_response_file(
     )
     if info_response:
         response_file = info_response[response_file_name]
+        if response_file == 'none':
+            raise CBFileUnknownError(
+                'Response record has no information about this file'
+            )
         runner_ip = info_response['source_ip']
         ssh_user = config['runner']['ssh_user']
         ssh_pkey_file = config['runner']['ssh_pkey_file']
