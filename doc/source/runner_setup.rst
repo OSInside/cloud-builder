@@ -89,6 +89,15 @@ created and configured as follows:
       This information is explained once and applies to all
       following steps too.
 
+   .. note:: selinux
+
+      Fedora systems uses selinux. For building packages and images
+      the security policy could prevent required actions to complete
+      like the creation of a new rpm database in a new root directory.
+      To prevent this make sure selinux is not enforced by calling:
+      `sudo setenforce 0`
+      
+
 3. **Setup broker connection and runner group on the runners**
 
    Login to each of the created runner instances and create
