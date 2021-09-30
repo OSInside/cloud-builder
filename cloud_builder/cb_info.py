@@ -142,8 +142,6 @@ def handle_info_requests(poll_timeout: int, log: CBCloudLogger) -> None:
             ):
                 request = broker.validate_info_request(message.value)
                 if request:
-                    arch = None
-                    dist = None
                     if 'package' in request:
                         arch = request['package']['arch']
                         dist = request['package']['dist']
@@ -180,25 +178,37 @@ def lookup_image(
         response.set_image_info_response(
             image, source_ip, is_building(build_pid_file), arch, selection
         )
-        image_result_file = os.sep.join(
+        utc_modification_time = get_result_modification_time(
+            build_pid_file
+        )
+        image_file_base_name = os.sep.join(
             [
                 Defaults.get_runner_root(),
-                f'{image}@{selection}.{arch}.result.yml'
+                f'{image}@{selection}.{arch}'
             ]
         )
+        image_result_file = image_file_base_name + '.result.yml'
+        image_build_log_file = image_file_base_name + '.build.log'
+        image_solver_file = image_file_base_name + '.solver.json'
+        image_binaries = []
+        image_status = get_image_status()
         if os.path.isfile(image_result_file):
-            utc_modification_time = get_result_modification_time(
-                image_result_file
-            )
             with open(image_result_file) as result_file:
                 result = broker.validate_build_response(result_file.read())
-                response.set_image_info_response_result(
-                    result['image']['binary_packages'],
-                    result['image']['log_file'],
-                    result['image']['solver_file'],
-                    format(utc_modification_time),
-                    get_image_status(result['response_code'])
-                )
+                image_binaries = result['image']['binary_packages']
+                image_status = get_image_status(result['response_code'])
+
+        response.set_image_info_response_result(
+            image_binaries,
+            image_build_log_file if os.path.isfile(
+                image_build_log_file
+            ) else 'none',
+            image_solver_file if os.path.isfile(
+                image_solver_file
+            ) else 'none',
+            format(utc_modification_time),
+            image_status
+        )
         log.info_response(response, broker)
 
 
@@ -219,26 +229,41 @@ def lookup_package(
         response.set_package_info_response(
             package, source_ip, is_building(build_pid_file), arch, dist
         )
-        package_result_file = os.sep.join(
+        utc_modification_time = get_result_modification_time(
+            build_pid_file
+        )
+        package_file_base_name = os.sep.join(
             [
                 Defaults.get_runner_root(),
-                f'{package}@{dist}.{arch}.result.yml'
+                f'{package}@{dist}.{arch}'
             ]
         )
+        package_result_file = package_file_base_name + '.result.yml'
+        package_prepare_log_file = package_file_base_name + '.prepare.log'
+        package_build_log_file = package_file_base_name + '.build.log'
+        package_solver_file = package_file_base_name + '.solver.json'
+        package_binaries = []
+        package_status = get_package_status()
         if os.path.isfile(package_result_file):
-            utc_modification_time = get_result_modification_time(
-                package_result_file
-            )
             with open(package_result_file) as result_file:
                 result = broker.validate_build_response(result_file.read())
-                response.set_package_info_response_result(
-                    result['package']['binary_packages'],
-                    result['package']['prepare_log_file'],
-                    result['package']['log_file'],
-                    result['package']['solver_file'],
-                    format(utc_modification_time),
-                    get_package_status(result['response_code'])
-                )
+                package_binaries = result['package']['binary_packages']
+                package_status = get_package_status(result['response_code'])
+
+        response.set_package_info_response_result(
+            package_binaries,
+            package_prepare_log_file if os.path.isfile(
+                package_prepare_log_file
+            ) else 'none',
+            package_build_log_file if os.path.isfile(
+                package_build_log_file
+            ) else 'none',
+            package_solver_file if os.path.isfile(
+                package_solver_file
+            ) else 'none',
+            format(utc_modification_time),
+            package_status
+        )
         log.info_response(response, broker)
 
 
@@ -248,7 +273,7 @@ def get_result_modification_time(filename: str) -> datetime:
     )
 
 
-def get_package_status(response_code: str) -> str:
+def get_package_status(response_code: str = '') -> str:
     status_flags = Defaults.get_status_flags()
     if response_code == status_flags.package_build_succeeded:
         return status_flags.package_build_succeeded
@@ -258,7 +283,7 @@ def get_package_status(response_code: str) -> str:
         return 'unknown'
 
 
-def get_image_status(response_code: str) -> str:
+def get_image_status(response_code: str = '') -> str:
     status_flags = Defaults.get_status_flags()
     if response_code == status_flags.image_build_succeeded:
         return status_flags.image_build_succeeded
