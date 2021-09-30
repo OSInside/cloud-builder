@@ -27,6 +27,7 @@ usage: cb-ctl -h | --help
            [--timeout=<time_sec>]
        cb-ctl --build-dependencies-local (--dist=<name>|--selection=<name>)
        cb-ctl --build-log=<package│image> --project-path=<path> --arch=<name> (--dist=<name>|--selection=<name>)
+           [--keep-open]
            [--timeout=<time_sec>]
        cb-ctl --build-info=<package│image> --project-path=<path> --arch=<name> (--dist=<name>|--selection=<name>)
            [--timeout=<time_sec>]
@@ -122,6 +123,9 @@ options:
     --clean
         Delete package buildroot if present on the runner
         before building the package
+
+    --keep-open
+        Use tail -f to open the log file on the runner
 """
 import time
 import os
@@ -234,6 +238,7 @@ def main() -> None:
             args['--dist'],
             args['--selection'],
             int(args['--timeout'] or default_timeout),
+            args['--keep-open'],
             get_config()
         )
     elif args['--build-info']:
@@ -431,11 +436,12 @@ def get_build_dependencies_local(dist: str, selection_name: str) -> None:
 
 def get_build_log(
     broker: Any, target: str, project_path: str, arch: str,
-    dist: str, selection: str, timeout_sec: int, config: Dict
+    dist: str, selection: str, timeout_sec: int, keep_open: bool,
+    config: Dict
 ) -> None:
     build_log_data = _get_info_response_file(
         broker, target, project_path, arch, dist, selection,
-        timeout_sec, config, 'log_file'
+        timeout_sec, config, 'log_file', keep_open
     )
     if build_log_data:
         CBDisplay.print_raw(build_log_data)
@@ -550,7 +556,7 @@ def get_info(
 def _get_info_response_file(
     broker: Any, target: str, project_path: str, arch: str,
     dist: str, selection: str, timeout_sec: int,
-    config: Dict, response_file_name
+    config: Dict, response_file_name, keep_open: bool = False
 ) -> str:
     info_response = get_info(
         broker, target, project_path, arch, dist, selection, timeout_sec
@@ -564,14 +570,20 @@ def _get_info_response_file(
         runner_ip = info_response['source_ip']
         ssh_user = config['runner']['ssh_user']
         ssh_pkey_file = config['runner']['ssh_pkey_file']
-        return Command.run(
-            [
-                'ssh', '-i', ssh_pkey_file,
-                '-o', 'StrictHostKeyChecking=accept-new',
-                f'{ssh_user}@{runner_ip}',
-                'cat', response_file
-            ]
-        ).output
+
+        ssh_runner = [
+            'ssh', '-i', ssh_pkey_file,
+            '-o', 'StrictHostKeyChecking=accept-new',
+            f'{ssh_user}@{runner_ip}'
+        ]
+        if not keep_open:
+            return Command.run(
+                ssh_runner + ['cat', response_file]
+            ).output
+        else:
+            os.system(
+                ' '.join(ssh_runner + ['tail', '-f', response_file])
+            )
     return ''
 
 

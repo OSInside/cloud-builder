@@ -43,7 +43,7 @@ function _cbctl {
                     return 0
                     ;;
                 "--build-log")
-                    __comp_reply "--project-path --arch --dist --timeout"
+                    __comp_reply "--project-path --arch --dist --timeout --keep-open"
                     return 0
                     ;;
                 "--build-info")
