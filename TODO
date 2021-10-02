@@ -1,5 +1,3 @@
-* Increase cb-ctl --build-log to fetch prepare and build log at once
-
 * complete add tests (100%)
 
 * Issue: release number across runners.
