@@ -152,11 +152,13 @@ Now that the control plane runs the following configurations are required:
    instances. This means if there are e.g 10 runners in the runner_group
    e.g `fedora`, it is expected that package requests gets distributed
    to all runners. For this concept to work in Kafka it's important to
-   assign 10 partitions to the topic that handles the requests. At this
-   point a decision about the later size of the system needs to be made.
-   It's possible to change the assigned number of partitions at a later
-   point in time. For this example setup the following conditions are
-   set:
+   assign 10 partitions to the topic that handles the requests. For more
+   details on how kafka balances consumers click `here <https://stackoverflow.com/questions/40326600/balancing-kafka-consumers/40327547>`__
+
+   At this point a decision about the later size of the system needs to
+   be made. It's possible to change the assigned number of partitions at
+   a later point in time. For this example setup the following conditions
+   are set:
 
    * 2 runner groups, `fedora` and `suse`.
    * 2 partitions for each runner group

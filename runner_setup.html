@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Runner Setup &mdash; Cloud Builder 0.2.11 documentation</title>
+  <title>Runner Setup &mdash; Cloud Builder 0.2.12 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/custom.css" type="text/css" />
@@ -229,6 +229,15 @@ The username to access Fedora machines in the cloud is set
 to <code class="xref py py-obj docutils literal notranslate"><span class="pre">fedora</span></code>. For Leap machines it is set set to <code class="xref py py-obj docutils literal notranslate"><span class="pre">ec2-user</span></code>.
 This information is explained once and applies to all
 following steps too.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>selinux</p>
+<p>Fedora systems uses selinux. For building packages and images
+the security policy could prevent required actions to complete
+like the creation of a new rpm database in a new root directory.
+To prevent this make sure selinux is not enforced by calling:
+<code class="xref py py-obj docutils literal notranslate"><span class="pre">sudo</span> <span class="pre">setenforce</span> <span class="pre">0</span></code></p>
 </div>
 </li>
 <li><p><strong>Setup broker connection and runner group on the runners</strong></p>
