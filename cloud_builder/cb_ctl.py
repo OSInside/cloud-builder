@@ -161,8 +161,7 @@ from cloud_builder.exceptions import (
     CBConfigFileNotFoundError,
     CBConfigFileValidationError,
     CBProjectMetadataError,
-    CBExecutionError,
-    CBFileUnknownError
+    CBExecutionError
 )
 
 from kiwi.command import Command
@@ -400,7 +399,7 @@ def get_build_dependencies(
 ) -> None:
     solver_data = _get_info_response_file(
         broker, target, project_path, arch, dist, selection,
-        timeout_sec, config, 'solver_file'
+        timeout_sec, config, 'dependencies'
     )
     if solver_data:
         CBDisplay.print_json(json.loads(solver_data))
@@ -441,7 +440,7 @@ def get_build_log(
 ) -> None:
     build_log_data = _get_info_response_file(
         broker, target, project_path, arch, dist, selection,
-        timeout_sec, config, 'log_file', keep_open
+        timeout_sec, config, 'logs', keep_open
     )
     if build_log_data:
         CBDisplay.print_raw(build_log_data)
@@ -556,35 +555,75 @@ def get_info(
 def _get_info_response_file(
     broker: Any, target: str, project_path: str, arch: str,
     dist: str, selection: str, timeout_sec: int,
-    config: Dict, response_file_name, keep_open: bool = False
+    config: Dict, response_file_id: str, keep_open: bool = False
 ) -> str:
     info_response = get_info(
         broker, target, project_path, arch, dist, selection, timeout_sec
     )
     if info_response:
-        response_file = info_response[response_file_name]
-        if response_file == 'none':
-            raise CBFileUnknownError(
-                'Response record has no information about this file'
-            )
         runner_ip = info_response['source_ip']
         ssh_user = config['runner']['ssh_user']
         ssh_pkey_file = config['runner']['ssh_pkey_file']
-
         ssh_runner = [
             'ssh', '-i', ssh_pkey_file,
             '-o', 'StrictHostKeyChecking=accept-new',
             f'{ssh_user}@{runner_ip}'
         ]
-        if not keep_open:
-            return Command.run(
-                ssh_runner + ['cat', response_file]
-            ).output
-        else:
-            os.system(
-                ' '.join(ssh_runner + ['tail', '-f', response_file])
+        response_file_list = []
+        if response_file_id == 'logs' and selection:
+            # image build log
+            build_log_file = _get_file_from_response(
+                info_response, 'log_file'
             )
+            if build_log_file:
+                response_file_list.append(build_log_file)
+        elif response_file_id == 'logs' and dist:
+            # package build logs
+            prepare_log_file = _get_file_from_response(
+                info_response, 'prepare_log_file'
+            )
+            if prepare_log_file:
+                response_file_list.append(prepare_log_file)
+            build_log_file = _get_file_from_response(
+                info_response, 'log_file'
+            )
+            if build_log_file:
+                response_file_list.append(build_log_file)
+        elif response_file_id == 'dependencies':
+            # image or package build dependencies
+            solver_log_file = _get_file_from_response(
+                info_response, 'solver_file'
+            )
+            if solver_log_file:
+                response_file_list.append(solver_log_file)
+
+        if response_file_list:
+            if not keep_open:
+                return Command.run(
+                    ssh_runner + [
+                        'cat'
+                    ] + response_file_list
+                ).output
+            else:
+                os.system(
+                    ' '.join(
+                        ssh_runner + [
+                            'tail', '-f',
+                        ] + response_file_list
+                    )
+                )
     return ''
+
+
+def _get_file_from_response(info_response: Dict, name: str) -> str:
+    if name == 'prepare_log_file':
+        filename = info_response['package'][name]
+    else:
+        filename = info_response[name]
+    if filename == 'none':
+        log.warning(f'Response record has no information for: {name}')
+        filename = ''
+    return filename
 
 
 def _response_reader(
