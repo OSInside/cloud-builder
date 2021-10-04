@@ -184,6 +184,9 @@ def main() -> None:
     Path.create(
         Defaults.get_runner_root()
     )
+    Path.create(
+        os.path.join(Defaults.get_runner_root(), 'scheduled')
+    )
 
     running_limit = int(args['--build-limit'] or 10)
     update_interval = int(args['--update-interval'] or 10)

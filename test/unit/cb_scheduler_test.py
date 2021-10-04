@@ -1,5 +1,6 @@
 import sys
 import io
+import os
 import signal
 from textwrap import dedent
 from mock import (
@@ -45,9 +46,15 @@ class TestCBScheduler:
         mock_BlockingScheduler.return_value = project_scheduler
         main()
         mock_Privileges_check_for_root_permissions.assert_called_once_with()
-        mock_Path_create.assert_called_once_with(
-            mock_Defaults.get_runner_root.return_value
-        )
+        assert mock_Path_create.call_args_list == [
+            call(
+                mock_Defaults.get_runner_root.return_value
+            ),
+            call(
+                os.path.join(
+                    mock_Defaults.get_runner_root.return_value, 'scheduled')
+            )
+        ]
         mock_handle_build_requests.assert_called_once_with(
             5000, 10, mock_CBCloudLogger.return_value
         )
