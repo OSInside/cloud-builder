@@ -369,24 +369,19 @@ class TestCBScheduler:
                 mock_CBResponse.return_value, broker
             )
 
-    @patch('os.walk')
+    @patch('glob.iglob')
     @patch('psutil.pid_exists')
-    def test_get_running_builds(self, mock_psutil_pid_exists, mock_walk):
+    def test_get_running_builds(
+        self, mock_psutil_pid_exists, mock_glob_iglob
+    ):
         mock_psutil_pid_exists.return_value = True
-        mock_walk.return_value = [
-            ('/top', ('bar', 'baz'), ('spam', 'package.pid'))
-        ]
+        mock_glob_iglob.return_value = ['package.pid']
         with patch('builtins.open', create=True) as mock_open:
             mock_open.return_value = MagicMock(spec=io.IOBase)
             file_handle = mock_open.return_value.__enter__.return_value
             file_handle.read.return_value = '1234'
             assert get_running_builds() == 1
-            mock_open.assert_called_once_with('/top/package.pid')
-
-        mock_psutil_pid_exists.side_effect = Exception
-
-        with patch('builtins.open', create=True) as mock_open:
-            assert get_running_builds() == 0
+            mock_open.assert_called_once_with('package.pid')
 
     @patch('os.path.isdir')
     @patch('cloud_builder.cb_scheduler.CBResponse')
@@ -736,6 +731,7 @@ class TestCBScheduler:
             }} &>>/var/tmp/CB/projects/MS/myimage@standard.x86_64.run.log &
 
             echo $! > /var/tmp/CB/projects/MS/myimage@standard.x86_64.pid
+            echo $! > /var/tmp/CB/scheduled/myimage@standard.x86_64.pid
         ''').format('', '')
         with patch('builtins.open', create=True) as mock_open:
             mock_open.return_value = MagicMock(spec=io.IOBase)
@@ -832,6 +828,7 @@ class TestCBScheduler:
             } &>>/var/tmp/CB/projects/MS/vim@TW.x86_64.run.log &
 
             echo $! > /var/tmp/CB/projects/MS/vim@TW.x86_64.pid
+            echo $! > /var/tmp/CB/scheduled/vim@TW.x86_64.pid
         ''')
         with patch('builtins.open', create=True) as mock_open:
             mock_open.return_value = MagicMock(spec=io.IOBase)

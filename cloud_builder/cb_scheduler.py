@@ -36,6 +36,7 @@ options:
         at the same time. Default: 10
 """
 import os
+import glob
 import platform
 import psutil
 import signal
@@ -397,19 +398,14 @@ def get_running_builds() -> int:
     :rtype: int
     """
     runnung_builds = 0
-    for topdir, dirs, files in sorted(os.walk(Defaults.get_runner_root())):
-        for entry in sorted(dirs + files):
-            if entry in files:
-                if entry.endswith('.pid'):
-                    pid_file = os.sep.join([topdir, entry])
-                    with open(pid_file) as pid_fd:
-                        try:
-                            build_pid = int(pid_fd.read().strip())
-                            if psutil.pid_exists(build_pid):
-                                runnung_builds += 1
-                        except Exception:
-                            # literal error in pid files are ignored
-                            pass
+    build_pids = os.path.join(
+        Defaults.get_runner_root(), 'scheduled'
+    )
+    for pid_file in sorted(glob.iglob(f'{build_pids}/*.pid')):
+        with open(pid_file) as pid_fd:
+            build_pid = int(pid_fd.read().strip())
+            if psutil.pid_exists(build_pid):
+                runnung_builds += 1
     return runnung_builds
 
 
@@ -635,6 +631,11 @@ def create_image_run_script(
         image_source_path = os.path.join(
             Defaults.get_runner_project_dir(), request['project']
         )
+        build_pid_file = '{0}/{1}@{2}.{3}'.format(
+            os.path.join(Defaults.get_runner_root(), 'scheduled'),
+            os.path.basename(request['project']),
+            selection, request['image']['arch'] + '.pid'
+        )
         image_target_path = '{0}@{1}.{2}'.format(
             os.path.join(Defaults.get_runner_root(), request['project']),
             selection, request['image']['arch']
@@ -660,13 +661,15 @@ def create_image_run_script(
             }} &>>{image_target_path}.run.log &
 
             echo $! > {image_target_path}.pid
+            echo $! > {build_pid_file}
         ''').format(
             image_source_path=image_source_path,
             image_target_path=image_target_path,
             profile_opts=' '.join(profile_opts) if profile_opts else '',
             custom_args=' '.join(custom_args) if build_options else '',
             request_id=request['request_id'],
-            bundle_id=bundle_id
+            bundle_id=bundle_id,
+            build_pid_file=build_pid_file
         )
     image_run_script = f'{image_target_path}.sh'
     Path.create(os.path.dirname(image_run_script))
@@ -726,6 +729,10 @@ def create_package_run_script(
         package_source_path = os.path.join(
             Defaults.get_runner_project_dir(), request['project']
         )
+        build_pid_file = '{0}/{1}@{2}'.format(
+            os.path.join(Defaults.get_runner_root(), 'scheduled'),
+            os.path.basename(request['project']), dist_profile + '.pid'
+        )
         package_root = os.path.join(
             Defaults.get_runner_root(), request['project']
         )
@@ -756,12 +763,14 @@ def create_package_run_script(
             }} &>>{build_root}.run.log &
 
             echo $! > {build_root}.pid
+            echo $! > {build_pid_file}
         ''').format(
             buildroot_rebuild='true' if buildroot_rebuild else 'false',
             package_source_path=package_source_path,
             dist_profile=dist_profile,
             build_root=build_root,
-            request_id=request['request_id']
+            request_id=request['request_id'],
+            build_pid_file=build_pid_file
         )
     package_run_script = f'{build_root}.sh'
     Path.create(os.path.dirname(package_run_script))
