@@ -396,8 +396,21 @@ def get_running_builds() -> int:
 
     :rtype: int
     """
-    # TODO: lookup current running limit
-    return 0
+    runnung_builds = 0
+    for topdir, dirs, files in sorted(os.walk(Defaults.get_runner_root())):
+        for entry in sorted(dirs + files):
+            if entry in files:
+                if entry.endswith('.pid'):
+                    pid_file = os.sep.join([topdir, entry])
+                    with open(pid_file) as pid_fd:
+                        try:
+                            build_pid = int(pid_fd.read().strip())
+                            if psutil.pid_exists(build_pid):
+                                runnung_builds += 1
+                        except Exception:
+                            # literal error in pid files are ignored
+                            pass
+    return runnung_builds
 
 
 def is_request_valid(

@@ -369,8 +369,24 @@ class TestCBScheduler:
                 mock_CBResponse.return_value, broker
             )
 
-    def test_get_running_builds(self):
-        assert get_running_builds() == 0
+    @patch('os.walk')
+    @patch('psutil.pid_exists')
+    def test_get_running_builds(self, mock_psutil_pid_exists, mock_walk):
+        mock_psutil_pid_exists.return_value = True
+        mock_walk.return_value = [
+            ('/top', ('bar', 'baz'), ('spam', 'package.pid'))
+        ]
+        with patch('builtins.open', create=True) as mock_open:
+            mock_open.return_value = MagicMock(spec=io.IOBase)
+            file_handle = mock_open.return_value.__enter__.return_value
+            file_handle.read.return_value = '1234'
+            assert get_running_builds() == 1
+            mock_open.assert_called_once_with('/top/package.pid')
+
+        mock_psutil_pid_exists.side_effect = Exception
+
+        with patch('builtins.open', create=True) as mock_open:
+            assert get_running_builds() == 0
 
     @patch('os.path.isdir')
     @patch('cloud_builder.cb_scheduler.CBResponse')
