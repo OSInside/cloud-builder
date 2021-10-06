@@ -35,23 +35,23 @@ function _cbctl {
                     return 0
                     ;;
                 "--build-dependencies")
-                    __comp_reply "--project-path --arch --dist --timeout"
+                    __comp_reply "--project-path --arch --dist --selection --timeout"
                     return 0
                     ;;
                 "--build-dependencies-local")
-                    __comp_reply "--dist"
+                    __comp_reply "--dist --selection"
                     return 0
                     ;;
                 "--build-log")
-                    __comp_reply "--project-path --arch --dist --timeout --keep-open"
+                    __comp_reply "--project-path --arch --dist --selection --timeout --keep-open"
                     return 0
                     ;;
                 "--build-info")
-                    __comp_reply "--project-path --arch --dist --timeout"
+                    __comp_reply "--project-path --arch --dist --selection --timeout"
                     return 0
                     ;;
                 "--get-binaries")
-                    __comp_reply "--project-path --arch --dist --target-dir --timeout"
+                    __comp_reply "--project-path --arch --dist --selection --target-dir --timeout"
                     return 0
                     ;;
                 "--watch")
