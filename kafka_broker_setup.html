@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Kafka Message Broker Setup &mdash; Cloud Builder 0.2.16 documentation</title>
+  <title>Kafka Message Broker Setup &mdash; Cloud Builder 0.2.17 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/custom.css" type="text/css" />
@@ -305,6 +305,44 @@ $ <span class="k">for</span> topic <span class="k">in</span> fedora suse<span cl
           --zookeeper ZookeeperConnectString <span class="se">\</span>
           --replication-factor <span class="m">2</span> <span class="se">\</span>
           --partitions <span class="m">2</span> <span class="se">\</span>
+          --topic <span class="si">${</span><span class="nv">topic</span><span class="si">}</span><span class="p">;</span>
+  <span class="k">done</span>
+</pre></div>
+</div>
+</li>
+<li><p><strong>Set appropriate retention time for topics</strong></p>
+<p>By default kafka topics have a retention time of 7 days which is
+quite long for some of the topics created before. As a good
+start the following retention times should be set:</p>
+<dl class="simple">
+<dt>Runner Group Topics: <em>60min</em></dt><dd><p>The runner group topics are the ones receiving the build
+requests. Keeping build requests for an hour should be enough
+to survive a potential kafka rebalance.</p>
+</dd>
+<dt>cb-info-response and cb-info-request: <em>2min</em></dt><dd><p>The cb-info-* topics are used to communicate with the build
+cluster. It is expected that requests sent will be answered
+more or less immeditately. Thus the retention time for these
+topics should be small.</p>
+</dd>
+<dt>cb-response: <em>keep or increase</em></dt><dd><p>The cb-response topic receives all messages from all Cloud Builder
+services. It is used to watch the cluster for basically
+everything. The default retention time of 7 days is a good
+start but could also increased.</p>
+</dd>
+</dl>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ <span class="nb">cd</span> kafka_2.12-2.2.1
+$ <span class="k">for</span> topic <span class="k">in</span> fedora suse<span class="p">;</span> <span class="k">do</span>
+      bin/kafka-topics.sh <span class="se">\</span>
+          --alter <span class="se">\</span>
+          --zookeeper ZookeeperConnectString <span class="se">\</span>
+          --config retention.ms<span class="o">=</span><span class="m">3600000</span> <span class="se">\</span>
+          --topic <span class="si">${</span><span class="nv">topic</span><span class="si">}</span><span class="p">;</span>
+  <span class="k">done</span>
+$ <span class="k">for</span> topic <span class="k">in</span> cb-info-response cb-info-request<span class="p">;</span> <span class="k">do</span>
+      bin/kafka-topics.sh <span class="se">\</span>
+          --alter <span class="se">\</span>
+          --zookeeper ZookeeperConnectString <span class="se">\</span>
+          --config retention.ms<span class="o">=</span><span class="m">120000</span> <span class="se">\</span>
           --topic <span class="si">${</span><span class="nv">topic</span><span class="si">}</span><span class="p">;</span>
   <span class="k">done</span>
 </pre></div>
