@@ -44,7 +44,7 @@ class TestCBRun:
             [
                 'find',
                 '/var/tmp/CB/projects/package@dist.arch/home/abuild',
-                '-name', '*.rpm'
+                '-name', '*.rpm', '-o', '-name', '*.deb'
             ]
         )
         response.set_package_build_response.assert_called_once_with(
