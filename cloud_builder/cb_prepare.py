@@ -180,9 +180,9 @@ def main() -> None:
 
                 pushd {0}
                 if type -p build; then
-                    build --no-init --root /
+                    build --no-init --dist default --root /
                 else
-                    obs-build --no-init --root /
+                    obs-build --no-init --dist default --root /
                 fi
             ''')
             with open(f'{build_root}/run.sh', 'w') as script:
