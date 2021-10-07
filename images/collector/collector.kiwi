@@ -4,11 +4,11 @@
 <!-- OBS-Profiles: @BUILD_FLAVOR@ -->
 <!-- OBS-ExclusiveArch: aarch64 x86_64 -->
 
-<image schemaversion="7.4" name="CB-ControlPlane" displayname="CB-ControlPlane">
+<image schemaversion="7.4" name="CB-Collector" displayname="CB-Collector">
     <description type="system">
         <author>Marcus Schäfer</author>
         <contact>marcus.schaefer@gmail.com</contact>
-        <specification>Cloud Builder ControlPlane</specification>
+        <specification>Cloud Builder Repository Server(Collector)</specification>
     </description>
     <profiles>
         <profile name="EC2-HVM" description="EC2 HVM Guest Image"/>
