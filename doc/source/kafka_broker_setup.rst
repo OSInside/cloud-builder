@@ -178,7 +178,48 @@ Now that the control plane runs the following configurations are required:
                 --topic ${topic};
         done
 
-5. **Configure** `cb-ctl`
+5. **Set appropriate retention time for topics**
+
+   By default kafka topics have a retention time of 7 days which is
+   quite long for some of the topics created before. As a good
+   start the following retention times should be set:
+
+   Runner Group Topics: *60min*
+     The runner group topics are the ones receiving the build
+     requests. Keeping build requests for an hour should be enough
+     to survive a potential kafka rebalance.
+     
+   cb-info-response and cb-info-request: *2min*
+     The cb-info-* topics are used to communicate with the build
+     cluster. It is expected that requests sent will be answered
+     more or less immeditately. Thus the retention time for these
+     topics should be small.
+
+   cb-response: *keep or increase*
+     The cb-response topic receives all messages from all {CB}
+     services. It is used to watch the cluster for basically
+     everything. The default retention time of 7 days is a good
+     start but could also increased.
+
+   .. code:: bash
+
+      $ cd kafka_2.12-2.2.1
+      $ for topic in fedora suse; do
+            bin/kafka-topics.sh \
+                --alter \
+                --zookeeper ZookeeperConnectString \
+                --config retention.ms=3600000 \
+                --topic ${topic};
+        done
+      $ for topic in cb-info-response cb-info-request; do
+            bin/kafka-topics.sh \
+                --alter \
+                --zookeeper ZookeeperConnectString \
+                --config retention.ms=120000 \
+                --topic ${topic};
+        done
+
+6. **Configure** `cb-ctl`
 
    Last step is the configuration of {CB} to allow access to the
    Kafka service.
