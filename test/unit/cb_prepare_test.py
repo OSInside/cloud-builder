@@ -63,9 +63,9 @@ class TestCBPrepare:
 
             pushd package
             if type -p build; then
-                build --no-init --root /
+                build --no-init --dist default --root /
             else
-                obs-build --no-init --root /
+                obs-build --no-init --dist default --root /
             fi
         ''')
 
