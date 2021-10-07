@@ -62,7 +62,11 @@ class TestCBPrepare:
             mount -t devtmpfs devtmpfs /dev
 
             pushd package
-            build --no-init --root /
+            if type -p build; then
+                build --no-init --root /
+            else
+                obs-build --no-init --root /
+            fi
         ''')
 
         with patch.dict('os.environ', {'HOME': 'ROOT_HOME'}):
