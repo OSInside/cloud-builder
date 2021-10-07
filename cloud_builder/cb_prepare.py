@@ -179,7 +179,11 @@ def main() -> None:
                 mount -t devtmpfs devtmpfs /dev
 
                 pushd {0}
-                build --no-init --root /
+                if type -p build; then
+                    build --no-init --root /
+                else
+                    obs-build --no-init --root /
+                fi
             ''')
             with open(f'{build_root}/run.sh', 'w') as script:
                 script.write(
