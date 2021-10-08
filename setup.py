@@ -4,7 +4,7 @@
 from os import path
 from setuptools import setup
   
-from cloud_builder.version import __version__
+__version__ = '0.2.20'
 
 here = path.abspath(path.dirname(__file__))
 with open(path.join(here, 'README.rst')) as readme:

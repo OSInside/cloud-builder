@@ -56,11 +56,12 @@ Group:          %{pygroup}
 Source:         %{name}.tar.gz
 Source1:        %{name}-rpmlintrc
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
-BuildRequires:  python%{python3_pkgversion}-kiwi
-BuildRequires:  python%{python3_pkgversion}-%{develsuffix}
+BuildRequires:  python%{python3_pkgversion}-%{develsuffix} >= 3.6
 BuildRequires:  python%{python3_pkgversion}-setuptools
+%if 0%{?fedora} || 0%{?suse_version}
 BuildRequires:  systemd-rpm-macros
 BuildRequires:  fdupes
+%endif
 BuildArch:      noarch
 
 %description
@@ -71,10 +72,11 @@ cluster in cloud(VM) or container clusters.
 %package -n python%{python3_pkgversion}-cloud_builder
 Summary:        CB - Cloud Builder
 Group:          Development/Languages/Python
+# Package image builds as rpms, the kiwi bundler uses rpm-build
+Recommends:     rpm-build
 Requires:       git
 Requires:       rsync
 Requires:       createrepo_c
-Requires:       rpm-build
 Requires:       python%{python3_pkgversion}-docopt
 Requires:       python%{python3_pkgversion}-kiwi >= 9.21.21
 Requires:       python%{python3_pkgversion}-requests
