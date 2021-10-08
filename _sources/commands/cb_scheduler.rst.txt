@@ -30,7 +30,10 @@ and architectures. Each distribution target/arch needs to
 be configured as a profile in the .kiwi metadata and added
 as effective build target in the package configuration file:
 
-  * Defaults.get_cloud_builder_metadata_file_name()
+.. code::
+
+   └── Defaults.get_cloud_builder_meta_dir()
+        └── Defaults.get_cloud_builder_metadata_file_name()
 
 An example package config to build the xclock package
 for the Tumbleweed distribution for x86_64 and aarch64
@@ -108,7 +111,10 @@ script which calls cb-image.
 
 The directory containing the image config file:
 
-  * Defaults.get_cloud_builder_metadata_file_name()
+.. code::
+
+   └── Defaults.get_cloud_builder_meta_dir()
+        └── Defaults.get_cloud_builder_metadata_file_name()
 
 is treated as the image description and passed as such to the
 KIWI image builder via cb-image. KIWI searches for a :file:`*.kiwi`

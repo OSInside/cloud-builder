@@ -31,7 +31,7 @@ cb-scheduler:
   package with help from **cb-prepare** and **cb-run**.
   Also supports building OS images with help from **cb-image**.
   If a package or an image should be build is configured via
-  the :file:`cloud_builder.yml` package metadata. Multiple
+  the :file:`.cb/cloud_builder.yml` package metadata. Multiple
   schedulers on as many compute instances increases
   the build performance.
 
