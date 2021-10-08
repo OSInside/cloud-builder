@@ -30,14 +30,16 @@ a predefined layout like in the following example:
     │       └── ...
     └── PROJECT_B
         ├── PACKAGE
-        │   ├── _Defaults.get_cloud_builder_metadata_file_name()_
-        │   ├── _Defaults.get_cloud_builder_kiwi_file_name()_
+        │   ├── _Defaults.get_cloud_builder_meta_dir()_
+        │   │      ├── _Defaults.get_cloud_builder_metadata_file_name()_
+        │   │      └── _Defaults.get_cloud_builder_kiwi_file_name()_
         │   ├── PACKAGE.changes
         │   ├── PACKAGE.spec
         │   └── PACKAGE.tar.xz
         │ 
         └── IMAGE
-            ├── _Defaults.get_cloud_builder_metadata_file_name()_
+            ├── _Defaults.get_cloud_builder_meta_dir()_
+            │      └── _Defaults.get_cloud_builder_metadata_file_name()_
             └── IMAGE.kiwi
 
 OPTIONS

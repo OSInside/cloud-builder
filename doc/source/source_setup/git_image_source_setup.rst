@@ -11,7 +11,7 @@ The image configuration files:
   These are all files to build a KIWI image. For details
   see: https://osinside.github.io/kiwi/overview.html
 
-The :file:`cloud_builder.yml` project file:
+The :file:`.cb/cloud_builder.yml` project file:
   This file contains information for {CB} to know how
   the image should be build. It also contains information about
   the runner group that is eligible to pick up the build request.
@@ -43,7 +43,8 @@ is aligned to the following layout:
     └── images
         └── leap
             └── test-image-disk
-                ├── cloud_builder.yml
+                ├── .cb
+                │    └── cloud_builder.yml
                 ├── appliance.kiwi
                 └── config.sh
 
@@ -54,10 +55,10 @@ is aligned to the following layout:
    {CB} expects to be respected. Below ``projects`` any custom
    structure to store projects and image sources is allowed
 
-Understanding :file:`cloud_builder.yml`
----------------------------------------
+Understanding :file:`.cb/cloud_builder.yml`
+-------------------------------------------
 
-In general :file:`cloud_builder.yml` contains information about
+In general :file:`.cb/cloud_builder.yml` contains information about
 how the image target should be build. A typical file looks like the
 following:
 

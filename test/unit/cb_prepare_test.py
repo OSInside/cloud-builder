@@ -80,7 +80,7 @@ class TestCBPrepare:
             [
                 'kiwi-ng', '--profile', 'dist.arch',
                 'image', 'info', '--description',
-                'ROOT_HOME/cloud_builder_sources/projects/package',
+                'ROOT_HOME/cloud_builder_sources/projects/package/.cb',
                 '--resolve-package-list'
             ], raise_on_error=False
         )
@@ -89,7 +89,7 @@ class TestCBPrepare:
                 'kiwi-ng', '--profile', 'dist.arch', '--logfile',
                 '/var/tmp/CB/projects/package@dist.arch.prepare.log',
                 'system', 'prepare', '--description',
-                'ROOT_HOME/cloud_builder_sources/projects/package',
+                'ROOT_HOME/cloud_builder_sources/projects/package/.cb',
                 '--allow-existing-root',
                 '--root', '/var/tmp/CB/projects/package@dist.arch'
             ]
@@ -159,7 +159,7 @@ class TestCBPrepare:
                 'kiwi-ng', '--profile', 'dist.arch', '--debug',
                 'system', 'prepare',
                 '--description',
-                '/some/abs/path/cloud_builder_sources/projects/package',
+                '/some/abs/path/cloud_builder_sources/projects/package/.cb',
                 '--allow-existing-root',
                 '--root',
                 '/some/abs/path/cloud_builder_sources/projects/'

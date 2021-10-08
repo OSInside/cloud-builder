@@ -19,13 +19,13 @@ The package configuration files:
      to build a package to be present and in understanding
      by the author.
 
-The :file:`cloud_builder.yml` project file:
+The :file:`.cb/cloud_builder.yml` project file:
   This file contains information for {CB} to know for which
   distribution and architecture the package should be build.
   It also contains information about the runner group that
   is eligible to pick up the build request.
 
-The :file:`cloud_builder.kiwi` metadata file:
+The :file:`.cb/cloud_builder.kiwi` metadata file:
   This file contains instructions how to build the buildroot
   environment within the package should be build. The buildroot
   is created using `KIWI <https://osinside.github.io/kiwi>`__
@@ -56,8 +56,9 @@ is aligned to the following layout:
     │
     └── MS
         └── python-kiwi_boxed_plugin
-            ├── cloud_builder.kiwi
-            ├── cloud_builder.yml
+            ├── .cb
+            │    ├── cloud_builder.kiwi
+            │    └── cloud_builder.yml
             ├── python-kiwi_boxed_plugin.changes
             ├── python-kiwi_boxed_plugin.spec
             ├── python-kiwi_boxed_plugin.tar.gz
@@ -70,10 +71,10 @@ is aligned to the following layout:
    {CB} expects to be respected. Below ``projects`` any custom
    structure to store projects and package sources is allowed
 
-Understanding :file:`cloud_builder.yml`
----------------------------------------
+Understanding :file:`.cb/cloud_builder.yml`
+-------------------------------------------
 
-In general :file:`cloud_builder.yml` contains information about
+In general :file:`.cb/cloud_builder.yml` contains information about
 the target distribution for which the package should be build.
 A typical file looks like the following:
 
@@ -138,13 +139,13 @@ A typical file looks like the following:
      Fedora34.x86_64
 
   These profile names plays an important role in the setup of the
-  following :file:`cloud_builder.kiwi` file.
+  following :file:`.cb/cloud_builder.kiwi` file.
 
 
-Understanding :file:`cloud_builder.kiwi`
-----------------------------------------
+Understanding :file:`.cb/cloud_builder.kiwi`
+--------------------------------------------
 
-The :file:`cloud_builder.kiwi` describes how the package buildroot
+The :file:`.cb/cloud_builder.kiwi` describes how the package buildroot
 system should be installed. When {CB} builds a package it does it
 in two steps. First step is the creation of an execution environment
 (cb-prepare service) also named **buildroot**. The second step is to
@@ -220,13 +221,13 @@ like the following:
 
 * `<profiles>`
 
-  As mentioned in the explanation about :file:`cloud_builder.yml`
+  As mentioned in the explanation about :file:`.cb/cloud_builder.yml`
   the profile section connects the `dist` and `arch` value into
   a profile name here. When {CB} calls KIWI to create the
   buildroot it passes the combined name as profile name
   to KIWI. That way it's possible to distinguish different
   buildroots according to the `dist` and `arch` settings
-  in :file:`cloud_builder.yml`.
+  in :file:`.cb/cloud_builder.yml`.
 
 * `<preferences>`
 

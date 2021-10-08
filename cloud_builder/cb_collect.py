@@ -140,8 +140,8 @@ def build_project_tree() -> Dict[str, List]:
         Defaults.get_runner_project_dir(), 'projects'
     )
     for root, dirs, files in os.walk(projects_root):
-        for name in files:
-            if name == Defaults.get_cloud_builder_metadata_file_name():
+        for dirname in dirs:
+            if dirname == Defaults.get_cloud_builder_meta_dir():
                 project_name = os.path.dirname(root)
                 package_or_image_name = os.path.basename(root)
                 if project_name in projects_tree:

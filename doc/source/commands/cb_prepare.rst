@@ -17,7 +17,10 @@ package inside of it, also known as buildroot. The KIWI
 appliance builder is used to create the buildroot
 according to a metadata definition file from:
 
-* Defaults.get_cloud_builder_kiwi_file_name()
+.. code::
+
+   └── Defaults.get_cloud_builder_meta_dir()
+         └── Defaults.get_cloud_builder_kiwi_file_name()
 
 which needs to be present as part of the package sources.
 

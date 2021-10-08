@@ -68,6 +68,15 @@ class Defaults:
         return 'cloud_builder.kiwi'
 
     @staticmethod
+    def get_cloud_builder_meta_dir() -> str:
+        """
+        Return meta data directory which contains
+        get_cloud_builder_metadata_file_name() and/or
+        get_cloud_builder_kiwi_file_name()
+        """
+        return '.cb'
+
+    @staticmethod
     def get_build_request_queue_name() -> str:
         """
         Return default name of message queue used for sending

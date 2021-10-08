@@ -18,8 +18,8 @@ requests under the following conditions:
 2. **Package source(s) and/or metadata has changed:**
 
   Similar to the first case with the difference that a
-  change on the package metadata `cloud_builder.yml` and/or
-  `cloud_builder.kiwi` will force a cleanup and rebuild of
+  change on the package metadata `.cb/cloud_builder.yml` and/or
+  `.cb/cloud_builder.kiwi` will force a cleanup and rebuild of
   an eventual existing buildroot on the selected runner
 
 To start the `cb-fetch` service either a new instance in

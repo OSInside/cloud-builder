@@ -46,6 +46,7 @@ class CBProjectMetaData:
         :param str filename:
             alternative meta data file name, default is
             Defaults.get_cloud_builder_metadata_file_name()
+            in Defaults.get_cloud_builder_meta_dir()
 
         :return: yaml dictionary data or empty dict
 
@@ -53,7 +54,8 @@ class CBProjectMetaData:
         """
         config_data: Dict[str, str] = {}
         config_file = filename or os.path.join(
-            package_path, Defaults.get_cloud_builder_metadata_file_name()
+            package_path, Defaults.get_cloud_builder_meta_dir(),
+            Defaults.get_cloud_builder_metadata_file_name()
         )
         if os.path.isfile(config_file):
             with open(config_file, 'r') as config:

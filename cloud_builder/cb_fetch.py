@@ -69,14 +69,16 @@ def main() -> None:
     │       └── ...
     └── PROJECT_B
         ├── PACKAGE
-        │   ├── _Defaults.get_cloud_builder_metadata_file_name()_
-        │   ├── _Defaults.get_cloud_builder_kiwi_file_name()_
+        │   ├── _Defaults.get_cloud_builder_meta_dir()_
+        │   │      ├── _Defaults.get_cloud_builder_metadata_file_name()_
+        │   │      └── _Defaults.get_cloud_builder_kiwi_file_name()_
         │   ├── PACKAGE.changes
         │   ├── PACKAGE.spec
         │   └── PACKAGE.tar.xz
         │ 
         └── IMAGE
-            ├── _Defaults.get_cloud_builder_metadata_file_name()_
+            ├── _Defaults.get_cloud_builder_meta_dir()_
+            │      └── _Defaults.get_cloud_builder_metadata_file_name()_
             └── IMAGE.kiwi
     """
     args = docopt(
@@ -193,7 +195,10 @@ def send_package_update_request(
 ) -> None:
     status_flags = Defaults.get_status_flags()
     request_action = status_flags.package_source_rebuild
-    buildroot_config = Defaults.get_cloud_builder_kiwi_file_name()
+    buildroot_config = os.path.join(
+        Defaults.get_cloud_builder_meta_dir(),
+        Defaults.get_cloud_builder_kiwi_file_name()
+    )
 
     if buildroot_config in changed_projects[project_source_path]:
         # buildroot setup is part of changes list. This

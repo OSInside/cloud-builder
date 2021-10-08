@@ -70,7 +70,8 @@ def main() -> None:
     appliance builder is used to create the buildroot
     according to a metadata definition file from:
 
-        Defaults.get_cloud_builder_kiwi_file_name()
+        └── Defaults.get_cloud_builder_meta_dir()
+             └── Defaults.get_cloud_builder_kiwi_file_name()
 
     which needs to be present as part of the package sources.
 
@@ -140,7 +141,12 @@ def main() -> None:
     kiwi_run_caller_options.extend(
         [
             'system', 'prepare',
-            '--description', args['--package'],
+            '--description', os.sep.join(
+                [
+                    args['--package'],
+                    Defaults.get_cloud_builder_meta_dir()
+                ]
+            ),
             '--allow-existing-root',
             '--root', build_root
         ]
@@ -252,7 +258,12 @@ def resolve_build_dependencies(
     kiwi_call.extend(
         [
             'image', 'info',
-            '--description', package_source_path,
+            '--description', os.sep.join(
+                [
+                    package_source_path,
+                    Defaults.get_cloud_builder_meta_dir()
+                ]
+            ),
             '--resolve-package-list'
         ]
     )
