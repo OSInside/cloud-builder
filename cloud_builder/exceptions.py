@@ -142,3 +142,9 @@ class CBFileUnknownError(CBError):
     """
     Exception raised if file to lookup is none
     """
+
+
+class CBParameterError(CBError):
+    """
+    Exception raised if one or more request parameters are invalid
+    """
