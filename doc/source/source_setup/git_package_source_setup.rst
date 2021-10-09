@@ -172,8 +172,7 @@ like the following:
        </profiles>
 
        <preferences>
-           <version>0.2.14</version>
-           <rpm-excludedocs>true</rpm-excludedocs>
+           <version>0.0.0</version>
            <type image="tbz"/>
        </preferences>
 
@@ -233,11 +232,9 @@ like the following:
 
   This section contains settings relevant for the package
   manager and has to define a type and version because the KIWI schema
-  wants it. The type information is not used in the scope
-  of {CB}. Therefore the most simple type setup was used.
-  For the version information the recommendation is to use
-  the package version as it's also present in the package
-  source files.
+  wants it. The type and version information are not used or relevant
+  in the scope of {CB}. Therefore the most simple type and version
+  setup was used.
 
 * `<packages type="bootstrap">`
 
