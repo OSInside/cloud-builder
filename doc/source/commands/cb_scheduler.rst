@@ -27,13 +27,15 @@ Building a package:
 
 A package can be build for different distribution targets
 and architectures. Each distribution target/arch needs to
-be configured as a profile in the .kiwi metadata and added
-as effective build target in the package configuration file:
+be configured as a profile in the build_root.kiwi metadata and
+added as effective build target in the cloud_builder.yml
+configuration file:
 
 .. code::
 
-   └── Defaults.get_cloud_builder_meta_dir()
-        └── Defaults.get_cloud_builder_metadata_file_name()
+    .cb
+      ├── build_root.kiwi
+      └── cloud_builder.yml
 
 An example package config to build the xclock package
 for the Tumbleweed distribution for x86_64 and aarch64
@@ -82,9 +84,16 @@ Build an OS image:
 ~~~~~~~~~~~~~~~~~~
 
 An image can be build for different profiles, build arguments
-and architectures. An example image config to build myimage 
-for myprofile and for the x86_64 achitecture would look like
-the following:
+and architectures. In contrast to a package build the image
+build only requires the cloud_builder.yml configuration file:
+
+.. code:: bash
+
+    .cb
+     └── cloud_builder.yml
+
+An example image config to build myimage for myprofile and
+for the x86_64 achitecture would look like the following:
 
 .. code:: yaml
 
@@ -109,18 +118,12 @@ prior building the image. The image output files will get pacakged
 into an rpm package. To do this properly the scheduler creates a
 script which calls cb-image.
 
-The directory containing the image config file:
-
-.. code::
-
-   └── Defaults.get_cloud_builder_meta_dir()
-        └── Defaults.get_cloud_builder_metadata_file_name()
-
-is treated as the image description and passed as such to the
-KIWI image builder via cb-image. KIWI searches for a :file:`*.kiwi`
-file to accept the directory as an image description. If the cloud
-builder image config file names a profile, that profile must be
-defined in the KIWI :file:`*.kiwi` file
+The project directory is treated as the image description directory
+and passed as such to the KIWI image builder via cb-image.
+KIWI searches for a :file:`*.kiwi` or :file:`config.xml` file to
+accept the directory as an image description. If the cloud builder
+configuration file :file:`cloud_builder.yml` names a profile,
+that profile must be defined in the KIWI config file.
 
 OPTIONS
 -------

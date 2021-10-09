@@ -70,8 +70,9 @@ def main() -> None:
     appliance builder is used to create the buildroot
     according to a metadata definition file from:
 
-        └── Defaults.get_cloud_builder_meta_dir()
-             └── Defaults.get_cloud_builder_kiwi_file_name()
+    .cb
+     ├── ...
+     └── build_root.kiwi
 
     which needs to be present as part of the package sources.
 

@@ -52,27 +52,28 @@ class Defaults:
     Implements Cloud Builder project default values
     """
     @staticmethod
-    def get_cloud_builder_metadata_file_name() -> str:
+    def get_cloud_builder_meta_project_setup_file_name() -> str:
         """
-        Return name of package configuration file to be used
-        with Cloud Builder
+        Return the basename of the  project setup configuration
+        file used to provide information about the target package
+        or image
         """
         return 'cloud_builder.yml'
 
     @staticmethod
-    def get_cloud_builder_kiwi_file_name() -> str:
+    def get_cloud_builder_meta_build_root_file_name() -> str:
         """
-        Return name of package buildroot kiwi config file to
-        be used with Cloud Builder
+        Return the basename of the buildroot kiwi config file
+        used to setup the build environment when building
+        packages
         """
-        return 'cloud_builder.kiwi'
+        return 'build_root.kiwi'
 
     @staticmethod
     def get_cloud_builder_meta_dir() -> str:
         """
-        Return meta data directory which contains
-        get_cloud_builder_metadata_file_name() and/or
-        get_cloud_builder_kiwi_file_name()
+        Return meta data directory which contains the
+        cloud builder setup files to build packages and images
         """
         return '.cb'
 
