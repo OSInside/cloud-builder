@@ -161,7 +161,8 @@ from cloud_builder.exceptions import (
     CBConfigFileNotFoundError,
     CBConfigFileValidationError,
     CBProjectMetadataError,
-    CBExecutionError
+    CBExecutionError,
+    CBParameterError
 )
 
 from kiwi.command import Command
@@ -506,6 +507,10 @@ def watch_filter_service_name(service_name: str) -> Callable:
             'cb-scheduler': 'CBScheduler',
             'cb-image': 'CBImage'
         }
+        if service_name not in service_id:
+            raise CBParameterError(
+                f'Service name {service_name!r} not found'
+            )
         if response['identity'].startswith(service_id[service_name]):
             CBDisplay.print_json(response)
     return func
