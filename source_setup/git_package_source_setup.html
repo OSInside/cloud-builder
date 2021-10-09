@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Git Package Source Setup &mdash; Cloud Builder 0.2.21 documentation</title>
+  <title>Git Package Source Setup &mdash; Cloud Builder 0.2.22 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
@@ -44,7 +44,7 @@
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Git Package Source Setup</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#understanding-the-project-structure">Understanding the project structure</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#understanding-cb-cloud-builder-yml">Understanding <code class="file docutils literal notranslate"><span class="pre">.cb/cloud_builder.yml</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#understanding-cb-cloud-builder-kiwi">Understanding <code class="file docutils literal notranslate"><span class="pre">.cb/cloud_builder.kiwi</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#understanding-cb-build-root-kiwi">Understanding <code class="file docutils literal notranslate"><span class="pre">.cb/build_root.kiwi</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="git_image_source_setup.html">Git Image Source Setup</a><ul>
@@ -174,7 +174,7 @@ distribution and architecture the package should be build.
 It also contains information about the runner group that
 is eligible to pick up the build request.</p>
 </dd>
-<dt>The <code class="file docutils literal notranslate"><span class="pre">.cb/cloud_builder.kiwi</span></code> metadata file:</dt><dd><p>This file contains instructions how to build the buildroot
+<dt>The <code class="file docutils literal notranslate"><span class="pre">.cb/build_root.kiwi</span></code> metadata file:</dt><dd><p>This file contains instructions how to build the buildroot
 environment within the package should be build. The buildroot
 is created using <a class="reference external" href="https://osinside.github.io/kiwi">KIWI</a></p>
 </dd>
@@ -200,7 +200,7 @@ is aligned to the following layout:</p>
 └── MS
     └── python-kiwi_boxed_plugin
         ├── .cb
-        │    ├── cloud_builder.kiwi
+        │    ├── build_root.kiwi
         │    └── cloud_builder.yml
         ├── python-kiwi_boxed_plugin.changes
         ├── python-kiwi_boxed_plugin.spec
@@ -275,13 +275,13 @@ Fedora34.x86_64
 </pre></div>
 </div>
 <p>These profile names plays an important role in the setup of the
-following <code class="file docutils literal notranslate"><span class="pre">.cb/cloud_builder.kiwi</span></code> file.</p>
+following <code class="file docutils literal notranslate"><span class="pre">.cb/build_root.kiwi</span></code> file.</p>
 </dd>
 </dl>
 </section>
-<section id="understanding-cb-cloud-builder-kiwi">
-<h2>Understanding <code class="file docutils literal notranslate"><span class="pre">.cb/cloud_builder.kiwi</span></code><a class="headerlink" href="#understanding-cb-cloud-builder-kiwi" title="Permalink to this headline">¶</a></h2>
-<p>The <code class="file docutils literal notranslate"><span class="pre">.cb/cloud_builder.kiwi</span></code> describes how the package buildroot
+<section id="understanding-cb-build-root-kiwi">
+<h2>Understanding <code class="file docutils literal notranslate"><span class="pre">.cb/build_root.kiwi</span></code><a class="headerlink" href="#understanding-cb-build-root-kiwi" title="Permalink to this headline">¶</a></h2>
+<p>The <code class="file docutils literal notranslate"><span class="pre">.cb/build_root.kiwi</span></code> describes how the package buildroot
 system should be installed. When Cloud Builder builds a package it does it
 in two steps. First step is the creation of an execution environment
 (cb-prepare service) also named <strong>buildroot</strong>. The second step is to
@@ -304,8 +304,7 @@ like the following:</p>
     <span class="nt">&lt;/profiles&gt;</span>
 
     <span class="nt">&lt;preferences&gt;</span>
-        <span class="nt">&lt;version&gt;</span>0.2.14<span class="nt">&lt;/version&gt;</span>
-        <span class="nt">&lt;rpm-excludedocs&gt;</span>true<span class="nt">&lt;/rpm-excludedocs&gt;</span>
+        <span class="nt">&lt;version&gt;</span>0.0.0<span class="nt">&lt;/version&gt;</span>
         <span class="nt">&lt;type</span> <span class="na">image=</span><span class="s">&quot;tbz&quot;</span><span class="nt">/&gt;</span>
     <span class="nt">&lt;/preferences&gt;</span>
 
@@ -364,11 +363,9 @@ in <code class="file docutils literal notranslate"><span class="pre">.cb/cloud_b
 <li><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">&lt;preferences&gt;</span></code></p>
 <p>This section contains settings relevant for the package
 manager and has to define a type and version because the KIWI schema
-wants it. The type information is not used in the scope
-of Cloud Builder. Therefore the most simple type setup was used.
-For the version information the recommendation is to use
-the package version as it’s also present in the package
-source files.</p>
+wants it. The type and version information are not used or relevant
+in the scope of Cloud Builder. Therefore the most simple type and version
+setup was used.</p>
 </li>
 <li><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">&lt;packages</span> <span class="pre">type=&quot;bootstrap&quot;&gt;</span></code></p>
 <p>This section not connected to a specific profile applies always.

@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Auto Rebuild on Package Build Dependency Changes &mdash; Cloud Builder 0.2.21 documentation</title>
+  <title>Auto Rebuild on Package Build Dependency Changes &mdash; Cloud Builder 0.2.22 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/custom.css" type="text/css" />
@@ -44,7 +44,7 @@
 <li class="toctree-l2"><a class="reference internal" href="source_setup/git_package_source_setup.html">Git Package Source Setup</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="source_setup/git_package_source_setup.html#understanding-the-project-structure">Understanding the project structure</a></li>
 <li class="toctree-l3"><a class="reference internal" href="source_setup/git_package_source_setup.html#understanding-cb-cloud-builder-yml">Understanding <code class="file docutils literal notranslate"><span class="pre">.cb/cloud_builder.yml</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="source_setup/git_package_source_setup.html#understanding-cb-cloud-builder-kiwi">Understanding <code class="file docutils literal notranslate"><span class="pre">.cb/cloud_builder.kiwi</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="source_setup/git_package_source_setup.html#understanding-cb-build-root-kiwi">Understanding <code class="file docutils literal notranslate"><span class="pre">.cb/build_root.kiwi</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="source_setup/git_image_source_setup.html">Git Image Source Setup</a><ul>
@@ -162,8 +162,8 @@
 <ol class="arabic simple">
 <li><p>Use libsatsolver via the libsolv python binding as
 implemented in the KIWI API and command
-<code class="xref py py-obj docutils literal notranslate"><span class="pre">kiwi</span> <span class="pre">image</span> <span class="pre">info</span> <span class="pre">--description</span> <span class="pre">cloud_builder.kiwi</span> <span class="pre">--resolve-package-list</span></code>
-Solving over the <code class="xref py py-obj docutils literal notranslate"><span class="pre">cloud_builder.kiwi</span></code> file provides the dependency
+<code class="xref py py-obj docutils literal notranslate"><span class="pre">kiwi</span> <span class="pre">image</span> <span class="pre">info</span> <span class="pre">--description</span> <span class="pre">build_root.kiwi</span> <span class="pre">--resolve-package-list</span></code>
+Solving over the <code class="xref py py-obj docutils literal notranslate"><span class="pre">build_root.kiwi</span></code> file provides the dependency
 tree for all package build required packages (BuildRequires).</p></li>
 <li><p>Create a shasum over the dependency result from step 1</p></li>
 <li><p>Compare the shasum from the solver result with a former solver

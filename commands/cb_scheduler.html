@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>cb-scheduler &mdash; Cloud Builder 0.2.21 documentation</title>
+  <title>cb-scheduler &mdash; Cloud Builder 0.2.22 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
@@ -44,7 +44,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../source_setup/git_package_source_setup.html">Git Package Source Setup</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../source_setup/git_package_source_setup.html#understanding-the-project-structure">Understanding the project structure</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../source_setup/git_package_source_setup.html#understanding-cb-cloud-builder-yml">Understanding <code class="file docutils literal notranslate"><span class="pre">.cb/cloud_builder.yml</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../source_setup/git_package_source_setup.html#understanding-cb-cloud-builder-kiwi">Understanding <code class="file docutils literal notranslate"><span class="pre">.cb/cloud_builder.kiwi</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../source_setup/git_package_source_setup.html#understanding-cb-build-root-kiwi">Understanding <code class="file docutils literal notranslate"><span class="pre">.cb/build_root.kiwi</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../source_setup/git_image_source_setup.html">Git Image Source Setup</a><ul>
@@ -175,10 +175,12 @@ acknowledged and removed from the broker queue.</p>
 <h3>Building a package:<a class="headerlink" href="#building-a-package" title="Permalink to this headline">¶</a></h3>
 <p>A package can be build for different distribution targets
 and architectures. Each distribution target/arch needs to
-be configured as a profile in the .kiwi metadata and added
-as effective build target in the package configuration file:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>└── Defaults.get_cloud_builder_meta_dir()
-     └── Defaults.get_cloud_builder_metadata_file_name()
+be configured as a profile in the build_root.kiwi metadata and
+added as effective build target in the cloud_builder.yml
+configuration file:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>.cb
+  ├── build_root.kiwi
+  └── cloud_builder.yml
 </pre></div>
 </div>
 <p>An example package config to build the xclock package
@@ -224,9 +226,14 @@ profiles is possible.</p>
 <section id="build-an-os-image">
 <h3>Build an OS image:<a class="headerlink" href="#build-an-os-image" title="Permalink to this headline">¶</a></h3>
 <p>An image can be build for different profiles, build arguments
-and architectures. An example image config to build myimage
-for myprofile and for the x86_64 achitecture would look like
-the following:</p>
+and architectures. In contrast to a package build the image
+build only requires the cloud_builder.yml configuration file:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>.cb
+ └── cloud_builder.yml
+</pre></div>
+</div>
+<p>An example image config to build myimage for myprofile and
+for the x86_64 achitecture would look like the following:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">schema_version</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0.1</span>
 <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">myimage</span>
 
@@ -248,16 +255,12 @@ suse group. The package cache on this runner will be cleared
 prior building the image. The image output files will get pacakged
 into an rpm package. To do this properly the scheduler creates a
 script which calls cb-image.</p>
-<p>The directory containing the image config file:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>└── Defaults.get_cloud_builder_meta_dir()
-     └── Defaults.get_cloud_builder_metadata_file_name()
-</pre></div>
-</div>
-<p>is treated as the image description and passed as such to the
-KIWI image builder via cb-image. KIWI searches for a <code class="file docutils literal notranslate"><span class="pre">*.kiwi</span></code>
-file to accept the directory as an image description. If the cloud
-builder image config file names a profile, that profile must be
-defined in the KIWI <code class="file docutils literal notranslate"><span class="pre">*.kiwi</span></code> file</p>
+<p>The project directory is treated as the image description directory
+and passed as such to the KIWI image builder via cb-image.
+KIWI searches for a <code class="file docutils literal notranslate"><span class="pre">*.kiwi</span></code> or <code class="file docutils literal notranslate"><span class="pre">config.xml</span></code> file to
+accept the directory as an image description. If the cloud builder
+configuration file <code class="file docutils literal notranslate"><span class="pre">cloud_builder.yml</span></code> names a profile,
+that profile must be defined in the KIWI config file.</p>
 </section>
 </section>
 <section id="options">

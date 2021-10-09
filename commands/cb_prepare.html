@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>cb-prepare &mdash; Cloud Builder 0.2.21 documentation</title>
+  <title>cb-prepare &mdash; Cloud Builder 0.2.22 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
@@ -44,7 +44,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../source_setup/git_package_source_setup.html">Git Package Source Setup</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../source_setup/git_package_source_setup.html#understanding-the-project-structure">Understanding the project structure</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../source_setup/git_package_source_setup.html#understanding-cb-cloud-builder-yml">Understanding <code class="file docutils literal notranslate"><span class="pre">.cb/cloud_builder.yml</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../source_setup/git_package_source_setup.html#understanding-cb-cloud-builder-kiwi">Understanding <code class="file docutils literal notranslate"><span class="pre">.cb/cloud_builder.kiwi</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../source_setup/git_package_source_setup.html#understanding-cb-build-root-kiwi">Understanding <code class="file docutils literal notranslate"><span class="pre">.cb/build_root.kiwi</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../source_setup/git_image_source_setup.html">Git Image Source Setup</a><ul>
@@ -166,8 +166,9 @@ cb-prepare --root<span class="o">=</span>&lt;root_path&gt; --package<span class=
 package inside of it, also known as buildroot. The KIWI
 appliance builder is used to create the buildroot
 according to a metadata definition file from:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>└── Defaults.get_cloud_builder_meta_dir()
-      └── Defaults.get_cloud_builder_kiwi_file_name()
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>.cb
+  ├── ...
+  └── build_root.kiwi
 </pre></div>
 </div>
 <p>which needs to be present as part of the package sources.</p>

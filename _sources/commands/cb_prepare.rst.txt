@@ -19,8 +19,9 @@ according to a metadata definition file from:
 
 .. code::
 
-   └── Defaults.get_cloud_builder_meta_dir()
-         └── Defaults.get_cloud_builder_kiwi_file_name()
+    .cb
+      ├── ...
+      └── build_root.kiwi
 
 which needs to be present as part of the package sources.
 
