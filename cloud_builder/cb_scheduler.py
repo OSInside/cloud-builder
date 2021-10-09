@@ -82,13 +82,15 @@ def main() -> None:
 
     A package can be build for different distribution targets
     and architectures. Each distribution target/arch needs to
-    be configured as a profile in the .kiwi metadata and added
-    as effective build target in the package configuration file:
+    be configured as a profile in the build_root.kiwi metadata and
+    added as effective build target in the cloud_builder.yml
+    configuration file:
 
-        └── Defaults.get_cloud_builder_meta_dir()
-             └── Defaults.get_cloud_builder_metadata_file_name()
+    .cb
+     ├── build_root.kiwi
+     └── cloud_builder.yml
 
-    An example package config to build the xclock package
+    An example cloud_builder.yml config to build the xclock package
     for the Tumbleweed distribution for x86_64 and aarch64
     would look like the following:
 
@@ -127,16 +129,21 @@ def main() -> None:
     * TW.x86_64
     * TW.aarch64
 
-    The .kiwi metadata file has to provide instructions
+    The build_root.kiwi metadata file has to provide instructions
     such that the creation of a correct buildroot for these
     profiles is possible.
 
     --
 
     An image can be build for different profiles, build arguments
-    and architectures. An example image config to build myimage
-    for myprofile and for the x86_64 achitecture would look like
-    the following:
+    and architectures. In contrast to a package build the image
+    build only requires the cloud_builder.yml configuration file:
+
+    .cb
+     └── cloud_builder.yml
+
+    An example image config to build myimage for myprofile and
+    for the x86_64 achitecture would look like the following:
 
     .. code:: yaml
 
@@ -157,20 +164,16 @@ def main() -> None:
     The above instructs the scheduler to build one image for the
     myprofile profile and the x86_64 achitecture on a runner in the
     suse group. The package cache on this runner will be cleared
-    prior building the image. The image output files will get pacakged
+    prior building the image. The image output files will be packaged
     into an rpm package. To do this properly the scheduler creates a
     script which calls cb-image.
 
-    The directory containing the image config file:
-
-        └── Defaults.get_cloud_builder_meta_dir()
-             └── Defaults.get_cloud_builder_metadata_file_name()
-
-    is treated as the image description and passed as such to the
-    KIWI image builder via cb-image. KIWI searches for a *.kiwi file
-    to accept the directory as an image description. If the cloud
-    builder image config file names a profile, that profile must be
-    defined in the KIWI *.kiwi file
+    The project directory is treated as the image description directory
+    and passed as such to the KIWI image builder via cb-image.
+    KIWI searches for a *.kiwi or config.xml file to accept the
+    directory as an image description. If the cloud builder configuration
+    file cloud_builder.yml names a profile, that profile must be
+    defined in the KIWI config file.
     """
     args = docopt(
         __doc__,
@@ -454,7 +457,7 @@ def is_request_valid(
     # 2. Check on project metadata to exist
     project_metadata = os.path.join(
         project_source_path, Defaults.get_cloud_builder_meta_dir(),
-        Defaults.get_cloud_builder_metadata_file_name()
+        Defaults.get_cloud_builder_meta_project_setup_file_name()
     )
     if not os.path.isfile(project_metadata):
         response.set_project_metadata_not_existing_response(

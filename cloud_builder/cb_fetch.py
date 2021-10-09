@@ -69,16 +69,16 @@ def main() -> None:
     │       └── ...
     └── PROJECT_B
         ├── PACKAGE
-        │   ├── _Defaults.get_cloud_builder_meta_dir()_
-        │   │      ├── _Defaults.get_cloud_builder_metadata_file_name()_
-        │   │      └── _Defaults.get_cloud_builder_kiwi_file_name()_
+        │   ├── .cb
+        │   │    ├── cloud_builder.yml
+        │   │    └── build_root.kiwi
         │   ├── PACKAGE.changes
         │   ├── PACKAGE.spec
         │   └── PACKAGE.tar.xz
         │ 
         └── IMAGE
-            ├── _Defaults.get_cloud_builder_meta_dir()_
-            │      └── _Defaults.get_cloud_builder_metadata_file_name()_
+            ├── .cb
+            │    └── cloud_builder.yml
             └── IMAGE.kiwi
     """
     args = docopt(
@@ -197,7 +197,7 @@ def send_package_update_request(
     request_action = status_flags.package_source_rebuild
     buildroot_config = os.path.join(
         Defaults.get_cloud_builder_meta_dir(),
-        Defaults.get_cloud_builder_kiwi_file_name()
+        Defaults.get_cloud_builder_meta_build_root_file_name()
     )
 
     if buildroot_config in changed_projects[project_source_path]:
