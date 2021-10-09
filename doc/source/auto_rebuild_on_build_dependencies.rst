@@ -11,8 +11,8 @@ Auto Rebuild on Package Build Dependency Changes
 
    1. Use libsatsolver via the libsolv python binding as
       implemented in the KIWI API and command
-      `kiwi image info --description cloud_builder.kiwi --resolve-package-list`
-      Solving over the `cloud_builder.kiwi` file provides the dependency
+      `kiwi image info --description build_root.kiwi --resolve-package-list`
+      Solving over the `build_root.kiwi` file provides the dependency
       tree for all package build required packages (BuildRequires).
 
    2. Create a shasum over the dependency result from step 1
