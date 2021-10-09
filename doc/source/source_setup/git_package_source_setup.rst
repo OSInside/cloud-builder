@@ -25,7 +25,7 @@ The :file:`.cb/cloud_builder.yml` project file:
   It also contains information about the runner group that
   is eligible to pick up the build request.
 
-The :file:`.cb/cloud_builder.kiwi` metadata file:
+The :file:`.cb/build_root.kiwi` metadata file:
   This file contains instructions how to build the buildroot
   environment within the package should be build. The buildroot
   is created using `KIWI <https://osinside.github.io/kiwi>`__
@@ -57,7 +57,7 @@ is aligned to the following layout:
     └── MS
         └── python-kiwi_boxed_plugin
             ├── .cb
-            │    ├── cloud_builder.kiwi
+            │    ├── build_root.kiwi
             │    └── cloud_builder.yml
             ├── python-kiwi_boxed_plugin.changes
             ├── python-kiwi_boxed_plugin.spec
@@ -139,13 +139,13 @@ A typical file looks like the following:
      Fedora34.x86_64
 
   These profile names plays an important role in the setup of the
-  following :file:`.cb/cloud_builder.kiwi` file.
+  following :file:`.cb/build_root.kiwi` file.
 
 
-Understanding :file:`.cb/cloud_builder.kiwi`
+Understanding :file:`.cb/build_root.kiwi`
 --------------------------------------------
 
-The :file:`.cb/cloud_builder.kiwi` describes how the package buildroot
+The :file:`.cb/build_root.kiwi` describes how the package buildroot
 system should be installed. When {CB} builds a package it does it
 in two steps. First step is the creation of an execution environment
 (cb-prepare service) also named **buildroot**. The second step is to
