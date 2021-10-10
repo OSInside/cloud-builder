@@ -8,6 +8,7 @@ EnvironmentFile=-/etc/cloud_builder
 Type=simple
 Restart=on-failure
 ExecStart=/bin/bash -c 'sudo cb-collect --project ${CB_PROJECT} --timeout ${CB_COLLECT_TIMEOUT} --ssh-pkey ${CB_SSH_PKEY} --ssh-user ${CB_SSH_USER}'
+ExecStartPre=/bin/bash -c 'rm -f /var/lock/_projects_*'
 
 [Install]
 WantedBy=multi-user.target
