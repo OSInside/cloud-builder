@@ -37,11 +37,8 @@ options:
         broker before return. Default: 30sec
 """
 import os
-import shutil
-import glob
 import time
 import threading
-from tempfile import TemporaryDirectory
 from datetime import datetime
 from docopt import docopt
 from cloud_builder.version import __version__
@@ -56,7 +53,14 @@ from kiwi.command import Command
 from kiwi.privileges import Privileges
 from kiwi.path import Path
 from typing import (
-    Dict, List, Any, Optional
+    Dict, List, Any, Optional, NamedTuple
+)
+
+repo_metadata = NamedTuple(
+    'repo_metadata', [
+        ('repo_type', str),
+        ('repo_file', str)
+    ]
 )
 
 
@@ -151,7 +155,9 @@ def build_project_tree() -> Dict[str, List]:
     return projects_tree
 
 
-def send_project_info_requests(broker: Any, log: CBCloudLogger) -> List[str]:
+def send_project_info_requests(
+    broker: Any, projects_tree: Dict[str, List], log: CBCloudLogger
+) -> List[str]:
     """
     Walk through the packages/images and send info requests
 
@@ -161,9 +167,6 @@ def send_project_info_requests(broker: Any, log: CBCloudLogger) -> List[str]:
 
     :rtype: List
     """
-    update_project()
-    projects_tree = build_project_tree()
-
     requuest_ids: List[str] = []
     for project in sorted(projects_tree.keys()):
         for package_or_image in projects_tree[project]:
@@ -216,7 +219,7 @@ def group_info_response(
         .. code:: python
 
             {
-                project_path: {
+                project_id: {
                     source_ip: {
                         [
                             binary_packages
@@ -244,7 +247,7 @@ def group_info_response(
                 if response:
                     broker.acknowledge()
                     if response['request_id'] in request_id_list:
-                        project_id = None
+                        project_id = ''
                         if 'package' in response:
                             project_id = '{0}_{1}_{2}'.format(
                                 response['project'],
@@ -268,7 +271,7 @@ def group_info_response(
         return {}
 
     # Walk through project_id grouped responses and take out the
-    # latest available build. Group all data by project_path/source_ip
+    # latest available build. Group all data by project_id/source_ip
     runner_responses: Dict[str, Dict[str, List]] = {}
     for project in info_records.keys():
         response_list = info_records[project]
@@ -292,7 +295,7 @@ def group_info_response(
         if 'package' in final_response:
             target = final_response['package']['dist']
         elif 'image' in final_response:
-            target = 'image'
+            target = final_response['image']['selection']
         else:
             # not a package and not an image, ignore
             log.error(
@@ -301,17 +304,17 @@ def group_info_response(
                 )
             )
             continue
-        project_path = os.path.join(
+        project_id = os.path.join(
             os.path.dirname(final_response['project']), target
         )
-        if project_path not in runner_responses:
-            runner_responses[project_path] = {}
+        if project_id not in runner_responses:
+            runner_responses[project_id] = {}
 
         source_ip = final_response['source_ip']
-        if source_ip not in runner_responses[project_path]:
-            runner_responses[project_path][source_ip] = []
+        if source_ip not in runner_responses[project_id]:
+            runner_responses[project_id][source_ip] = []
 
-        runner_responses[project_path][source_ip].extend(
+        runner_responses[project_id][source_ip].extend(
             final_response['binary_packages']
         )
     return runner_responses
@@ -328,7 +331,15 @@ def build_repos(
     :param int timeout: Read timeout on info response queue
     """
     while(True):
-        request_id_list = send_project_info_requests(broker, log)
+        update_project()
+        projects_tree = build_project_tree()
+
+        cleanup_project_repos(projects_tree, log)
+        cleanup_project_repo_packages(projects_tree, log)
+
+        request_id_list = send_project_info_requests(
+            broker, projects_tree, log
+        )
         runner_responses = group_info_response(
             broker, request_id_list, timeout, log
         )
@@ -336,81 +347,125 @@ def build_repos(
             log.info(f'No runners responded... sleeping {timeout} sec')
             time.sleep(timeout)
             continue
-        for project_path in runner_responses.keys():
+        for project_id in runner_responses.keys():
             project_repo_thread = threading.Thread(
                 target=build_project_repo,
                 args=(
-                    project_path, runner_responses[project_path],
+                    project_id, runner_responses[project_id],
                     ssh_pkey_file, user, log
                 )
             )
             project_repo_thread.start()
 
 
+def cleanup_project_repos(
+    projects_tree: Dict[str, List], log: CBCloudLogger
+):
+    """
+    Delete projects from repos if they were deleted from the git source
+
+    :param Dict projects_tree: Dictionary containing current source projects
+    :param CBCloudLogger log: logger
+    """
+    for root, dirs, files in os.walk(Defaults.get_repo_root()):
+        for dirname in dirs:
+            if os.path.isdir(f'{root}/.project'):
+                source_project = root.replace(
+                    Defaults.get_repo_root(), Defaults.get_runner_project_dir()
+                )
+                if source_project not in projects_tree:
+                    log.info(f'Deleting repos for project {root}')
+                    Path.wipe(root)
+
+
+def cleanup_project_repo_packages(
+    projects_tree: Dict[str, List], log: CBCloudLogger
+):
+    """
+    Delete packages from project repos if they were deleted
+    from the git source
+
+    :param Dict projects_tree: Dictionary containing current source projects
+    :param CBCloudLogger log: logger
+    """
+    # TODO
+
+
 def build_project_repo(
-    project_path: str, runner_responses_for_project: Dict,
+    project_id: str, runner_responses_for_project: Dict,
     ssh_pkey_file: str, user: str, log: CBCloudLogger
 ) -> None:
-    if not _set_lock(project_path):
-        log.info(f'Repo sync for {project_path} is locked')
+    if not _set_lock(project_id):
+        log.info(f'Repo sync for {project_id} is locked')
         return
-    temp_repos = TemporaryDirectory(dir='/var/tmp', prefix='cb_repo_')
-    repo_path = os.path.normpath(
-        os.sep.join([temp_repos.name, project_path])
-    )
     target_path = os.path.normpath(
-        os.sep.join([Defaults.get_repo_root(), project_path])
+        os.sep.join([Defaults.get_repo_root(), project_id])
     )
-    repo_type = None
-    Path.create(repo_path)
+    project_indicator = os.sep.join(
+        [os.path.dirname(target_path), '.project']
+    )
+    log.info(f'Creating project indicator: {project_indicator!r}')
+    Path.create(project_indicator)
+    Path.create(target_path)
     for source_ip in runner_responses_for_project.keys():
-        remote_source_files = []
         for source_file in runner_responses_for_project[source_ip]:
-            if not repo_type:
-                repo_type = _get_repo_type(source_file)
-            remote_source_files.append(f'{user}@{source_ip}:{source_file}')
-        sync_call = Command.run(
-            [
-                'rsync', '-a', '-e', 'ssh -i {0} -o {1}'.format(
-                    ssh_pkey_file, 'StrictHostKeyChecking=accept-new'
-                )
-            ] + remote_source_files + [
-                repo_path
-            ], raise_on_error=False
-        )
-        if sync_call.output:
-            log.info(sync_call.output)
-        if sync_call.error:
-            log.error(sync_call.error)
-    if not sync_call.error:
-        # TODO: this syncing with --delete is dangerous if the runners
-        # don't report about their packages. Consider the case a runner
-        # goes down. In this case it will not report about its packages
-        # and this can lead to the removal of the package in the repos.
-        # I think this behavior is unwanted. If no --delete option is
-        # used the repos will also contain old builds and deletion of
-        # packages will not have any effect on the repos. This needs
-        # further thinking
-        log.info(f'Syncing repo for project: {repo_path}')
-        Path.create(target_path)
-        sync_call = Command.run(
-            [
-                'rsync', '-a', '--delete', repo_path + os.sep,
-                target_path
-            ],
-            raise_on_error=False
-        )
-        if sync_call.output:
-            log.info(sync_call.output)
-        if sync_call.error:
-            log.error(sync_call.error)
-        if repo_type == 'rpm':
-            _create_rpm_repo(target_path)
-        else:
-            log.error(
-                f'Ups, no idea how to create repo for data in: {target_path}'
+            remote_source_file = f'{user}@{source_ip}:{source_file}'
+            repo_meta = _get_repo_path_for_binary(
+                source_file, target_path, log
             )
-    _set_free(project_path)
+            if repo_meta:
+                sync_call = Command.run(
+                    [
+                        'rsync', '-av', '-e', 'ssh -i {0} -o {1}'.format(
+                            ssh_pkey_file, 'StrictHostKeyChecking=accept-new'
+                        ), remote_source_file, repo_meta.repo_file
+                    ], raise_on_error=False
+                )
+                if sync_call.output:
+                    log.info(sync_call.output)
+                if sync_call.error:
+                    log.error(sync_call.error)
+
+    if repo_meta.repo_type == 'rpm':
+        _create_rpm_repo(target_path, log)
+    else:
+        log.error(
+            f'Ups, no idea how to create repo for data in: {target_path}'
+        )
+    _set_free(project_id)
+
+
+def _get_repo_path_for_binary(
+    binary_file_name: str, target_path: str, log: CBCloudLogger
+) -> repo_metadata:
+    repo_path = None
+    repo_type = 'unknown'
+    if binary_file_name.endswith('.src.rpm'):
+        repo_path = f'{target_path}/src'
+        repo_type = 'rpm'
+    elif binary_file_name.endswith('.noarch.rpm'):
+        repo_path = f'{target_path}/noarch'
+        repo_type = 'rpm'
+    elif binary_file_name.endswith('.rpm'):
+        arch = binary_file_name.split('.')[-2]
+        repo_path = f'{target_path}/{arch}'
+        repo_type = 'rpm'
+    else:
+        log.info(
+            f'No idea how to handle {binary_file_name!r}... skipping'
+        )
+        return repo_metadata(
+            repo_type=repo_type,
+            repo_file=''
+        )
+    if not os.path.isdir(repo_path):
+        Path.create(repo_path)
+    return repo_metadata(
+        repo_type=repo_type,
+        repo_file=os.sep.join(
+            [repo_path, os.path.basename(binary_file_name)]
+        )
+    )
 
 
 def _get_repo_type(source_file: str) -> Optional[str]:
@@ -423,35 +478,25 @@ def _get_repo_type(source_file: str) -> Optional[str]:
     return None
 
 
-def _create_rpm_repo(target_path: str) -> None:
-    for file_name in glob.iglob(f'{target_path}/*.rpm'):
-        if file_name.endswith('.src.rpm'):
-            rpm_target_dir = f'{target_path}/src'
-        elif file_name.endswith('.noarch.rpm'):
-            rpm_target_dir = f'{target_path}/noarch'
-        elif file_name.endswith('.rpm'):
-            arch = file_name.split('.')[-2]
-            rpm_target_dir = f'{target_path}/{arch}'
-        else:
-            rpm_target_dir = ''
-        if rpm_target_dir:
-            if not os.path.isdir(rpm_target_dir):
-                os.mkdir(rpm_target_dir)
-            shutil.move(file_name, rpm_target_dir)
-    Command.run(
-        ['createrepo_c', target_path]
+def _create_rpm_repo(target_path: str, log: CBCloudLogger) -> None:
+    create_repo_call = Command.run(
+        ['createrepo_c', target_path], raise_on_error=False
     )
+    if create_repo_call.output:
+        log.info(create_repo_call.output)
+    if create_repo_call.error:
+        log.error(create_repo_call.error)
     # TODO: package and repo signing
     # - signing of repomd.xml or alike if not rpm repo
     # - signing of package files via rpmsign
 
 
-def _set_lock(project_path: str) -> bool:
+def _set_lock(project_id: str) -> bool:
     """
     Create lock file for the given project path
     Returns False if lock is already present
 
-    :param str project_path: unique path name to describe project
+    :param str project_id: unique path name to describe project
 
     :return:
         Bool value indicating if lock is set or not.
@@ -460,7 +505,7 @@ def _set_lock(project_path: str) -> bool:
     :rtype: bool
     """
     lock_file = '/var/lock/{0}.lock'.format(
-        project_path.replace(os.sep, '_')
+        project_id.replace(os.sep, '_')
     )
     if os.path.isfile(lock_file):
         return False
@@ -470,9 +515,9 @@ def _set_lock(project_path: str) -> bool:
     return True
 
 
-def _set_free(project_path: str) -> None:
+def _set_free(project_id: str) -> None:
     lock_file = '/var/lock/{0}.lock'.format(
-        project_path.replace(os.sep, '_')
+        project_id.replace(os.sep, '_')
     )
     os.unlink(lock_file)
 
