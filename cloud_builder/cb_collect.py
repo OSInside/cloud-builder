@@ -38,6 +38,7 @@ options:
 """
 import os
 import time
+import yaml
 import threading
 from datetime import datetime
 from docopt import docopt
@@ -314,9 +315,11 @@ def group_info_response(
         if source_ip not in runner_responses[project_id]:
             runner_responses[project_id][source_ip] = []
 
-        runner_responses[project_id][source_ip].extend(
-            final_response['binary_packages']
-        )
+        project_package_name = os.path.basename(final_response['project'])
+        for entry in final_response['binary_packages']:
+            runner_responses[project_id][source_ip].append(
+                f'{entry}|{project_package_name}'
+            )
     return runner_responses
 
 
@@ -333,10 +336,6 @@ def build_repos(
     while(True):
         update_project()
         projects_tree = build_project_tree()
-
-        cleanup_project_repos(projects_tree, log)
-        cleanup_project_repo_packages(projects_tree, log)
-
         request_id_list = send_project_info_requests(
             broker, projects_tree, log
         )
@@ -358,37 +357,62 @@ def build_repos(
             project_repo_thread.start()
 
 
-def cleanup_project_repos(
-    projects_tree: Dict[str, List], log: CBCloudLogger
-):
+def cleanup_project_repo(repo_project_path: str, log: CBCloudLogger) -> None:
     """
-    Delete projects from repos if they were deleted from the git source
+    Delete project from repos if it was deleted from the git source
 
-    :param Dict projects_tree: Dictionary containing current source projects
+    :param str repo_project_path: Project path in repo
     :param CBCloudLogger log: logger
     """
-    for root, dirs, files in os.walk(Defaults.get_repo_root()):
-        for dirname in dirs:
-            if os.path.isdir(f'{root}/.project'):
-                source_project = root.replace(
-                    Defaults.get_repo_root(), Defaults.get_runner_project_dir()
-                )
-                if source_project not in projects_tree:
-                    log.info(f'Deleting repos for project {root}')
-                    Path.wipe(root)
+    if os.path.exists(repo_project_path):
+        source_project = repo_project_path.replace(
+            Defaults.get_repo_root(), Defaults.get_runner_project_dir()
+        )
+        if not os.path.exists(source_project):
+            log.info(f'Deleting repos for project {repo_project_path!r}')
+            Path.wipe(repo_project_path)
 
 
 def cleanup_project_repo_packages(
-    projects_tree: Dict[str, List], log: CBCloudLogger
-):
+    repo_project_path: str, log: CBCloudLogger
+) -> None:
     """
-    Delete packages from project repos if they were deleted
+    Delete packages from project repo if they were deleted
     from the git source
 
-    :param Dict projects_tree: Dictionary containing current source projects
+    :param str repo_project_path: Project path in repo
+    :param CBCloudLogger log: logger
+    """
+    project_files_name = f'{repo_project_path}/.project/files'
+    if os.path.isfile(project_files_name):
+        with open(project_files_name) as files_handle:
+            project_files = yaml.safe_load(files_handle)
+        source_project = repo_project_path.replace(
+            Defaults.get_repo_root(), Defaults.get_runner_project_dir()
+        )
+        for package in project_files.keys():
+            package_path = f'{source_project}/{package}'
+            if not os.path.exists(package_path):
+                log.info(f'Deleting {package_path!r} from repos')
+                for target in project_files[package]:
+                    for file in project_files[package][target]:
+                        if os.path.isfile(file):
+                            os.unlink(file)
+
+
+def cleanup_project_repo_packages_targets(
+    repo_project_path: str, log: CBCloudLogger
+) -> None:
+    """
+    Delete packages from project repo that belongs to specific
+    targets (dist or selection) if they were deleted from
+    the git source metadata configuration
+
+    :param str repo_project_path: Project path in repo
     :param CBCloudLogger log: logger
     """
     # TODO
+    pass
 
 
 def build_project_repo(
@@ -401,19 +425,39 @@ def build_project_repo(
     target_path = os.path.normpath(
         os.sep.join([Defaults.get_repo_root(), project_id])
     )
+    project_path = os.path.dirname(target_path)
     project_indicator = os.sep.join(
-        [os.path.dirname(target_path), '.project']
+        [project_path, '.project']
     )
+
+    log.info(f'Running cleanup for: {project_path!r}')
+    # check if project got deleted from source
+    cleanup_project_repo(project_path, log)
+
+    # check if packages in project got deleted from source
+    cleanup_project_repo_packages(project_path, log)
+
+    # check if targets in packages in project got deleted from source
+    cleanup_project_repo_packages_targets(project_path, log)
+
     log.info(f'Creating project indicator: {project_indicator!r}')
+    Path.wipe(project_indicator)
     Path.create(project_indicator)
     Path.create(target_path)
     for source_ip in runner_responses_for_project.keys():
-        for source_file in runner_responses_for_project[source_ip]:
+        for source_spec in runner_responses_for_project[source_ip]:
+            (source_file, project_package_name) = source_spec.split('|')
             remote_source_file = f'{user}@{source_ip}:{source_file}'
             repo_meta = _get_repo_path_for_binary(
                 source_file, target_path, log
             )
             if repo_meta:
+                _update_project_indicator(
+                    indicator_dir=project_indicator,
+                    target_name=os.path.basename(target_path),
+                    package_name=project_package_name,
+                    repo_file=repo_meta.repo_file
+                )
                 sync_call = Command.run(
                     [
                         'rsync', '-av', '-e', 'ssh -i {0} -o {1}'.format(
@@ -433,6 +477,32 @@ def build_project_repo(
             f'Ups, no idea how to create repo for data in: {target_path}'
         )
     _set_free(project_id)
+
+
+def _update_project_indicator(
+    indicator_dir: str, target_name: str, package_name: str, repo_file: str
+) -> None:
+    files_info = os.sep.join([indicator_dir, 'files'])
+    files_data = {}
+    if os.path.isfile(files_info):
+        with open(files_info) as files:
+            files_data = yaml.safe_load(files)
+    modified = False
+    if not files_data.get(package_name):
+        files_data[package_name] = {}
+        modified = True
+
+    if not files_data[package_name].get(target_name):
+        files_data[package_name][target_name] = []
+        modified = True
+
+    if repo_file not in files_data[package_name][target_name]:
+        files_data[package_name][target_name].append(repo_file)
+        modified = True
+
+    if modified:
+        with open(files_info, 'w') as files:
+            files.write(yaml.dump(files_data, default_flow_style=False))
 
 
 def _get_repo_path_for_binary(
