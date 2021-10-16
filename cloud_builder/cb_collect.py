@@ -357,13 +357,16 @@ def build_repos(
             project_repo_thread.start()
 
 
-def cleanup_project_repo(repo_project_path: str, log: CBCloudLogger) -> None:
+def cleanup_project_repo(
+    repo_project_path: str, log: CBCloudLogger
+) -> bool:
     """
     Delete project from repos if it was deleted from the git source
 
     :param str repo_project_path: Project path in repo
     :param CBCloudLogger log: logger
     """
+    cleanup_performed = False
     if os.path.exists(repo_project_path):
         source_project = repo_project_path.replace(
             Defaults.get_repo_root(), Defaults.get_runner_project_dir()
@@ -371,11 +374,13 @@ def cleanup_project_repo(repo_project_path: str, log: CBCloudLogger) -> None:
         if not os.path.exists(source_project):
             log.info(f'Deleting repos for project {repo_project_path!r}')
             Path.wipe(repo_project_path)
+            cleanup_performed = True
+    return cleanup_performed
 
 
 def cleanup_project_repo_packages(
     repo_project_path: str, log: CBCloudLogger
-) -> None:
+) -> bool:
     """
     Delete packages from project repo if they were deleted
     from the git source
@@ -383,6 +388,7 @@ def cleanup_project_repo_packages(
     :param str repo_project_path: Project path in repo
     :param CBCloudLogger log: logger
     """
+    cleanup_performed = False
     project_files_name = f'{repo_project_path}/.project/files'
     if os.path.isfile(project_files_name):
         with open(project_files_name) as files_handle:
@@ -390,19 +396,30 @@ def cleanup_project_repo_packages(
         source_project = repo_project_path.replace(
             Defaults.get_repo_root(), Defaults.get_runner_project_dir()
         )
+        new_project_files = {}
         for package in project_files.keys():
             package_path = f'{source_project}/{package}'
             if not os.path.exists(package_path):
-                log.info(f'Deleting {package_path!r} from repos')
+                log.info(f'Deleting {package!r} from repos')
                 for target in project_files[package]:
                     for file in project_files[package][target]:
                         if os.path.isfile(file):
+                            log.info(f'--> Deleting {file!r}')
                             os.unlink(file)
+                            cleanup_performed = True
+            else:
+                new_project_files[package] = project_files[package]
+        if cleanup_performed:
+            with open(project_files_name, 'w') as files_handle:
+                files_handle.write(
+                    yaml.dump(new_project_files, default_flow_style=False)
+                )
+    return cleanup_performed
 
 
 def cleanup_project_repo_packages_targets(
     repo_project_path: str, log: CBCloudLogger
-) -> None:
+) -> bool:
     """
     Delete packages from project repo that belongs to specific
     targets (dist or selection) if they were deleted from
@@ -411,8 +428,9 @@ def cleanup_project_repo_packages_targets(
     :param str repo_project_path: Project path in repo
     :param CBCloudLogger log: logger
     """
+    cleanup_performed = False
     # TODO
-    pass
+    return cleanup_performed
 
 
 def build_project_repo(
@@ -430,20 +448,12 @@ def build_project_repo(
         [project_path, '.project']
     )
 
-    log.info(f'Running cleanup for: {project_path!r}')
-    # check if project got deleted from source
-    cleanup_project_repo(project_path, log)
-
-    # check if packages in project got deleted from source
-    cleanup_project_repo_packages(project_path, log)
-
-    # check if targets in packages in project got deleted from source
-    cleanup_project_repo_packages_targets(project_path, log)
-
     log.info(f'Creating project indicator: {project_indicator!r}')
     Path.wipe(project_indicator)
     Path.create(project_indicator)
-    Path.create(target_path)
+
+    if not os.path.exists(target_path):
+        Path.create(target_path)
     for source_ip in runner_responses_for_project.keys():
         for source_spec in runner_responses_for_project[source_ip]:
             (source_file, project_package_name) = source_spec.split('|')
@@ -469,6 +479,18 @@ def build_project_repo(
                     log.info(sync_call.output)
                 if sync_call.error:
                     log.error(sync_call.error)
+
+    log.info(f'Running cleanup for: {project_path!r}')
+    # check if project got deleted from source
+    cleanup = cleanup_project_repo(project_path, log)
+
+    # check if packages in project got deleted from source
+    if not cleanup:
+        cleanup = cleanup_project_repo_packages(project_path, log)
+
+    # check if targets in packages in project got deleted from source
+    if not cleanup:
+        cleanup = cleanup_project_repo_packages_targets(project_path, log)
 
     if repo_meta.repo_type == 'rpm':
         _create_rpm_repo(target_path, log)
