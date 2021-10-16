@@ -492,12 +492,13 @@ def build_project_repo(
     if not cleanup:
         cleanup = cleanup_project_repo_packages_targets(project_path, log)
 
-    if repo_meta.repo_type == 'rpm':
-        _create_rpm_repo(target_path, log)
-    else:
-        log.error(
-            f'Ups, no idea how to create repo for data in: {target_path}'
-        )
+    if os.path.exists(target_path):
+        if repo_meta.repo_type == 'rpm':
+            _create_rpm_repo(target_path, log)
+        else:
+            log.error(
+                f'Ups, no idea how to create repo for data in: {target_path}'
+            )
     _set_free(project_id)
 
 
