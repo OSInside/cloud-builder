@@ -429,7 +429,46 @@ def cleanup_project_repo_packages_targets(
     :param CBCloudLogger log: logger
     """
     cleanup_performed = False
-    # TODO
+    project_files_name = f'{repo_project_path}/.project/files'
+    if os.path.isfile(project_files_name):
+        with open(project_files_name) as files_handle:
+            project_files = yaml.safe_load(files_handle)
+        source_project = repo_project_path.replace(
+            Defaults.get_repo_root(), Defaults.get_runner_project_dir()
+        )
+        new_project_files: Dict[str, Dict[str, List]] = {}
+        for package in project_files.keys():
+            package_path = f'{source_project}/{package}'
+            if os.path.exists(package_path):
+                project_config = CBProjectMetaData.get_project_config(
+                    package_path, log, CBIdentity.get_request_id()
+                )
+                target_names = []
+                if project_config:
+                    for target in project_config.get('distributions') or []:
+                        target_names.append(target['dist'])
+                    for target in project_config.get('images') or []:
+                        target_names.append(target['selection']['name'])
+                for target in project_files[package]:
+                    if target not in target_names:
+                        log.info(
+                            f'Deleting {package!r} for {target!r} from repos'
+                        )
+                        for file in project_files[package][target]:
+                            if os.path.isfile(file):
+                                log.info(f'--> Deleting {file!r}')
+                                os.unlink(file)
+                                cleanup_performed = True
+                    else:
+                        if package not in new_project_files:
+                            new_project_files[package] = {}
+                        new_project_files[package][target] = \
+                            project_files[package][target]
+        if cleanup_performed:
+            with open(project_files_name, 'w') as files_handle:
+                files_handle.write(
+                    yaml.dump(new_project_files, default_flow_style=False)
+                )
     return cleanup_performed
 
 
@@ -505,6 +544,11 @@ def build_project_repo(
 def _update_project_indicator(
     indicator_dir: str, target_name: str, package_name: str, repo_file: str
 ) -> None:
+    if not os.path.exists(indicator_dir):
+        # Due to a project cleanup in another thread it can happen
+        # that the indicator_dir does no longer exist. In this case
+        # return early
+        return
     files_info = os.sep.join([indicator_dir, 'files'])
     files_data = {}
     if os.path.isfile(files_info):
