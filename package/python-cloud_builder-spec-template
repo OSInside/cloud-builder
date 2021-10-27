@@ -82,8 +82,13 @@ Requires:       createrepo_c
 Requires:       python%{python3_pkgversion}-docopt
 Requires:       python%{python3_pkgversion}-kiwi >= 9.21.21
 Requires:       python%{python3_pkgversion}-requests
+%if 0%{?ubuntu} || 0%{?debian}
+Requires:       python%{python3_pkgversion}-yaml
+Requires:       python%{python3_pkgversion}-apscheduler
+%else
 Requires:       python%{python3_pkgversion}-PyYAML
 Requires:       python%{python3_pkgversion}-APScheduler
+%endif
 Requires:       python%{python3_pkgversion}-kafka-python
 Requires:       python%{python3_pkgversion}-psutil
 Requires:       python%{python3_pkgversion}-setuptools
