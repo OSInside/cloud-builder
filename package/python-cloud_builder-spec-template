@@ -91,6 +91,10 @@ Requires:       python%{python3_pkgversion}-requests
 %if 0%{?ubuntu} || 0%{?debian}
 Requires:       python%{python3_pkgversion}-yaml
 Requires:       python%{python3_pkgversion}-apscheduler
+# This requirement is added here but actually is a requirement for
+# kiwi on Debian based distributions. It seems the spec file of kiwi
+# has a mistake as pulls in xattr not pyxattr
+Requires:       python%{python3_pkgversion}-pyxattr
 %else
 Requires:       python%{python3_pkgversion}-PyYAML
 Requires:       python%{python3_pkgversion}-APScheduler
