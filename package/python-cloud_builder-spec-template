@@ -78,7 +78,13 @@ Recommends:     rpm-build
 %endif
 Requires:       git
 Requires:       rsync
+%if 0%{?fedora} || 0%{?suse_version}
+# Actually this is a requirement for the cb-collect service.
+# For Debian based distros createrepo_c exists on e.g Ubuntu 21.04
+# but not on older versions. The requirement limitation here means
+# that a collector can only run on a distro which has createrepo_c
 Requires:       createrepo_c
+%endif
 Requires:       python%{python3_pkgversion}-docopt
 Requires:       python%{python3_pkgversion}-kiwi >= 9.21.21
 Requires:       python%{python3_pkgversion}-requests
