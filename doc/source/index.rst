@@ -21,6 +21,7 @@
    auto_rebuild_on_build_dependencies
    collect_and_build_project_repos
    commands
+   playground
 
 .. sidebar:: Links
 
