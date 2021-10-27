@@ -73,7 +73,9 @@ cluster in cloud(VM) or container clusters.
 Summary:        CB - Cloud Builder
 Group:          Development/Languages/Python
 # Package image builds as rpms, the kiwi bundler uses rpm-build
+%if 0%{?suse_version} || 0%{?fedora} || 0%{?rhel} >= 8
 Recommends:     rpm-build
+%endif
 Requires:       git
 Requires:       rsync
 Requires:       createrepo_c
