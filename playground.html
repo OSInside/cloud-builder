@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Index &mdash; Cloud Builder 0.2.29 documentation</title>
+  <title>Playground &mdash; Cloud Builder 0.2.29 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/custom.css" type="text/css" />
@@ -16,8 +17,9 @@
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
     <script src="_static/js/theme.js"></script>
-    <link rel="index" title="Index" href="#" />
-    <link rel="search" title="Search" href="search.html" /> 
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="cb-ctl" href="commands/cb_ctl.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -35,7 +37,7 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <ul>
+              <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="infrastructure_setup.html">Infrastructure Setup</a></li>
 <li class="toctree-l1"><a class="reference internal" href="source_setup.html">Cloud Builder Source Setup</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="source_setup/git_package_source_setup.html">Git Package Source Setup</a><ul>
@@ -121,7 +123,7 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="playground.html">Playground</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Playground</a></li>
 </ul>
 
         </div>
@@ -138,8 +140,9 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Index</li>
+      <li>Playground</li>
       <li class="wy-breadcrumbs-aside">
+            <a href="_sources/playground.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -147,17 +150,60 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-
-<h1 id="index">Index</h1>
-
-<div class="genindex-jumpbox">
- 
+  <section id="playground">
+<span id="id1"></span><h1>Playground<a class="headerlink" href="#playground" title="Permalink to this headline">¶</a></h1>
+<p>This chapter contains just some sort of brain dump of things
+I tried out, or other people can try out. An area for crazy
+ideas and unfinished stuff.</p>
+<p>Remember to have fun :)</p>
+<dl>
+<dt>Building Debian Packages:</dt><dd><p>I was testing this and came across the following steps to build debs</p>
+<ul>
+<li><p>A Debian based host is needed. To have all the tools and a native
+environment I think the runner should be a Debian host. It doesn’t
+matter what it is, unstable, ubuntu, debian …</p></li>
+<li><p>Add the Staging repo to <code class="file docutils literal notranslate"><span class="pre">/etc/apt/sources.list.d/cloud_builder.list</span></code></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>deb <span class="o">[</span><span class="nv">trusted</span><span class="o">=</span>yes check-valid-until<span class="o">=</span>no<span class="o">]</span> https://download.opensuse.org/repositories/Virtualization:/Appliances:/Staging/xUbuntu_20.04/ /
+</pre></div>
 </div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ sudo apt update
+$ sudo apt install python3-cloud-builder
+</pre></div>
+</div>
+</li>
+<li><p>Checkout the example packages repo</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ git clone https://github.com/OSInside/cloud-builder-packages.git
+</pre></div>
+</div>
+</li>
+<li><p>And run a local build</p>
+<p>I put a debbuild prepared spec file for the python-kiwi packages
+as an example. So this build will use debbuild which can consume
+the information from an rpm spec file and create debs out of it.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>deb build with debbuild will not be accepted by the comunity
+building with sources as they exist on <a class="reference external" href="https://salsa.debian.org/">https://salsa.debian.org/</a>
+and a good debian/ directory with all dpkg metadata should also
+be buildable via Cloud Builder</p>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ <span class="nb">cd</span> cloud-builder-packages/projects/MS/python-kiwi
+
+$ sudo cb-ctl --build-package-local --dist focal
+</pre></div>
+</div>
+</li>
+</ul>
+</dd>
+</dl>
+</section>
 
 
            </div>
           </div>
-          <footer>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="commands/cb_ctl.html" class="btn btn-neutral float-left" title="cb-ctl" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
 
   <hr/>
 
