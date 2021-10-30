@@ -78,7 +78,7 @@ created and configured as follows:
 
       $ sudo dnf config-manager \
             --add-repo https://download.opensuse.org/repositories/Virtualization:/Appliances:/Staging/Fedora_34 \
-            --enable
+            --enable --nogpgcheck
       $ sudo dnf install python3-cloud_builder
 
    .. note::
