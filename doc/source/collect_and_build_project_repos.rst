@@ -98,14 +98,40 @@ Create and Setup the reposerver instance
    See the '**Configure** `cb-ctl`' list item in the :ref:`control-plane-setup`
    for details how to obtain the broker credentials.
 
-5. **Setup SSH key pair for collecting packages from runners**
+5. **Setup SSH access for collecting packages from runners**
 
-   Still logged in on the reposerver create a new SSH keypair as follows
+   To allow the reposerver accessing data from the runners,
+   it's required to SSH authorize the reposerver. In the
+   setup of the control plane a SSH keypair has already
+   been created to allow the control plane access to the
+   runners. The same private key as present on the control
+   plane can now also be used on the reposerver. This
+   can be done as follows:
+
+   1. Login to the control plane from a new terminal session.
+
+      See :ref:`control-plane-setup` for details
+
+   2. Fetch the `cb-collect` private SSH key and logout from the control plane.
+
+      .. code:: bash
+
+         $ cat ~/.ssh/id_cb_collect
+         $ exit
+
+   In the terminal session with the still active login session on
+   the reposerver copy/paste the `cb-collect` SSH private key as
+   follows:
 
    .. code:: bash
 
-       $ sudo -i
-       $ ssh-keygen -t rsa -f ~/.ssh/id_cb_collect
+      $ mkdir -p -m 0700 /root/.ssh
+      $ sudo touch /root/.ssh/id_cb_collect
+      $ sudo chmod 600 /root/.ssh/id_cb_collect
+      $ sudo vi /root/.ssh/id_cb_collect
+
+        Copy & Paste the SSH private key as it was obtained
+        in the former step and safe the file.
 
    Once done reference the path to the private key in the
    :file:`/etc/cloud_builder` setup file as follows:
@@ -129,55 +155,13 @@ Create and Setup the reposerver instance
      to understand how to make the volume available:
      https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-using-volumes.html
 
-7. **Setup cb-collect user on the runners**
+7. **Setup user to be used for accessing the runners**
 
-   In cloud environments the distributors publish cloud images with
-   different predefined user configurations. For example on
-   Fedora instances ssh login is used via `fedora@IP` whereas on
-   Leap instances the user setup is `ec2-user@IP`. Most probably
-   the username will be different on any distribution. As {CB}
-   runners can be instances from different distributions to allow
-   utilizing the native distribution tools to build packages, it
-   is advisable to generalize the user and access permissions which
-   are used to collect packages from the available runner instances.
-
-   To do this login to each runner and create the `cb-collect`
-   user and access setup as follows:
-
-   .. code:: bash
-
-       # on the reposerver
-
-       $ sudo cat /root/.ssh/id_cb_collect.pub
-
-       $ ssh -i PathToPkeyMatchingMySSHKeyPairName \
-            RunnerUserName@RunnerInstanceIP
-
-       $ sudo -i
-       $ useradd -d /home/cb-collect -m cb-collect
-       $ su -l cb-collect
-       $ mkdir -m 0700 .ssh
-       $ touch .ssh/authorized_keys
-       $ chmod 600 .ssh/authorized_keys
-       $ vi .ssh/authorized_keys
-
-       Copy & Paste the SSH pubkey as it was printed on the console
-       by the very first cat... command and safe the file
-
-       $ exit
-
-       # back on the reposerver, repeat for each runner...
-
-   .. note::
-
-       If there are many runners the setup of the user and access
-       permissions as desribed above is cumbersome. Configuration
-       management tools like `ansible`, `CloudFormation` and alike can
-       be helpful to automate this step and should be preferred in
-       general for the setup of an entire {CB} cluster
-
-   Once done on all runners setup the SSH user in the
-   :file:`/etc/cloud_builder` setup file as follows:
+   In the setup of the runner a generic user to access the runner
+   for build results and information was created. This user, by
+   default, is called `cb-collect`. In the setup of the collector
+   it's required to specify the user name which is allowed to
+   access the runners as follows:
 
    .. code:: bash
 
