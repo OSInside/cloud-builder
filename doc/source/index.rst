@@ -15,6 +15,7 @@
    infrastructure_setup
    source_setup
    kafka_broker_setup
+   control_plane_setup
    runner_setup
    request_package_build
    auto_rebuild_on_source_change

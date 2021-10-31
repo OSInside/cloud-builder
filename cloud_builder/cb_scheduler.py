@@ -252,6 +252,7 @@ def handle_build_requests(
             for message in broker.read(
                 topic=broker.get_runner_group(), timeout_ms=poll_timeout
             ):
+                # FIXME: the update of the git repo must be done before this call
                 request = broker.validate_build_request(message.value)
                 if request:
                     project_source_path = os.path.join(
