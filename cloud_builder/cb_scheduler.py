@@ -252,13 +252,13 @@ def handle_build_requests(
             for message in broker.read(
                 topic=broker.get_runner_group(), timeout_ms=poll_timeout
             ):
-                # FIXME: the update of the git repo must be done before this call
                 request = broker.validate_build_request(message.value)
                 if request:
                     project_source_path = os.path.join(
                         Defaults.get_runner_project_dir(),
                         format(request['project'])
                     )
+                    update_source_repo(request, log)
                     validated_request = is_request_valid(
                         project_source_path, request, log
                     )
@@ -279,6 +279,20 @@ def handle_build_requests(
         broker.close()
 
 
+def update_source_repo(request: Dict, log: CBCloudLogger) -> None:
+    status_flags = Defaults.get_status_flags()
+    if request['action'] == status_flags.package_rebuild or \
+       request['action'] == status_flags.package_rebuild_clean or \
+       request['action'] == status_flags.package_source_rebuild or \
+       request['action'] == status_flags.package_source_rebuild_clean or \
+       request['action'] == status_flags.image_rebuild or \
+       request['action'] == status_flags.image_source_rebuild:
+        log.info('Update project git source repo prior build')
+        Command.run(
+            ['git', '-C', Defaults.get_runner_project_dir(), 'pull']
+        )
+
+
 def build_image(
     request: Dict, build_config: Dict, broker: CBMessageBroker,
     log: CBCloudLogger
@@ -296,14 +310,6 @@ def build_image(
     reset_build_if_running(
         request, log, broker
     )
-    status_flags = Defaults.get_status_flags()
-    if request['action'] == status_flags.image_rebuild or \
-       request['action'] == status_flags.image_source_rebuild:
-        log.info('Update project git source repo prior build')
-        Command.run(
-            ['git', '-C', Defaults.get_runner_project_dir(), 'pull']
-        )
-
     log.info('Starting image build process')
     Command.run(
         ['bash', create_image_run_script(request, build_config)]
@@ -326,20 +332,10 @@ def build_package(
         request, log, broker
     )
     status_flags = Defaults.get_status_flags()
-    if request['action'] == status_flags.package_rebuild or \
-       request['action'] == status_flags.package_rebuild_clean or \
-       request['action'] == status_flags.package_source_rebuild or \
-       request['action'] == status_flags.package_source_rebuild_clean:
-        log.info('Update project git source repo prior build')
-        Command.run(
-            ['git', '-C', Defaults.get_runner_project_dir(), 'pull']
-        )
-
     buildroot_rebuild = False
     if request['action'] == status_flags.package_source_rebuild_clean or \
        request['action'] == status_flags.package_rebuild_clean:
         buildroot_rebuild = True
-
     log.info('Starting package build process')
     Command.run(
         ['bash', create_package_run_script(request, buildroot_rebuild)]
