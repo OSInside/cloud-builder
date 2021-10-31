@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Kafka Message Broker Setup &mdash; Cloud Builder 0.2.29 documentation</title>
+  <title>Kafka Message Broker Setup &mdash; Cloud Builder 0.2.30 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/custom.css" type="text/css" />
@@ -19,7 +19,7 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Runner Setup" href="runner_setup.html" />
+    <link rel="next" title="Create and Install the Control Plane" href="control_plane_setup.html" />
     <link rel="prev" title="Git Image Source Setup" href="source_setup/git_image_source_setup.html" /> 
 </head>
 
@@ -54,9 +54,9 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Kafka Message Broker Setup</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#create-and-install-the-control-plane">Create and Install the Control Plane</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#control-plane-setup">Control Plane Setup</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Kafka Message Broker Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="control_plane_setup.html">Create and Install the Control Plane</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="control_plane_setup.html#control-plane-configuration">Control Plane Configuration</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="runner_setup.html">Runner Setup</a></li>
@@ -124,7 +124,11 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="playground.html">Playground</a></li>
+<li class="toctree-l1"><a class="reference internal" href="playground.html">Playground</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="playground.html#building-debian-packages">Building Debian Packages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="playground.html#simple-cluster-setup">Simple Cluster Setup</a></li>
+</ul>
+</li>
 </ul>
 
         </div>
@@ -186,196 +190,10 @@ to get kafka running in Amazon can be found here:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://docs.aws.amazon.com/msk/latest/developerguide/getting-started.html">https://docs.aws.amazon.com/msk/latest/developerguide/getting-started.html</a></p></li>
 </ul>
-<section id="create-and-install-the-control-plane">
-<h2>Create and Install the Control Plane<a class="headerlink" href="#create-and-install-the-control-plane" title="Permalink to this headline">¶</a></h2>
-<p>The Control Plane is a machine with access to the message
-broker such that configurations of the broker as well as
-calling the <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-ctl</span></code> command can be performed.</p>
-<p>In a production environment usually many users will use
-<code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-ctl</span></code> outside of the control plane. As there are many
-different access scenarious thinkable, this documentation
-is based on the most simple access method which is based
-on <code class="xref py py-obj docutils literal notranslate"><span class="pre">ssh</span></code> to the control plane and calling <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-ctl</span></code> from
-there. Please note this is not the recommended way for a
-production environment.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>The following requires Kafka to run. The steps to setup the
-control plane are documented based on Kafka running on Amazon MSK
-and with the control plane to be an instance running on
-Amazon EC2, both in the same region. If these prerequisites do
-not match your environment, some of the following information
-will not apply.</p>
-</div>
-<ol class="arabic">
-<li><p><strong>Start an instance to become the control plane</strong></p>
-<p>The used AMI ID points to a Leap 15.3 system. Currently Cloud Builder
-is packaged for Leap and Fedora. Thus the control plane could
-also be based on Fedora. The following launches for Leap.</p>
-<p>Replace the camel case parameter values with your own.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ <span class="nv">leap_15_3_ami</span><span class="o">=</span>ami-0b4f49bedf96b14c9
-$ aws ec2 run-instances <span class="se">\</span>
-    --image-id <span class="si">${</span><span class="nv">leap_15_3_ami</span><span class="si">}</span> <span class="se">\</span>
-    --count <span class="m">1</span> <span class="se">\</span>
-    --instance-type t2.micro <span class="se">\</span>
-    --key-name MySSHKeyPairName <span class="se">\</span>
-    --security-group-ids sg-MyGroup <span class="se">\</span>
-    --subnet-id subnet-MySubNet
-</pre></div>
-</div>
-</li>
-<li><p><strong>SSH to the control plane</strong></p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ ssh -i PathToPkeyMatchingMySSHKeyPairName <span class="se">\</span>
-      ec2-user@InstanceIP
-</pre></div>
-</div>
-</li>
-<li><p><strong>Install Cloud Builder on the control plane</strong></p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ sudo zypper addrepo https://download.opensuse.org/repositories/Virtualization:/Appliances:/Staging/openSUSE_Leap_15.3 cloud-builder
-$ sudo zypper install python3-cloud_builder
-</pre></div>
-</div>
-</li>
-<li><p><strong>Install Kafka admin utilities</strong></p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ sudo zypper install java-1_8_0-openjdk
-$ wget https://archive.apache.org/dist/kafka/2.2.1/kafka_2.12-2.2.1.tgz
-$ tar -xzf kafka_2.12-2.2.1.tgz
-</pre></div>
-</div>
-</li>
-</ol>
-</section>
-<section id="control-plane-setup">
-<span id="id1"></span><h2>Control Plane Setup<a class="headerlink" href="#control-plane-setup" title="Permalink to this headline">¶</a></h2>
-<p>Now that the control plane runs the following configurations are required:</p>
-<ol class="arabic">
-<li><p><strong>Fetch the Zookeeper Connect String</strong></p>
-<ul class="simple">
-<li><p>Open the Amazon MSK console at <a class="reference external" href="https://console.aws.amazon.com/msk">https://console.aws.amazon.com/msk</a></p></li>
-<li><p>Click on your cluster</p></li>
-<li><p>Click on <code class="xref py py-obj docutils literal notranslate"><span class="pre">view</span> <span class="pre">client</span> <span class="pre">information</span></code></p></li>
-</ul>
-<p>In the pop up window under the headline <code class="xref py py-obj docutils literal notranslate"><span class="pre">Apache</span> <span class="pre">ZooKeeper</span> <span class="pre">connection</span></code>
-Copy and preserve this information temporarily</p>
-</li>
-<li><p><strong>Login to the Control Plane</strong></p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ ssh -i PathToPkeyMatchingMySSHKeyPairName <span class="se">\</span>
-      ec2-user@InstanceIP
-</pre></div>
-</div>
-</li>
-<li><p><strong>Create Cloud Builder Publish/Subscribe message topics</strong></p>
-<p>A message queue in Kafka is named a <code class="xref py py-obj docutils literal notranslate"><span class="pre">topic</span></code>. The following
-topics are used by Cloud Builder in Publish/Subscribe mode. This means
-each message is broadcast to all readers. This setting applies
-to the topics <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-response</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-info-request</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-info-response</span></code>.
-Create these topics as follows:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ <span class="nb">cd</span> kafka_2.12-2.2.1
-$ <span class="k">for</span> topic <span class="k">in</span> cb-response cb-info-request cb-info-response<span class="p">;</span> <span class="k">do</span>
-      bin/kafka-topics.sh <span class="se">\</span>
-          --create <span class="se">\</span>
-          --zookeeper ZookeeperConnectString <span class="se">\</span>
-          --replication-factor <span class="m">2</span> <span class="se">\</span>
-          --partitions <span class="m">1</span> <span class="se">\</span>
-          --topic <span class="si">${</span><span class="nv">topic</span><span class="si">}</span><span class="p">;</span>
-  <span class="k">done</span>
-</pre></div>
-</div>
-</li>
-<li><p><strong>Create Cloud Builder Shared message topic</strong></p>
-<p>Cloud Builder is designed to scale automatically on the number of runner
-instances. This means if there are e.g 10 runners in the runner_group
-e.g <code class="xref py py-obj docutils literal notranslate"><span class="pre">fedora</span></code>, it is expected that package requests gets distributed
-to all runners. For this concept to work in Kafka it’s important to
-assign 10 partitions to the topic that handles the requests. For more
-details on how kafka balances consumers click <a class="reference external" href="https://stackoverflow.com/questions/40326600/balancing-kafka-consumers/40327547">here</a></p>
-<p>At this point a decision about the later size of the system needs to
-be made. It’s possible to change the assigned number of partitions at
-a later point in time. For this example setup the following conditions
-are set:</p>
-<ul class="simple">
-<li><p>2 runner groups, <code class="xref py py-obj docutils literal notranslate"><span class="pre">fedora</span></code> and <code class="xref py py-obj docutils literal notranslate"><span class="pre">suse</span></code>.</p></li>
-<li><p>2 partitions for each runner group</p></li>
-</ul>
-<p>This will require to run 4 runner instances later, 2 for each
-runner group. Create the topics for these setup as follows:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ <span class="nb">cd</span> kafka_2.12-2.2.1
-$ <span class="k">for</span> topic <span class="k">in</span> fedora suse<span class="p">;</span> <span class="k">do</span>
-      bin/kafka-topics.sh <span class="se">\</span>
-          --create <span class="se">\</span>
-          --zookeeper ZookeeperConnectString <span class="se">\</span>
-          --replication-factor <span class="m">2</span> <span class="se">\</span>
-          --partitions <span class="m">2</span> <span class="se">\</span>
-          --topic <span class="si">${</span><span class="nv">topic</span><span class="si">}</span><span class="p">;</span>
-  <span class="k">done</span>
-</pre></div>
-</div>
-</li>
-<li><p><strong>Set appropriate retention time for topics</strong></p>
-<p>By default kafka topics have a retention time of 7 days which is
-quite long for some of the topics created before. As a good
-start the following retention times should be set:</p>
-<dl class="simple">
-<dt>Runner Group Topics: <em>60min</em></dt><dd><p>The runner group topics are the ones receiving the build
-requests. Keeping build requests for an hour should be enough
-to survive a potential kafka rebalance.</p>
-</dd>
-<dt>cb-info-response and cb-info-request: <em>2min</em></dt><dd><p>The cb-info-* topics are used to communicate with the build
-cluster. It is expected that requests sent will be answered
-more or less immeditately. Thus the retention time for these
-topics should be small.</p>
-</dd>
-<dt>cb-response: <em>keep or increase</em></dt><dd><p>The cb-response topic receives all messages from all Cloud Builder
-services. It is used to watch the cluster for basically
-everything. The default retention time of 7 days is a good
-start but could also increased.</p>
-</dd>
-</dl>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ <span class="nb">cd</span> kafka_2.12-2.2.1
-$ <span class="k">for</span> topic <span class="k">in</span> fedora suse<span class="p">;</span> <span class="k">do</span>
-      bin/kafka-topics.sh <span class="se">\</span>
-          --alter <span class="se">\</span>
-          --zookeeper ZookeeperConnectString <span class="se">\</span>
-          --config retention.ms<span class="o">=</span><span class="m">3600000</span> <span class="se">\</span>
-          --topic <span class="si">${</span><span class="nv">topic</span><span class="si">}</span><span class="p">;</span>
-  <span class="k">done</span>
-$ <span class="k">for</span> topic <span class="k">in</span> cb-info-response cb-info-request<span class="p">;</span> <span class="k">do</span>
-      bin/kafka-topics.sh <span class="se">\</span>
-          --alter <span class="se">\</span>
-          --zookeeper ZookeeperConnectString <span class="se">\</span>
-          --config retention.ms<span class="o">=</span><span class="m">120000</span> <span class="se">\</span>
-          --topic <span class="si">${</span><span class="nv">topic</span><span class="si">}</span><span class="p">;</span>
-  <span class="k">done</span>
-</pre></div>
-</div>
-</li>
-<li><p><strong>Configure</strong> <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-ctl</span></code></p>
-<p>Last step is the configuration of Cloud Builder to allow access to the
-Kafka service.</p>
-<ul class="simple">
-<li><p>Open the Amazon MSK console at <a class="reference external" href="https://console.aws.amazon.com/msk">https://console.aws.amazon.com/msk</a></p></li>
-<li><p>Click on your cluster</p></li>
-<li><p>Click on <code class="xref py py-obj docutils literal notranslate"><span class="pre">view</span> <span class="pre">client</span> <span class="pre">information</span></code></p></li>
-</ul>
-<p>In the pop up window under the headline <code class="xref py py-obj docutils literal notranslate"><span class="pre">Bootstrap</span> <span class="pre">servers</span></code>
-Copy and preserve this information temporarily</p>
-<p>Create the file <code class="file docutils literal notranslate"><span class="pre">/etc/cloud_builder_broker.yml</span></code> as follows:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo vi /etc/cloud_builder_broker.yml
-</pre></div>
-</div>
-<p>Place the following content:</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">broker</span><span class="p">:</span>
-  <span class="nt">host</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">BootstrapServersString</span>
-<span class="nt">this_host</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">external_IP_or_Hostname_of_this_instance</span>
-</pre></div>
-</div>
-</li>
-</ol>
-<p>Congrats, the control plane is now running, the kafka message broker
-is up and configured and <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-ctl</span></code> would be ready for a first package
-build request. However, there are no runners which could work on such
-a request. Learn how to setup the Cloud Builder runner(s) next: <a class="reference internal" href="runner_setup.html#runner-setup"><span class="std std-ref">Runner Setup</span></a></p>
-</section>
+<p>Once a kafka message broker is running in some way shape or form
+the next step in setting up the Cloud Builder build cluster is the launch of
+the <code class="xref py py-obj docutils literal notranslate"><span class="pre">control</span> <span class="pre">plane</span></code>. Learn how to start and configure the <code class="xref py py-obj docutils literal notranslate"><span class="pre">control</span> <span class="pre">plane</span></code>
+next: <a class="reference internal" href="control_plane_setup.html#control-plane-setup"><span class="std std-ref">Create and Install the Control Plane</span></a></p>
 </section>
 
 
@@ -383,7 +201,7 @@ a request. Learn how to setup the Cloud Builder runner(s) next: <a class="refere
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="source_setup/git_image_source_setup.html" class="btn btn-neutral float-left" title="Git Image Source Setup" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="runner_setup.html" class="btn btn-neutral float-right" title="Runner Setup" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="control_plane_setup.html" class="btn btn-neutral float-right" title="Create and Install the Control Plane" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

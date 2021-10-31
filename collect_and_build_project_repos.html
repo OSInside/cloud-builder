@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Collect and Build Project Repos &mdash; Cloud Builder 0.2.29 documentation</title>
+  <title>Collect and Build Project Repos &mdash; Cloud Builder 0.2.30 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/custom.css" type="text/css" />
@@ -54,9 +54,9 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="kafka_broker_setup.html">Kafka Message Broker Setup</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="kafka_broker_setup.html#create-and-install-the-control-plane">Create and Install the Control Plane</a></li>
-<li class="toctree-l2"><a class="reference internal" href="kafka_broker_setup.html#control-plane-setup">Control Plane Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="kafka_broker_setup.html">Kafka Message Broker Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="control_plane_setup.html">Create and Install the Control Plane</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="control_plane_setup.html#control-plane-configuration">Control Plane Configuration</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="runner_setup.html">Runner Setup</a></li>
@@ -124,7 +124,11 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="playground.html">Playground</a></li>
+<li class="toctree-l1"><a class="reference internal" href="playground.html">Playground</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="playground.html#building-debian-packages">Building Debian Packages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="playground.html#simple-cluster-setup">Simple Cluster Setup</a></li>
+</ul>
+</li>
 </ul>
 
         </div>
@@ -232,13 +236,38 @@ change this value to your git project</p>
 <span class="nt">this_host</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">external_IP_or_Hostname_of_this_instance</span>
 </pre></div>
 </div>
-<p>See the ‘<strong>Configure</strong> <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-ctl</span></code>’ list item in the <a class="reference internal" href="kafka_broker_setup.html#control-plane-setup"><span class="std std-ref">Control Plane Setup</span></a>
+<p>See the ‘<strong>Configure</strong> <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-ctl</span></code>’ list item in the <a class="reference internal" href="control_plane_setup.html#control-plane-setup"><span class="std std-ref">Create and Install the Control Plane</span></a>
 for details how to obtain the broker credentials.</p>
 </li>
-<li><p><strong>Setup SSH key pair for collecting packages from runners</strong></p>
-<p>Still logged in on the reposerver create a new SSH keypair as follows</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ sudo -i
-$ ssh-keygen -t rsa -f ~/.ssh/id_cb_collect
+<li><p><strong>Setup SSH access for collecting packages from runners</strong></p>
+<p>To allow the reposerver accessing data from the runners,
+it’s required to SSH authorize the reposerver. In the
+setup of the control plane a SSH keypair has already
+been created to allow the control plane access to the
+runners. The same private key as present on the control
+plane can now also be used on the reposerver. This
+can be done as follows:</p>
+<ol class="arabic">
+<li><p>Login to the control plane from a new terminal session.</p>
+<p>See <a class="reference internal" href="control_plane_setup.html#control-plane-setup"><span class="std std-ref">Create and Install the Control Plane</span></a> for details</p>
+</li>
+<li><p>Fetch the <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-collect</span></code> private SSH key and logout from the control plane.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ cat ~/.ssh/id_cb_collect
+$ <span class="nb">exit</span>
+</pre></div>
+</div>
+</li>
+</ol>
+<p>In the terminal session with the still active login session on
+the reposerver copy/paste the <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-collect</span></code> SSH private key as
+follows:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ mkdir -p -m <span class="m">0700</span> /root/.ssh
+$ sudo touch /root/.ssh/id_cb_collect
+$ sudo chmod <span class="m">600</span> /root/.ssh/id_cb_collect
+$ sudo vi /root/.ssh/id_cb_collect
+
+  Copy <span class="p">&amp;</span> Paste the SSH private key as it was obtained
+  <span class="k">in</span> the former step and safe the file.
 </pre></div>
 </div>
 <p>Once done reference the path to the private key in the
@@ -261,51 +290,12 @@ to understand how to make the volume available:
 <a class="reference external" href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-using-volumes.html">https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-using-volumes.html</a></p></li>
 </ul>
 </li>
-<li><p><strong>Setup cb-collect user on the runners</strong></p>
-<p>In cloud environments the distributors publish cloud images with
-different predefined user configurations. For example on
-Fedora instances ssh login is used via <code class="xref py py-obj docutils literal notranslate"><span class="pre">fedora&#64;IP</span></code> whereas on
-Leap instances the user setup is <code class="xref py py-obj docutils literal notranslate"><span class="pre">ec2-user&#64;IP</span></code>. Most probably
-the username will be different on any distribution. As Cloud Builder
-runners can be instances from different distributions to allow
-utilizing the native distribution tools to build packages, it
-is advisable to generalize the user and access permissions which
-are used to collect packages from the available runner instances.</p>
-<p>To do this login to each runner and create the <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-collect</span></code>
-user and access setup as follows:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># on the reposerver</span>
-
-$ sudo cat /root/.ssh/id_cb_collect.pub
-
-$ ssh -i PathToPkeyMatchingMySSHKeyPairName <span class="se">\</span>
-     RunnerUserName@RunnerInstanceIP
-
-$ sudo -i
-$ useradd -d /home/cb-collect -m cb-collect
-$ su -l cb-collect
-$ mkdir -m <span class="m">0700</span> .ssh
-$ touch .ssh/authorized_keys
-$ chmod <span class="m">600</span> .ssh/authorized_keys
-$ vi .ssh/authorized_keys
-
-Copy <span class="p">&amp;</span> Paste the SSH pubkey as it was printed on the console
-by the very first cat... <span class="nb">command</span> and safe the file
-
-$ <span class="nb">exit</span>
-
-<span class="c1"># back on the reposerver, repeat for each runner...</span>
-</pre></div>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>If there are many runners the setup of the user and access
-permissions as desribed above is cumbersome. Configuration
-management tools like <code class="xref py py-obj docutils literal notranslate"><span class="pre">ansible</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">CloudFormation</span></code> and alike can
-be helpful to automate this step and should be preferred in
-general for the setup of an entire Cloud Builder cluster</p>
-</div>
-<p>Once done on all runners setup the SSH user in the
-<code class="file docutils literal notranslate"><span class="pre">/etc/cloud_builder</span></code> setup file as follows:</p>
+<li><p><strong>Setup user to be used for accessing the runners</strong></p>
+<p>In the setup of the runner a generic user to access the runner
+for build results and information was created. This user, by
+default, is called <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-collect</span></code>. In the setup of the collector
+it’s required to specify the user name which is allowed to
+access the runners as follows:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ sudo vi /etc/cloud_builder
 
 <span class="nv">CB_SSH_USER</span><span class="o">=</span><span class="s2">&quot;cb-collect&quot;</span>

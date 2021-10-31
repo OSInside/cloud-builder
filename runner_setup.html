@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Runner Setup &mdash; Cloud Builder 0.2.29 documentation</title>
+  <title>Runner Setup &mdash; Cloud Builder 0.2.30 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/custom.css" type="text/css" />
@@ -20,7 +20,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Request a Package Build" href="request_package_build.html" />
-    <link rel="prev" title="Kafka Message Broker Setup" href="kafka_broker_setup.html" /> 
+    <link rel="prev" title="Create and Install the Control Plane" href="control_plane_setup.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -54,9 +54,9 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="kafka_broker_setup.html">Kafka Message Broker Setup</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="kafka_broker_setup.html#create-and-install-the-control-plane">Create and Install the Control Plane</a></li>
-<li class="toctree-l2"><a class="reference internal" href="kafka_broker_setup.html#control-plane-setup">Control Plane Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="kafka_broker_setup.html">Kafka Message Broker Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="control_plane_setup.html">Create and Install the Control Plane</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="control_plane_setup.html#control-plane-configuration">Control Plane Configuration</a></li>
 </ul>
 </li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Runner Setup</a></li>
@@ -124,7 +124,11 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="playground.html">Playground</a></li>
+<li class="toctree-l1"><a class="reference internal" href="playground.html">Playground</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="playground.html#building-debian-packages">Building Debian Packages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="playground.html#simple-cluster-setup">Simple Cluster Setup</a></li>
+</ul>
+</li>
 </ul>
 
         </div>
@@ -219,7 +223,7 @@ Cloud Builder as follows:</p>
 
 $ sudo dnf config-manager <span class="se">\</span>
       --add-repo https://download.opensuse.org/repositories/Virtualization:/Appliances:/Staging/Fedora_34 <span class="se">\</span>
-      --enable
+      --enable --nogpgcheck
 $ sudo dnf install python3-cloud_builder
 </pre></div>
 </div>
@@ -241,6 +245,47 @@ To prevent this make sure selinux is not enforced by calling:
 <code class="xref py py-obj docutils literal notranslate"><span class="pre">sudo</span> <span class="pre">setenforce</span> <span class="pre">0</span></code></p>
 </div>
 </li>
+<li><p><strong>Create and setup the cb-collect user</strong></p>
+<p>In cloud environments the distributors publish cloud images with
+different predefined user configurations. For example on
+Fedora instances ssh login is used via <code class="xref py py-obj docutils literal notranslate"><span class="pre">fedora&#64;IP</span></code> whereas on
+Leap instances the user setup is <code class="xref py py-obj docutils literal notranslate"><span class="pre">ec2-user&#64;IP</span></code>. Most probably
+the username will be different on any distribution. As Cloud Builder
+runners can be instances from different distributions to allow
+utilizing the native distribution tools to build packages, it
+is needed to generalize the user and access permissions which
+are used to access runners for collecting build results or for
+fetching build information.</p>
+<ol class="arabic">
+<li><p>Login to the control plane.</p>
+<p>See <a class="reference internal" href="control_plane_setup.html#control-plane-setup"><span class="std std-ref">Create and Install the Control Plane</span></a> for details</p>
+</li>
+<li><p>Fetch the <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-collect</span></code> public SSH key and logout from the control plane.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ cat ~/.ssh/id_cb_collect.pub
+$ <span class="nb">exit</span>
+</pre></div>
+</div>
+</li>
+<li><p>Create and authorize the <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-collect</span></code> user on this runner.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ sudo -i
+$ useradd -d /home/cb-collect -m cb-collect
+$ su -l cb-collect
+$ mkdir -m <span class="m">0700</span> .ssh
+$ touch .ssh/authorized_keys
+$ chmod <span class="m">600</span> .ssh/authorized_keys
+$ vi .ssh/authorized_keys
+
+  Copy <span class="p">&amp;</span> Paste the SSH pubkey as it was printed on the
+  console <span class="k">in</span> step <span class="m">2</span>. and safe the file
+
+$ <span class="nb">exit</span>
+$ <span class="nb">echo</span> <span class="s2">&quot;cb-collect ALL=NOPASSWD: ALL&quot;</span> &gt;&gt; /etc/sudoers
+$ <span class="nb">exit</span>
+</pre></div>
+</div>
+</li>
+</ol>
+</li>
 <li><p><strong>Setup broker connection and runner group on the runners</strong></p>
 <p>Login to each of the created runner instances and create
 the file <code class="file docutils literal notranslate"><span class="pre">/etc/cloud_builder_broker.yml</span></code> as follows:</p>
@@ -253,7 +298,7 @@ the file <code class="file docutils literal notranslate"><span class="pre">/etc/
 <span class="nt">this_host</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">external_IP_or_Hostname_of_this_instance</span>
 </pre></div>
 </div>
-<p>See the ‘<strong>Configure</strong> <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-ctl</span></code>’ list item in the <a class="reference internal" href="kafka_broker_setup.html#control-plane-setup"><span class="std std-ref">Control Plane Setup</span></a>
+<p>See the ‘<strong>Configure</strong> <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-ctl</span></code>’ list item in the <a class="reference internal" href="control_plane_setup.html#control-plane-setup"><span class="std std-ref">Create and Install the Control Plane</span></a>
 for details how to obtain the broker credentials.</p>
 <ul>
 <li><p>Add the following content on the Leap runners only</p>
@@ -327,7 +372,7 @@ There are two runners available for each of these vendors.</p>
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="kafka_broker_setup.html" class="btn btn-neutral float-left" title="Kafka Message Broker Setup" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="control_plane_setup.html" class="btn btn-neutral float-left" title="Create and Install the Control Plane" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="request_package_build.html" class="btn btn-neutral float-right" title="Request a Package Build" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 

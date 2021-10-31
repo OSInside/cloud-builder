@@ -78,7 +78,7 @@ created and configured as follows:
 
       $ sudo dnf config-manager \
             --add-repo https://download.opensuse.org/repositories/Virtualization:/Appliances:/Staging/Fedora_34 \
-            --enable
+            --enable --nogpgcheck
       $ sudo dnf install python3-cloud_builder
 
    .. note::
@@ -97,8 +97,50 @@ created and configured as follows:
       To prevent this make sure selinux is not enforced by calling:
       `sudo setenforce 0`
       
+3. **Create and setup the cb-collect user**
 
-3. **Setup broker connection and runner group on the runners**
+   In cloud environments the distributors publish cloud images with
+   different predefined user configurations. For example on
+   Fedora instances ssh login is used via `fedora@IP` whereas on
+   Leap instances the user setup is `ec2-user@IP`. Most probably
+   the username will be different on any distribution. As {CB}
+   runners can be instances from different distributions to allow
+   utilizing the native distribution tools to build packages, it
+   is needed to generalize the user and access permissions which
+   are used to access runners for collecting build results or for
+   fetching build information.
+
+   1. Login to the control plane.
+
+      See :ref:`control-plane-setup` for details
+
+   2. Fetch the `cb-collect` public SSH key and logout from the control plane.
+
+      .. code:: bash
+
+         $ cat ~/.ssh/id_cb_collect.pub
+         $ exit
+
+   3. Create and authorize the `cb-collect` user on this runner.
+
+      .. code:: bash
+
+         $ sudo -i
+         $ useradd -d /home/cb-collect -m cb-collect
+         $ su -l cb-collect
+         $ mkdir -m 0700 .ssh
+         $ touch .ssh/authorized_keys
+         $ chmod 600 .ssh/authorized_keys
+         $ vi .ssh/authorized_keys
+
+           Copy & Paste the SSH pubkey as it was printed on the
+           console in step 2. and safe the file
+
+         $ exit
+         $ echo "cb-collect ALL=NOPASSWD: ALL" >> /etc/sudoers
+         $ exit
+
+4. **Setup broker connection and runner group on the runners**
 
    Login to each of the created runner instances and create
    the file :file:`/etc/cloud_builder_broker.yml` as follows:
@@ -132,7 +174,7 @@ created and configured as follows:
         runner:
           group: fedora
 
-4. **Setup git package source connection**
+5. **Setup git package source connection**
 
    Login to each of the created runner instances and edit
    the file :file:`/etc/cloud_builder` as follows:
@@ -162,7 +204,7 @@ created and configured as follows:
       doubt give it a try with the default setting, but keep in mind
       about this value, especially for production use.
 
-5. **Start** `cb-fetch-once` **service**
+6. **Start** `cb-fetch-once` **service**
 
    Login to each of the created runner instances and fetch
    the package source git once as follows:
@@ -175,7 +217,7 @@ created and configured as follows:
    system. The `cb-scheduler` service cares for the repo update via
    `git pull` on demand
 
-6. **Start** `cb-scheduler` **and** `cb-info` **services**
+7. **Start** `cb-scheduler` **and** `cb-info` **services**
 
    Login to each of the created runner instances and start
    the scheduler and info services as follows:
