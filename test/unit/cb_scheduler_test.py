@@ -95,10 +95,12 @@ class TestCBScheduler:
     @patch('cloud_builder.cb_scheduler.CBCloudLogger')
     @patch('cloud_builder.cb_scheduler.CBMessageBroker')
     @patch('cloud_builder.cb_scheduler.is_request_valid')
+    @patch('cloud_builder.cb_scheduler.Command.run')
+    @patch('cloud_builder.cb_scheduler.Defaults.get_runner_project_dir')
     def test_handle_image_build_requests(
-        self, mock_is_request_valid, mock_CBMessageBroker,
-        mock_CBCloudLogger, mock_build_image, mock_get_running_builds,
-        mock_CBResponse
+        self, mock_Defaults_get_runner_project_dir, mock_Command_run,
+        mock_is_request_valid, mock_CBMessageBroker, mock_CBCloudLogger,
+        mock_build_image, mock_get_running_builds, mock_CBResponse
     ):
         log = Mock()
         request = {
@@ -151,7 +153,13 @@ class TestCBScheduler:
         mock_build_image.assert_called_once_with(
             request, project_config, broker, log
         )
-
+        mock_Command_run.assert_called_once_with(
+            [
+                'git', '-C',
+                mock_Defaults_get_runner_project_dir.return_value,
+                'pull'
+            ]
+        )
         broker.close.assert_called_once_with()
 
     @patch('cloud_builder.cb_scheduler.CBResponse')
@@ -160,10 +168,11 @@ class TestCBScheduler:
     @patch('cloud_builder.cb_scheduler.CBCloudLogger')
     @patch('cloud_builder.cb_scheduler.CBMessageBroker')
     @patch('cloud_builder.cb_scheduler.is_request_valid')
+    @patch('cloud_builder.cb_scheduler.update_source_repo')
     def test_handle_package_build_requests(
-        self, mock_is_request_valid, mock_CBMessageBroker,
-        mock_CBCloudLogger, mock_build_package, mock_get_running_builds,
-        mock_CBResponse
+        self, mock_update_source_repo, mock_is_request_valid,
+        mock_CBMessageBroker, mock_CBCloudLogger, mock_build_package,
+        mock_get_running_builds, mock_CBResponse
     ):
         log = Mock()
         request = {
@@ -203,7 +212,9 @@ class TestCBScheduler:
         mock_build_package.assert_called_once_with(
             request, broker, log
         )
-
+        mock_update_source_repo.called_once_with(
+            request, log
+        )
         broker.close.assert_called_once_with()
 
     @patch('cloud_builder.cb_scheduler.CBCloudLogger')
@@ -245,18 +256,9 @@ class TestCBScheduler:
         mock_create_image_run_script.assert_called_once_with(
             request, project_config
         )
-        assert mock_Command_run.call_args_list == [
-            call(
-                [
-                    'git', '-C',
-                    mock_Defaults_get_runner_project_dir.return_value,
-                    'pull'
-                ]
-            ),
-            call(
-                ['bash', mock_create_image_run_script.return_value]
-            )
-        ]
+        mock_Command_run.assert_called_once_with(
+            ['bash', mock_create_image_run_script.return_value]
+        )
 
     @patch('cloud_builder.cb_scheduler.CBCloudLogger')
     @patch('cloud_builder.cb_scheduler.Command.run')
@@ -288,18 +290,9 @@ class TestCBScheduler:
             request, log, broker
         )
         mock_create_package_run_script.assert_called_once_with(request, True)
-        assert mock_Command_run.call_args_list == [
-            call(
-                [
-                    'git', '-C',
-                    mock_Defaults_get_runner_project_dir.return_value,
-                    'pull'
-                ]
-            ),
-            call(
-                ['bash', mock_create_package_run_script.return_value]
-            )
-        ]
+        mock_Command_run.assert_called_once_with(
+            ['bash', mock_create_package_run_script.return_value]
+        )
 
     @patch('os.path.isfile')
     @patch('psutil.pid_exists')
