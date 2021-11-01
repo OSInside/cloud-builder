@@ -809,6 +809,8 @@ class TestCBScheduler:
 
             rm -f /var/tmp/CB/projects/MS/vim@TW.x86_64.log
 
+            touch /var/tmp/CB/projects/MS/vim@TW.x86_64.build.log
+
             if true; then
                 rm -rf /var/tmp/CB/projects/MS/vim@TW.x86_64
             fi

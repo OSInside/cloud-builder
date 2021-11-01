@@ -112,7 +112,9 @@ def main() -> None:
             )
         )
         solver_result = resolve_build_dependencies(
-            args['--package'], [dist_profile], prepare_log_file
+            source_path=args['--package'],
+            profile_list=[dist_profile],
+            log_file=prepare_log_file
         )
         with open(solver_json_file, 'w') as solve_result:
             solve_result.write(
@@ -224,10 +226,19 @@ def main() -> None:
 
 
 def resolve_build_dependencies(
-    package_source_path: str, profile_list: List[str] = [], log_file: str = ''
+    source_path: str, profile_list: List[str] = [], log_file: str = '',
+    resolve_for_image_source: bool = False
 ) -> Dict:
     """
     Resolve build dependencies
+
+    :param str source_path: package or image source path
+    :param list profile_list: list of profile names to resolve for
+    :param str log_file: log file name to write solver result
+    :param bool resolve_for_image_source:
+        indicate that this resolver operation runs for an image source.
+        For package sources the buildroot definition is resolved.
+        For images sources the image definition is resolved.
 
     :return:
         Returns a dictionary containing result and potential
@@ -259,9 +270,10 @@ def resolve_build_dependencies(
     kiwi_call.extend(
         [
             'image', 'info',
-            '--description', os.sep.join(
+            '--description',
+            source_path if resolve_for_image_source else os.sep.join(
                 [
-                    package_source_path,
+                    source_path,
                     Defaults.get_cloud_builder_meta_dir()
                 ]
             ),

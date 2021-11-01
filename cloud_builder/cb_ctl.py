@@ -422,7 +422,9 @@ def get_build_dependencies_local(dist: str, selection_name: str) -> None:
                 profile_list = selection.get('profiles') or []
 
     solver_result = resolve_build_dependencies(
-        target_source_path, profile_list
+        source_path=target_source_path,
+        profile_list=profile_list,
+        resolve_for_image_source=True if selection_name else False
     )
     if solver_result['solver_data']:
         CBDisplay.print_json(

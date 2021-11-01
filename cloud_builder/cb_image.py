@@ -122,7 +122,10 @@ def main() -> None:
             )
         )
         solver_result = resolve_build_dependencies(
-            args['--description'], args['--profile'], build_log_file
+            source_path=args['--description'],
+            profile_list=args['--profile'],
+            log_file=build_log_file,
+            resolve_for_image_source=True
         )
         with open(solver_json_file, 'w') as solve_result:
             solve_result.write(

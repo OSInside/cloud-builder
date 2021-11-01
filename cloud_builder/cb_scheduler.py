@@ -750,6 +750,8 @@ def create_package_run_script(
 
             rm -f {build_root}.log
 
+            touch {build_root}.build.log
+
             if {buildroot_rebuild}; then
                 rm -rf {build_root}
             fi
