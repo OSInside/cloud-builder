@@ -112,7 +112,7 @@ console or the `aws` tool using the AWS API.
    done
 
    # update BootstrapServersString
-   sed -ie "s@  host:.*@  host: ${BootstrapServersString}@" \
+   sudo sed -ie "s@  host:.*@  host: ${BootstrapServersString}@" \
        /etc/cloud_builder_broker.yml
 
    # update BootstrapServersString on runners
@@ -121,7 +121,7 @@ console or the `aws` tool using the AWS API.
    runner_fedora2=ec2-18-197-141-15.eu-central-1.compute.amazonaws.com
    for runner in ${runner_leap1} ${runner_fedora1} ${runner_fedora2};do
        ssh -i ~/.ssh/id_cb_collect cb-collect@${runner} \
-           sudo sed -ie "s@  host:.*@  host: ${BootstrapServersString}@" \
+           sudo sed -ie \"s@  host:.*@  host: ${BootstrapServersString}@\" \
            /etc/cloud_builder_broker.yml
        ssh -i ~/.ssh/id_cb_collect cb-collect@${runner} \
            sudo systemctl restart cb-scheduler cb-info

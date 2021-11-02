@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Playground &mdash; Cloud Builder 0.2.30 documentation</title>
+  <title>Playground &mdash; Cloud Builder 0.2.31 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/custom.css" type="text/css" />
@@ -253,7 +253,7 @@ console or the <code class="xref py py-obj docutils literal notranslate"><span c
 <span class="k">done</span>
 
 <span class="c1"># update BootstrapServersString</span>
-sed -ie <span class="s2">&quot;s@  host:.*@  host: </span><span class="si">${</span><span class="nv">BootstrapServersString</span><span class="si">}</span><span class="s2">@&quot;</span> <span class="se">\</span>
+sudo sed -ie <span class="s2">&quot;s@  host:.*@  host: </span><span class="si">${</span><span class="nv">BootstrapServersString</span><span class="si">}</span><span class="s2">@&quot;</span> <span class="se">\</span>
     /etc/cloud_builder_broker.yml
 
 <span class="c1"># update BootstrapServersString on runners</span>
@@ -262,7 +262,7 @@ sed -ie <span class="s2">&quot;s@  host:.*@  host: </span><span class="si">${</s
 <span class="nv">runner_fedora2</span><span class="o">=</span>ec2-18-197-141-15.eu-central-1.compute.amazonaws.com
 <span class="k">for</span> runner <span class="k">in</span> <span class="si">${</span><span class="nv">runner_leap1</span><span class="si">}</span> <span class="si">${</span><span class="nv">runner_fedora1</span><span class="si">}</span> <span class="si">${</span><span class="nv">runner_fedora2</span><span class="si">}</span><span class="p">;</span><span class="k">do</span>
     ssh -i ~/.ssh/id_cb_collect cb-collect@<span class="si">${</span><span class="nv">runner</span><span class="si">}</span> <span class="se">\</span>
-        sudo sed -ie <span class="s2">&quot;s@  host:.*@  host: </span><span class="si">${</span><span class="nv">BootstrapServersString</span><span class="si">}</span><span class="s2">@&quot;</span> <span class="se">\</span>
+        sudo sed -ie <span class="se">\&quot;</span>s@  host:.*@  host: <span class="si">${</span><span class="nv">BootstrapServersString</span><span class="si">}</span>@<span class="se">\&quot;</span> <span class="se">\</span>
         /etc/cloud_builder_broker.yml
     ssh -i ~/.ssh/id_cb_collect cb-collect@<span class="si">${</span><span class="nv">runner</span><span class="si">}</span> <span class="se">\</span>
         sudo systemctl restart cb-scheduler cb-info
