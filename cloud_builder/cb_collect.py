@@ -60,7 +60,8 @@ from typing import (
 repo_metadata = NamedTuple(
     'repo_metadata', [
         ('repo_type', str),
-        ('repo_file', str)
+        ('repo_file', str),
+        ('repo_path', str)
     ]
 )
 
@@ -493,6 +494,7 @@ def build_project_repo(
 
     if not os.path.exists(target_path):
         Path.create(target_path)
+    sync_files: Dict[str, List[str]] = {}
     for source_ip in runner_responses_for_project.keys():
         for source_spec in runner_responses_for_project[source_ip]:
             (source_file, project_package_name) = source_spec.split('|')
@@ -507,17 +509,24 @@ def build_project_repo(
                     package_name=project_package_name,
                     repo_file=repo_meta.repo_file
                 )
-                sync_call = Command.run(
-                    [
-                        'rsync', '-av', '-e', 'ssh -i {0} -o {1}'.format(
-                            ssh_pkey_file, 'StrictHostKeyChecking=accept-new'
-                        ), remote_source_file, repo_meta.repo_file
-                    ], raise_on_error=False
+                if repo_meta.repo_path in sync_files:
+                    sync_files[repo_meta.repo_path].append(remote_source_file)
+                else:
+                    sync_files[repo_meta.repo_path] = [remote_source_file]
+    for repo_path in sorted(sync_files.keys()):
+        sync_call = Command.run(
+            [
+                'rsync', '-av', '-e', 'ssh -i {0} -o {1}'.format(
+                    ssh_pkey_file, 'StrictHostKeyChecking=accept-new'
                 )
-                if sync_call.output:
-                    log.info(sync_call.output)
-                if sync_call.error:
-                    log.error(sync_call.error)
+            ] + sync_files[repo_path] + [
+                repo_meta.repo_path
+            ], raise_on_error=False
+        )
+        if sync_call.output:
+            log.info(sync_call.output)
+        if sync_call.error:
+            log.error(sync_call.error)
 
     log.info(f'Running cleanup for: {project_path!r}')
     # check if project got deleted from source
@@ -575,7 +584,7 @@ def _update_project_indicator(
 def _get_repo_path_for_binary(
     binary_file_name: str, target_path: str, log: CBCloudLogger
 ) -> repo_metadata:
-    repo_path = None
+    repo_path = 'unknown'
     repo_type = 'unknown'
     if binary_file_name.endswith('.src.rpm'):
         repo_path = f'{target_path}/src'
@@ -593,12 +602,14 @@ def _get_repo_path_for_binary(
         )
         return repo_metadata(
             repo_type=repo_type,
+            repo_path=repo_path,
             repo_file=''
         )
     if not os.path.isdir(repo_path):
         Path.create(repo_path)
     return repo_metadata(
         repo_type=repo_type,
+        repo_path=repo_path,
         repo_file=os.sep.join(
             [repo_path, os.path.basename(binary_file_name)]
         )
