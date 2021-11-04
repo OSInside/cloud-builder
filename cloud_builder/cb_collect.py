@@ -20,6 +20,7 @@ usage: cb-collect -h | --help
        cb-collect --project=<github_project> --ssh-pkey=<ssh_pkey_file>
            [--ssh-user=<user>]
            [--timeout=<time_sec>]
+           [--update-interval=<time_sec>]
 
 options:
     --project=<github_project>
@@ -35,6 +36,10 @@ options:
     --timeout=<time_sec>
         Wait time_sec seconds of inactivity on the message
         broker before return. Default: 30sec
+
+    --update-interval=<time_sec>
+        Update interval to ask for new packages/images
+        Default: 30sec
 """
 import os
 import time
@@ -113,7 +118,7 @@ def main() -> None:
     build_repos(
         broker, int(args['--timeout'] or 30),
         args['--ssh-pkey'], args['--ssh-user'] or 'ec2-user',
-        log
+        int(args['--update-interval'] or 30), log
     )
 
 
@@ -326,7 +331,7 @@ def group_info_response(
 
 def build_repos(
     broker: Any, timeout: int, ssh_pkey_file: str, user: str,
-    log: CBCloudLogger
+    update_interval: int, log: CBCloudLogger
 ) -> None:
     """
     Application loop - building project repositories
@@ -344,8 +349,10 @@ def build_repos(
             broker, request_id_list, timeout, log
         )
         if not runner_responses:
-            log.info(f'No runners responded... sleeping {timeout} sec')
-            time.sleep(timeout)
+            log.info(
+                f'No runners responded... sleeping {update_interval} sec'
+            )
+            time.sleep(update_interval)
             continue
         for project_id in runner_responses.keys():
             project_repo_thread = threading.Thread(
@@ -356,6 +363,9 @@ def build_repos(
                 )
             )
             project_repo_thread.start()
+
+        # wait update_interval seconds before next round
+        time.sleep(update_interval)
 
 
 def cleanup_project_repo(

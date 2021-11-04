@@ -10,7 +10,10 @@ CB_PROJECT="https://github.com/OSInside/cloud-builder-packages.git"
 ## Type:        integer
 ## Default:     30
 #
-# Cloud Builder update intervall for sources update
+# Update interval for polling on new requests for
+# the services cb-info, cb-scheduler and cb-fetch.
+# The value specifies to wait N seconds before retry
+# the poll on the message broker
 #
 CB_UPDATE=30
 
@@ -23,16 +26,22 @@ CB_UPDATE=30
 CB_BUILD_LIMIT=10
 
 ## Type:        integer
-## Default:     30
+## Default:     5
 #
 # Cloud Builder package collector wait N seconds of
 # inactivity on the info message broker service before
-# retry to ask for package results
+# working on the read results
 #
 CB_COLLECT_TIMEOUT=5
 
-## Type           : string
-## Default        : ""
+## Type:        integer
+## Default:     30
+#
+# Cloud Builder package collector wait N seconds
+# before asking for package/image updates again
+#
+CB_COLLECT_UPDATE_INTERVAL=30
+
 #
 # Path to the SSH private key used for connecting the
 # runners such that non interactive access to the runners
