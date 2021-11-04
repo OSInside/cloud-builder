@@ -231,9 +231,18 @@ Now that the control plane runs the following configurations are required:
       runner:
         ssh_user: cb-collect
         ssh_pkey_file: HOME/.ssh/id_cb_collect
+        count: 2
 
    Replace *HOME* with the absolute path to the home directory
    of the user that is expected to call `cb-ctl`
+
+   .. note:: runner count
+
+      The configured number of runners (2) in this example is
+      optional but recommended and tells cb-ctl to expect
+      information from 2 runners. This setting avoids unneeded
+      wait times as explained in step 5 of the runner setup
+      from here :ref:`runner-setup`
 
 Congrats, the control plane is now running, the kafka message broker
 is up and configured and `cb-ctl` would be ready for a first package

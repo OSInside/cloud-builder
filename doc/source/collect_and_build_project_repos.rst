@@ -59,24 +59,52 @@ Create and Setup the reposerver instance
       $ sudo zypper addrepo https://download.opensuse.org/repositories/Virtualization:/Appliances:/Staging/openSUSE_Leap_15.3 cloud-builder
       $ sudo zypper install python3-cloud_builder
 
-3. **Setup git package source connection**
+3. **Setup cb-collect service configuration**
 
-   Still logged in on the reposerver edit the file
-   :file:`/etc/cloud_builder` as follows:
+   Still logged in on the reposerver the file :file:`/etc/cloud_builder`
+   contains service parameters which needs to be setup as follows:
 
-   .. code:: bash
+   **git package source connection**
+     The below setting is the default after install of {CB}.
+     The used CB_PROJECT git repository is the {CB} provided example git
+     repo containing some arbitrary package sources. It only serves the
+     purpose to let users test and run {CB}. For production
+     change this value to your git project
 
-      $ sudo vi /etc/cloud_builder
+     .. code:: bash
 
-      CB_PROJECT="https://github.com/OSInside/cloud-builder-packages.git"
+        CB_PROJECT="https://github.com/OSInside/cloud-builder-packages.git"
 
-   .. note::
+   **runner count:**
+     The {CB} runner count specifies the number of runners that exists
+     in the cluster. This information will be used in cb-collect which
+     asks for information from the cb-info service. Each runner provides
+     an info service. On request multiple info services could respond
+     with information about a package/image. As the requester doesn't
+     know how many answers completes the record, the default behavior
+     is to wait for a configurable time of silence on the response
+     queue before handing control back to the collector and working
+     on the results.
 
-      The above setting is the default after install of {CB}.
-      The used CB_PROJECT git repository is the {CB} provided example git
-      repo containing some arbitrary package sources. It only serves the
-      purpose to let users test and run {CB}. For production
-      change this value to your git project
+     This can lead to an unneeded amount of waiting time in the
+     collector. There is also always the risk that the wait time
+     was not long enough to retrieve all answers from the
+     cb-info services in the system.
+
+     If the information about the number of runners in the
+     cluster is provided, this value will be used to count the
+     number of answers and if that number equals the number
+     of runners it is clear that there can't be more answers
+     which leads the reading code to get back to the collector
+     instead of staying blocked waiting for the timeout.
+
+     .. code:: bash
+
+        CB_RUNNERS=2
+
+     The default value of 0 runners indicates there is no
+     knowledge about the amount of runners in the system and that
+     leads to the timeout based behavior as explained above
 
 4. **Setup broker connection on the reposerver**
 
