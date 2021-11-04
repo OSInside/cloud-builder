@@ -21,6 +21,7 @@ usage: cb-collect -h | --help
            [--ssh-user=<user>]
            [--timeout=<time_sec>]
            [--update-interval=<time_sec>]
+           [--runners=<runner_count>]
 
 options:
     --project=<github_project>
@@ -40,6 +41,9 @@ options:
     --update-interval=<time_sec>
         Update interval to ask for new packages/images
         Default: 30sec
+
+    --runners=<runner_count>
+        Number of runners in the cluster
 """
 import os
 import time
@@ -118,7 +122,9 @@ def main() -> None:
     build_repos(
         broker, int(args['--timeout'] or 30),
         args['--ssh-pkey'], args['--ssh-user'] or 'ec2-user',
-        int(args['--update-interval'] or 30), log
+        int(args['--update-interval'] or 30),
+        int(args['--runners'] or 0),
+        log
     )
 
 
@@ -209,7 +215,7 @@ def send_project_info_requests(
 
 def group_info_response(
     broker: Any, request_id_list: List[str], timeout_sec: int,
-    log: CBCloudLogger
+    runner_count: int, log: CBCloudLogger
 ) -> Dict:
     """
     Watch on the info_response queue for information
@@ -219,6 +225,8 @@ def group_info_response(
     :param Any broker: Instance of broker factory
     :param List request_id_list: list of matching request IDs
     :param int timeout: read timeout in sec on cb-info response
+    :param int runner_count: number of runners
+    :param CBCloudLogger log: logger object
 
     :return:
         Dictionary of IP groups and their data to fetch
@@ -237,12 +245,16 @@ def group_info_response(
 
     :rtype: Dict
     """
+    stop_reading_at = len(request_id_list) * runner_count
+    response_count = 1
     info_records: Dict[str, List] = {}
     # Read package info responses and group them by a unique id
     # consisting out of: project-package-arch-dist information
     try:
         timeout_loop_start = time.time()
-        while time.time() < timeout_loop_start + timeout_sec + 1:
+        while time.time() < timeout_loop_start + timeout_sec + 1 and (
+            stop_reading_at == 0 or stop_reading_at >= response_count
+        ):
             message = None
             for message in broker.read(
                 topic=Defaults.get_info_response_queue_name(),
@@ -254,28 +266,44 @@ def group_info_response(
                 if response:
                     broker.acknowledge()
                     if response['request_id'] in request_id_list:
-                        project_id = ''
-                        if 'package' in response:
-                            project_id = '{0}_{1}_{2}'.format(
-                                response['project'],
-                                response['package']['arch'],
-                                response['package']['dist']
-                            )
-                        elif 'image' in response:
-                            project_id = '{0}_{1}_{2}'.format(
-                                response['project'],
-                                response['image']['arch'],
-                                'image'
-                            )
-                        if project_id and project_id in info_records:
-                            info_records[project_id].append(response)
-                        elif project_id:
-                            info_records[project_id] = [response]
+                        if response['utc_modification_time'] != 'none':
+                            # A utc_modification_time set to none, indicates
+                            # that this info response was sent from an info
+                            # service which has no data for the requested
+                            # package/image (info server configured with
+                            # --always-respond). These responses we ignore for
+                            # the collector, but they are important to identify
+                            # the time when all runners have responded.
+                            project_id = ''
+                            if 'package' in response:
+                                project_id = '{0}_{1}_{2}'.format(
+                                    response['project'],
+                                    response['package']['arch'],
+                                    response['package']['dist']
+                                )
+                            elif 'image' in response:
+                                project_id = '{0}_{1}_{2}'.format(
+                                    response['project'],
+                                    response['image']['arch'],
+                                    'image'
+                                )
+                            if project_id and project_id in info_records:
+                                info_records[project_id].append(response)
+                            elif project_id:
+                                info_records[project_id] = [response]
+                    response_count += 1
             if not message:
                 break
     except Exception as issue:
         log.error(format(issue))
         return {}
+
+    if stop_reading_at > 0 and response_count != stop_reading_at:
+        log.warning(
+            'runner count set to {0} but got {1} responses'.format(
+                stop_reading_at, response_count
+            )
+        )
 
     # Walk through project_id grouped responses and take out the
     # latest available build. Group all data by project_id/source_ip
@@ -331,7 +359,7 @@ def group_info_response(
 
 def build_repos(
     broker: Any, timeout: int, ssh_pkey_file: str, user: str,
-    update_interval: int, log: CBCloudLogger
+    update_interval: int, runner_count: int, log: CBCloudLogger
 ) -> None:
     """
     Application loop - building project repositories
@@ -346,7 +374,7 @@ def build_repos(
             broker, projects_tree, log
         )
         runner_responses = group_info_response(
-            broker, request_id_list, timeout, log
+            broker, request_id_list, timeout, runner_count, log
         )
         if not runner_responses:
             log.info(
