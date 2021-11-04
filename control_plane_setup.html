@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Create and Install the Control Plane &mdash; Cloud Builder 0.2.31 documentation</title>
+  <title>Create and Install the Control Plane &mdash; Cloud Builder 0.2.32 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/custom.css" type="text/css" />
@@ -354,10 +354,20 @@ control plane the used SSH keypair is created once as folows:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">runner</span><span class="p">:</span>
   <span class="nt">ssh_user</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">cb-collect</span>
   <span class="nt">ssh_pkey_file</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">HOME/.ssh/id_cb_collect</span>
+  <span class="nt">count</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">2</span>
 </pre></div>
 </div>
 <p>Replace <em>HOME</em> with the absolute path to the home directory
 of the user that is expected to call <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-ctl</span></code></p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>runner count</p>
+<p>The configured number of runners (2) in this example is
+optional but recommended and tells cb-ctl to expect
+information from 2 runners. This setting avoids unneeded
+wait times as explained in step 5 of the runner setup
+from here <a class="reference internal" href="runner_setup.html#runner-setup"><span class="std std-ref">Runner Setup</span></a></p>
+</div>
 </li>
 </ol>
 <p>Congrats, the control plane is now running, the kafka message broker

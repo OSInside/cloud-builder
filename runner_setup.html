@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Runner Setup &mdash; Cloud Builder 0.2.31 documentation</title>
+  <title>Runner Setup &mdash; Cloud Builder 0.2.32 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/custom.css" type="text/css" />
@@ -315,22 +315,23 @@ for details how to obtain the broker credentials.</p>
 </li>
 </ul>
 </li>
-<li><p><strong>Setup git package source connection</strong></p>
-<p>Login to each of the created runner instances and edit
-the file <code class="file docutils literal notranslate"><span class="pre">/etc/cloud_builder</span></code> as follows:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">CB_PROJECT</span><span class="o">=</span><span class="s2">&quot;https://github.com/OSInside/cloud-builder-packages.git&quot;</span>
-<span class="nv">CB_BUILD_LIMIT</span><span class="o">=</span><span class="m">10</span>
-</pre></div>
-</div>
-<p>The above settings are the default after install of Cloud Builder.
+<li><p><strong>Setup runner services configuration</strong></p>
+<p>On the runner several Cloud Builder services like cb-fetch-once, cb-info
+or cb-scheduler will be started. All of these services reads
+configuration parameters from the file <code class="file docutils literal notranslate"><span class="pre">/etc/cloud_builder</span></code>
+Login to each of the created runner instances and setup the
+following settings:</p>
+<dl>
+<dt><strong>git package source connection:</strong></dt><dd><p>The below setting is the default after install of Cloud Builder.
 The used CB_PROJECT git repository is the Cloud Builder provided example git
 repo containing some arbitrary package sources. It only serves the
 purpose to let users test and run Cloud Builder. For production
 change this value to your git project</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>CB_BUILD_LIMIT</p>
-<p>Every runner comes with a build limit. This is the number
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">CB_PROJECT</span><span class="o">=</span><span class="s2">&quot;https://github.com/OSInside/cloud-builder-packages.git&quot;</span>
+</pre></div>
+</div>
+</dd>
+<dt><strong>package/image build limit:</strong></dt><dd><p>Every runner comes with a build limit. This is the number
 of simultaneously allowed build processes. If the limit is hit
 the runner closes its connection to the message broker until the
 number is below the maximum. For Apache kafka the close of the
@@ -341,7 +342,42 @@ is relatively conservative. It depends on the selected instance
 type/memory and disk space to select an appropriate value. If in
 doubt give it a try with the default setting, but keep in mind
 about this value, especially for production use.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">CB_BUILD_LIMIT</span><span class="o">=</span><span class="m">10</span>
+</pre></div>
 </div>
+</dd>
+<dt><strong>runner count:</strong></dt><dd><p>The Cloud Builder runner count specifies the number of runners that exists
+in the cluster. This information will be used in services which
+asks for information from the cb-info service. Each runner provides
+an info service. On request multiple info services could respond
+with information about a package/image. As the requester doesn’t
+know how many answers completes the record, the default behavior
+is to wait for a configurable time of silence on the response
+queue before handing control back to the user and working
+on the results.</p>
+<p>This can lead to an unneeded amount of waiting time for
+the user. There is also always the risk that the wait time
+was not long enough to retrieve all answers from the
+cb-info services in the system.</p>
+<p>If the information about the number of runners in the
+cluster is provided, this value will be used to count the
+number of answers and if that number equals the number
+of runners it is clear that there can’t be more answers
+which leads the reading code to get back to the user
+instead of staying blocked waiting for the timeout.</p>
+<p>If the runner count is configured, it’s also required that all
+cb-info services are configured to respond to any request even
+if there is no information available for the requested package
+or image.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">CB_RUNNERS</span><span class="o">=</span><span class="m">2</span>
+<span class="nv">CB_INFO_RESPONSE_TYPE</span><span class="o">=</span><span class="s2">&quot;--respond-always&quot;</span>
+</pre></div>
+</div>
+<p>The default value of 0 runners indicates there is no
+knowledge about the amount of runners in the system and that
+leads to the timeout based behavior as explained above</p>
+</dd>
+</dl>
 </li>
 <li><p><strong>Start</strong> <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-fetch-once</span></code> <strong>service</strong></p>
 <p>Login to each of the created runner instances and fetch

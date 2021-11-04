@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Collect and Build Project Repos &mdash; Cloud Builder 0.2.31 documentation</title>
+  <title>Collect and Build Project Repos &mdash; Cloud Builder 0.2.32 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/custom.css" type="text/css" />
@@ -207,22 +207,46 @@ $ sudo zypper install python3-cloud_builder
 </pre></div>
 </div>
 </li>
-<li><p><strong>Setup git package source connection</strong></p>
-<p>Still logged in on the reposerver edit the file
-<code class="file docutils literal notranslate"><span class="pre">/etc/cloud_builder</span></code> as follows:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ sudo vi /etc/cloud_builder
-
-<span class="nv">CB_PROJECT</span><span class="o">=</span><span class="s2">&quot;https://github.com/OSInside/cloud-builder-packages.git&quot;</span>
-</pre></div>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>The above setting is the default after install of Cloud Builder.
+<li><p><strong>Setup cb-collect service configuration</strong></p>
+<p>Still logged in on the reposerver the file <code class="file docutils literal notranslate"><span class="pre">/etc/cloud_builder</span></code>
+contains service parameters which needs to be setup as follows:</p>
+<dl>
+<dt><strong>git package source connection</strong></dt><dd><p>The below setting is the default after install of Cloud Builder.
 The used CB_PROJECT git repository is the Cloud Builder provided example git
 repo containing some arbitrary package sources. It only serves the
 purpose to let users test and run Cloud Builder. For production
 change this value to your git project</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">CB_PROJECT</span><span class="o">=</span><span class="s2">&quot;https://github.com/OSInside/cloud-builder-packages.git&quot;</span>
+</pre></div>
 </div>
+</dd>
+<dt><strong>runner count:</strong></dt><dd><p>The Cloud Builder runner count specifies the number of runners that exists
+in the cluster. This information will be used in cb-collect which
+asks for information from the cb-info service. Each runner provides
+an info service. On request multiple info services could respond
+with information about a package/image. As the requester doesn’t
+know how many answers completes the record, the default behavior
+is to wait for a configurable time of silence on the response
+queue before handing control back to the collector and working
+on the results.</p>
+<p>This can lead to an unneeded amount of waiting time in the
+collector. There is also always the risk that the wait time
+was not long enough to retrieve all answers from the
+cb-info services in the system.</p>
+<p>If the information about the number of runners in the
+cluster is provided, this value will be used to count the
+number of answers and if that number equals the number
+of runners it is clear that there can’t be more answers
+which leads the reading code to get back to the collector
+instead of staying blocked waiting for the timeout.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">CB_RUNNERS</span><span class="o">=</span><span class="m">2</span>
+</pre></div>
+</div>
+<p>The default value of 0 runners indicates there is no
+knowledge about the amount of runners in the system and that
+leads to the timeout based behavior as explained above</p>
+</dd>
+</dl>
 </li>
 <li><p><strong>Setup broker connection on the reposerver</strong></p>
 <p>Still logged in on the reposerver create the file

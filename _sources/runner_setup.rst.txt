@@ -174,35 +174,78 @@ created and configured as follows:
         runner:
           group: fedora
 
-5. **Setup git package source connection**
+5. **Setup runner services configuration**
 
-   Login to each of the created runner instances and edit
-   the file :file:`/etc/cloud_builder` as follows:
+   On the runner several {CB} services like cb-fetch-once, cb-info
+   or cb-scheduler will be started. All of these services reads
+   configuration parameters from the file :file:`/etc/cloud_builder`
+   Login to each of the created runner instances and setup the
+   following settings:
 
-   .. code:: bash
+   **git package source connection:**
+     The below setting is the default after install of {CB}.
+     The used CB_PROJECT git repository is the {CB} provided example git
+     repo containing some arbitrary package sources. It only serves the
+     purpose to let users test and run {CB}. For production
+     change this value to your git project
 
-      CB_PROJECT="https://github.com/OSInside/cloud-builder-packages.git"
-      CB_BUILD_LIMIT=10
+     .. code:: bash
 
-   The above settings are the default after install of {CB}.
-   The used CB_PROJECT git repository is the {CB} provided example git
-   repo containing some arbitrary package sources. It only serves the
-   purpose to let users test and run {CB}. For production
-   change this value to your git project
+        CB_PROJECT="https://github.com/OSInside/cloud-builder-packages.git"
 
-   .. note:: CB_BUILD_LIMIT
+   **package/image build limit:**
+     Every runner comes with a build limit. This is the number
+     of simultaneously allowed build processes. If the limit is hit
+     the runner closes its connection to the message broker until the
+     number is below the maximum. For Apache kafka the close of the
+     connection of a consumer will cause a rebalance of all other still
+     connected consumers. This is an expensive operation and should be
+     avoided. The {CB} set maximum of 10 package builds at the same time
+     is relatively conservative. It depends on the selected instance
+     type/memory and disk space to select an appropriate value. If in
+     doubt give it a try with the default setting, but keep in mind
+     about this value, especially for production use.
 
-      Every runner comes with a build limit. This is the number
-      of simultaneously allowed build processes. If the limit is hit
-      the runner closes its connection to the message broker until the
-      number is below the maximum. For Apache kafka the close of the
-      connection of a consumer will cause a rebalance of all other still
-      connected consumers. This is an expensive operation and should be
-      avoided. The {CB} set maximum of 10 package builds at the same time
-      is relatively conservative. It depends on the selected instance
-      type/memory and disk space to select an appropriate value. If in
-      doubt give it a try with the default setting, but keep in mind
-      about this value, especially for production use.
+     .. code:: bash
+
+        CB_BUILD_LIMIT=10
+
+   **runner count:**
+     The {CB} runner count specifies the number of runners that exists
+     in the cluster. This information will be used in services which
+     asks for information from the cb-info service. Each runner provides
+     an info service. On request multiple info services could respond
+     with information about a package/image. As the requester doesn't
+     know how many answers completes the record, the default behavior
+     is to wait for a configurable time of silence on the response
+     queue before handing control back to the user and working
+     on the results.
+
+     This can lead to an unneeded amount of waiting time for
+     the user. There is also always the risk that the wait time
+     was not long enough to retrieve all answers from the
+     cb-info services in the system.
+
+     If the information about the number of runners in the
+     cluster is provided, this value will be used to count the
+     number of answers and if that number equals the number
+     of runners it is clear that there can't be more answers
+     which leads the reading code to get back to the user
+     instead of staying blocked waiting for the timeout.
+
+     If the runner count is configured, it's also required that all
+     cb-info services are configured to respond to any request even
+     if there is no information available for the requested package
+     or image.
+
+     .. code:: bash
+
+        CB_RUNNERS=2
+        CB_INFO_RESPONSE_TYPE="--respond-always"
+
+     The default value of 0 runners indicates there is no
+     knowledge about the amount of runners in the system and that
+     leads to the timeout based behavior as explained above
 
 6. **Start** `cb-fetch-once` **service**
 
