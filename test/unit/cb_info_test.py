@@ -33,12 +33,13 @@ class TestCBInfo:
         mock_Privileges_check_for_root_permissions,
         mock_handle_info_requests
     ):
+        respond_always = False
         info_scheduler = Mock()
         mock_BlockingScheduler.return_value = info_scheduler
         main()
         mock_Privileges_check_for_root_permissions.assert_called_once_with()
         mock_handle_info_requests.assert_called_once_with(
-            5000, mock_CBCloudLogger.return_value
+            5000, respond_always, mock_CBCloudLogger.return_value
         )
         mock_BlockingScheduler.assert_called_once_with()
         info_scheduler.start.assert_called_once_with()
@@ -65,6 +66,7 @@ class TestCBInfo:
         self, mock_CBIdentity, mock_CBMessageBroker,
         mock_CBCloudLogger, mock_lookup_image
     ):
+        respond_always = False
         log = Mock()
         request = {
             'image': {
@@ -90,7 +92,7 @@ class TestCBInfo:
         mock_CBMessageBroker.new.return_value = broker
 
         with raises(IndexError):
-            handle_info_requests(5000, log)
+            handle_info_requests(5000, respond_always, log)
 
         assert broker.read.call_args_list[0] == call(
             topic='cb-info-request',
@@ -98,7 +100,8 @@ class TestCBInfo:
             timeout_ms=5000
         )
         mock_lookup_image.assert_called_once_with(
-            'myimage', 'x86_64', 'selection', 'uuid', broker, log
+            'myimage', 'x86_64', 'selection', 'uuid',
+            respond_always, broker, log
         )
         broker.close.assert_called_once_with()
 
@@ -111,6 +114,7 @@ class TestCBInfo:
         mock_CBCloudLogger, mock_lookup_package
     ):
         log = Mock()
+        respond_always = False
         request = {
             'package': {
                 'arch': 'x86_64',
@@ -135,7 +139,7 @@ class TestCBInfo:
         mock_CBMessageBroker.new.return_value = broker
 
         with raises(IndexError):
-            handle_info_requests(5000, log)
+            handle_info_requests(5000, respond_always, log)
 
         assert broker.read.call_args_list[0] == call(
             topic='cb-info-request',
@@ -143,7 +147,7 @@ class TestCBInfo:
             timeout_ms=5000
         )
         mock_lookup_package.assert_called_once_with(
-            'vim', 'x86_64', 'TW', 'uuid', broker, log
+            'vim', 'x86_64', 'TW', 'uuid', respond_always, broker, log
         )
         broker.close.assert_called_once_with()
 
@@ -158,6 +162,7 @@ class TestCBInfo:
         mock_is_building, mock_get_result_modification_time,
         mock_CBInfoResponse, mock_CBCloudLogger
     ):
+        respond_always = False
         mock_os_path_isfile.return_value = True
         mock_get_result_modification_time.return_value = 'utctime'
         log = Mock()
@@ -176,7 +181,10 @@ class TestCBInfo:
         }
 
         with patch('builtins.open', create=True):
-            lookup_image('image', 'arch', 'selection', 'uuid', broker, log)
+            lookup_image(
+                'image', 'arch', 'selection', 'uuid',
+                respond_always, broker, log
+            )
 
         broker.acknowledge.assert_called_once_with()
         result = broker.validate_build_response.return_value
@@ -200,6 +208,7 @@ class TestCBInfo:
         mock_is_building, mock_get_result_modification_time,
         mock_CBInfoResponse, mock_CBCloudLogger
     ):
+        respond_always = False
         mock_os_path_isfile.return_value = True
         mock_get_result_modification_time.return_value = 'utctime'
         log = Mock()
@@ -219,7 +228,10 @@ class TestCBInfo:
         }
 
         with patch('builtins.open', create=True):
-            lookup_package('package', 'arch', 'dist', 'uuid', broker, log)
+            lookup_package(
+                'package', 'arch', 'dist', 'uuid',
+                respond_always, broker, log
+            )
 
         broker.acknowledge.assert_called_once_with()
         result = broker.validate_build_response.return_value
@@ -235,13 +247,17 @@ class TestCBInfo:
 
     @patch('cloud_builder.cb_info.datetime')
     @patch('os.path.getmtime')
+    @patch('os.path.exists')
     def test_get_result_modification_time(
-        self, mock_os_path_getmtime, mock_datetime
+        self, mock_os_path_exists, mock_os_path_getmtime, mock_datetime
     ):
+        mock_os_path_exists.return_value = True
         get_result_modification_time('filename')
         mock_datetime.utcfromtimestamp.assert_called_once_with(
             mock_os_path_getmtime.return_value
         )
+        mock_os_path_exists.return_value = False
+        assert get_result_modification_time('filename') is None
 
     def test_get_package_status(self):
         status_flags = Defaults.get_status_flags()
@@ -262,7 +278,9 @@ class TestCBInfo:
             'unknown'
 
     @patch('psutil.pid_exists')
-    def test_is_building(self, mock_psutil_pid_exists):
+    @patch('os.path.isfile')
+    def test_is_building(self, mock_os_path_isfile, mock_psutil_pid_exists):
+        mock_os_path_isfile.return_value = True
         mock_psutil_pid_exists.return_value = False
         with patch('builtins.open', create=True) as mock_open:
             mock_open.return_value = MagicMock(spec=io.IOBase)

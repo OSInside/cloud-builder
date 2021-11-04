@@ -7,7 +7,7 @@ Requires=network-online.target
 EnvironmentFile=-/etc/cloud_builder
 Type=simple
 Restart=on-failure
-ExecStart=/bin/bash -c 'sudo cb-info --update-interval ${CB_UPDATE}'
+ExecStart=/bin/bash -c 'sudo cb-info --update-interval ${CB_UPDATE} ${CB_INFO_RESPONSE_TYPE}'
 
 [Install]
 WantedBy=multi-user.target

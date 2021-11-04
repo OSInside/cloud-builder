@@ -42,6 +42,24 @@ CB_COLLECT_TIMEOUT=5
 #
 CB_COLLECT_UPDATE_INTERVAL=30
 
+## Type:        string
+## Default:     ""
+#
+# Configure the response behavior of cb-info. By default
+# a request to cb-info for a package/image for which the
+# runner has no information will result in no answer from
+# the service. If CB_INFO_RESPONSE_TYPE is set to
+#
+# --respond-always
+#
+# the behavior changes in a way that cb-info will
+# send an answer for any received request, independently
+# if there is data available or not.
+#
+CB_INFO_RESPONSE_TYPE=""
+
+## Type:        string
+## Default:     ""
 #
 # Path to the SSH private key used for connecting the
 # runners such that non interactive access to the runners
@@ -50,8 +68,8 @@ CB_COLLECT_UPDATE_INTERVAL=30
 #
 CB_SSH_PKEY=""
 
-## Type           : string
-## Default        : ""
+## Type:        string
+## Default:     ""
 #
 # Name of SSH user to use for accessing runners
 #

@@ -20,6 +20,7 @@ usage: cb-info -h | --help
        cb-info
            [--update-interval=<time_sec>]
            [--poll-timeout=<time_msec>]
+           [--respond-always]
 
 options:
     --update-interval=<time_sec>
@@ -29,10 +30,16 @@ options:
     --poll-timeout=<time_msec>
         Optional message broker poll timeout to return if no
         requests are available. Default: 5000msec
+
+    --respond-always
+        Always respond even if there is no information
+        available for the requested package/image
 """
 import os
 import psutil
-from typing import Any
+from typing import (
+    Any, Optional
+)
 from datetime import datetime
 from docopt import docopt
 from cloud_builder.version import __version__
@@ -91,6 +98,7 @@ def main() -> None:
 
     update_interval = int(args['--update-interval'] or 10)
     poll_timeout = int(args['--poll-timeout'] or 5000)
+    respond_always = args['--respond-always']
 
     if poll_timeout / 1000 > update_interval:
         # This should not be allowed, as the BlockingScheduler would
@@ -100,17 +108,19 @@ def main() -> None:
             'Poll timeout on the message broker greater than update interval'
         )
 
-    handle_info_requests(poll_timeout, log)
+    handle_info_requests(poll_timeout, respond_always, log)
 
     project_scheduler = BlockingScheduler()
     project_scheduler.add_job(
-        lambda: handle_info_requests(poll_timeout, log),
+        lambda: handle_info_requests(poll_timeout, respond_always, log),
         'interval', seconds=update_interval
     )
     project_scheduler.start()
 
 
-def handle_info_requests(poll_timeout: int, log: CBCloudLogger) -> None:
+def handle_info_requests(
+    poll_timeout: int, respond_always: bool, log: CBCloudLogger
+) -> None:
     """
     Listen to the message broker queue for info requests
     in pub/sub mode. The subscription model is based on
@@ -147,14 +157,16 @@ def handle_info_requests(poll_timeout: int, log: CBCloudLogger) -> None:
                         dist = request['package']['dist']
                         lookup_package(
                             request['project'], arch, dist,
-                            request['request_id'], broker, log
+                            request['request_id'], respond_always,
+                            broker, log
                         )
                     elif 'image' in request:
                         arch = request['image']['arch']
                         selection = request['image']['selection']
                         lookup_image(
                             request['project'], arch, selection,
-                            request['request_id'], broker, log
+                            request['request_id'], respond_always,
+                            broker, log
                         )
     finally:
         log.info('Closing message broker connection')
@@ -163,7 +175,7 @@ def handle_info_requests(poll_timeout: int, log: CBCloudLogger) -> None:
 
 def lookup_image(
     image: str, arch: str, selection: str, request_id: str,
-    broker: Any, log: CBCloudLogger
+    respond_always: bool, broker: Any, log: CBCloudLogger
 ) -> None:
     log.set_id(image)
     build_pid_file = os.sep.join(
@@ -171,33 +183,35 @@ def lookup_image(
     )
     if os.path.isfile(build_pid_file):
         broker.acknowledge()
-        source_ip = log.get_id().split(':')[1]
+
+    source_ip = log.get_id().split(':')[1]
+    utc_modification_time = get_result_modification_time(
+        build_pid_file
+    )
+    image_file_base_name = os.sep.join(
+        [
+            Defaults.get_runner_root(),
+            f'{image}@{selection}.{arch}'
+        ]
+    )
+    image_result_file = image_file_base_name + '.result.yml'
+    image_build_log_file = image_file_base_name + '.build.log'
+    image_solver_file = image_file_base_name + '.solver.json'
+    image_binaries = []
+    image_status = get_image_status()
+    if os.path.isfile(image_result_file):
+        with open(image_result_file) as result_file:
+            result = broker.validate_build_response(result_file.read())
+            image_binaries = result['image']['binary_packages']
+            image_status = get_image_status(result['response_code'])
+
+    if os.path.isfile(build_pid_file) or respond_always:
         response = CBInfoResponse(
             request_id, log.get_id()
         )
         response.set_image_info_response(
             image, source_ip, is_building(build_pid_file), arch, selection
         )
-        utc_modification_time = get_result_modification_time(
-            build_pid_file
-        )
-        image_file_base_name = os.sep.join(
-            [
-                Defaults.get_runner_root(),
-                f'{image}@{selection}.{arch}'
-            ]
-        )
-        image_result_file = image_file_base_name + '.result.yml'
-        image_build_log_file = image_file_base_name + '.build.log'
-        image_solver_file = image_file_base_name + '.solver.json'
-        image_binaries = []
-        image_status = get_image_status()
-        if os.path.isfile(image_result_file):
-            with open(image_result_file) as result_file:
-                result = broker.validate_build_response(result_file.read())
-                image_binaries = result['image']['binary_packages']
-                image_status = get_image_status(result['response_code'])
-
         response.set_image_info_response_result(
             image_binaries,
             image_build_log_file if os.path.isfile(
@@ -206,7 +220,7 @@ def lookup_image(
             image_solver_file if os.path.isfile(
                 image_solver_file
             ) else 'none',
-            format(utc_modification_time),
+            format(utc_modification_time or 'none'),
             image_status
         )
         log.info_response(response, broker)
@@ -214,7 +228,7 @@ def lookup_image(
 
 def lookup_package(
     package: str, arch: str, dist: str, request_id: str,
-    broker: Any, log: CBCloudLogger
+    respond_always: bool, broker: Any, log: CBCloudLogger
 ) -> None:
     log.set_id(package)
     build_pid_file = os.sep.join(
@@ -222,34 +236,36 @@ def lookup_package(
     )
     if os.path.isfile(build_pid_file):
         broker.acknowledge()
-        source_ip = log.get_id().split(':')[1]
+
+    source_ip = log.get_id().split(':')[1]
+    utc_modification_time = get_result_modification_time(
+        build_pid_file
+    )
+    package_file_base_name = os.sep.join(
+        [
+            Defaults.get_runner_root(),
+            f'{package}@{dist}.{arch}'
+        ]
+    )
+    package_result_file = package_file_base_name + '.result.yml'
+    package_prepare_log_file = package_file_base_name + '.prepare.log'
+    package_build_log_file = package_file_base_name + '.build.log'
+    package_solver_file = package_file_base_name + '.solver.json'
+    package_binaries = []
+    package_status = get_package_status()
+    if os.path.isfile(package_result_file):
+        with open(package_result_file) as result_file:
+            result = broker.validate_build_response(result_file.read())
+            package_binaries = result['package']['binary_packages']
+            package_status = get_package_status(result['response_code'])
+
+    if os.path.isfile(build_pid_file) or respond_always:
         response = CBInfoResponse(
             request_id, log.get_id()
         )
         response.set_package_info_response(
             package, source_ip, is_building(build_pid_file), arch, dist
         )
-        utc_modification_time = get_result_modification_time(
-            build_pid_file
-        )
-        package_file_base_name = os.sep.join(
-            [
-                Defaults.get_runner_root(),
-                f'{package}@{dist}.{arch}'
-            ]
-        )
-        package_result_file = package_file_base_name + '.result.yml'
-        package_prepare_log_file = package_file_base_name + '.prepare.log'
-        package_build_log_file = package_file_base_name + '.build.log'
-        package_solver_file = package_file_base_name + '.solver.json'
-        package_binaries = []
-        package_status = get_package_status()
-        if os.path.isfile(package_result_file):
-            with open(package_result_file) as result_file:
-                result = broker.validate_build_response(result_file.read())
-                package_binaries = result['package']['binary_packages']
-                package_status = get_package_status(result['response_code'])
-
         response.set_package_info_response_result(
             package_binaries,
             package_prepare_log_file if os.path.isfile(
@@ -261,16 +277,18 @@ def lookup_package(
             package_solver_file if os.path.isfile(
                 package_solver_file
             ) else 'none',
-            format(utc_modification_time),
+            format(utc_modification_time or 'none'),
             package_status
         )
         log.info_response(response, broker)
 
 
-def get_result_modification_time(filename: str) -> datetime:
-    return datetime.utcfromtimestamp(
-        os.path.getmtime(filename)
-    )
+def get_result_modification_time(filename: str) -> Optional[datetime]:
+    if os.path.exists(filename):
+        return datetime.utcfromtimestamp(
+            os.path.getmtime(filename)
+        )
+    return None
 
 
 def get_package_status(response_code: str = '') -> str:
@@ -294,8 +312,9 @@ def get_image_status(response_code: str = '') -> str:
 
 
 def is_building(pidfile: str) -> bool:
-    with open(pidfile) as pid_fd:
-        build_pid = int(pid_fd.read())
-        if psutil.pid_exists(build_pid):
-            return True
+    if os.path.isfile(pidfile):
+        with open(pidfile) as pid_fd:
+            build_pid = int(pid_fd.read())
+            if psutil.pid_exists(build_pid):
+                return True
     return False
