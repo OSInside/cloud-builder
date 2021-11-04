@@ -249,7 +249,8 @@ def main() -> None:
             args['--arch'],
             args['--dist'],
             args['--selection'],
-            int(args['--timeout'] or default_timeout)
+            int(args['--timeout'] or default_timeout),
+            get_config()
         )
     elif args['--get-binaries']:
         fetch_binaries(
@@ -451,11 +452,12 @@ def get_build_log(
 
 def get_build_info(
     broker: Any, target: str, project_path: str, arch: str,
-    dist: str, selection: str, timeout_sec: int
+    dist: str, selection: str, timeout_sec: int, config: Dict
 ) -> None:
     CBDisplay.print_json(
         get_info(
-            broker, target, project_path, arch, dist, selection, timeout_sec
+            broker, target, project_path, arch, dist, selection,
+            timeout_sec, config
         )
     )
 
@@ -465,7 +467,8 @@ def fetch_binaries(
     dist: str, selection: str, timeout_sec: int, target_dir, config: Dict
 ) -> None:
     info_response = get_info(
-        broker, target, project_path, arch, dist, selection, timeout_sec
+        broker, target, project_path, arch, dist, selection,
+        timeout_sec, config
     )
     if info_response:
         runner_ip = info_response['source_ip']
@@ -546,7 +549,7 @@ def watch_filter_none() -> Callable:
 
 def get_info(
     broker: Any, target: str, project_path: str, arch: str,
-    dist: str, selection: str, timeout_sec: int
+    dist: str, selection: str, timeout_sec: int, config: Dict
 ) -> Dict:
     if dist:
         request_id = _send_package_info_request(
@@ -556,16 +559,17 @@ def get_info(
         request_id = _send_image_info_request(
             broker, _get_target_path(project_path, target), arch, selection
         )
-    return _info_reader(broker, request_id, timeout_sec)
+    return _info_reader(broker, request_id, timeout_sec, config)
 
 
 def _get_info_response_file(
     broker: Any, target: str, project_path: str, arch: str,
-    dist: str, selection: str, timeout_sec: int,
-    config: Dict, response_file_id: str, keep_open: bool = False
+    dist: str, selection: str, timeout_sec: int, config: Dict,
+    response_file_id: str, keep_open: bool = False
 ) -> str:
     info_response = get_info(
-        broker, target, project_path, arch, dist, selection, timeout_sec
+        broker, target, project_path, arch, dist, selection,
+        timeout_sec, config
     )
     if info_response:
         runner_ip = info_response['source_ip']
@@ -686,7 +690,9 @@ def _send_image_info_request(
     return info_request.get_data()['request_id']
 
 
-def _info_reader(broker: Any, request_id: str, timeout_sec: int) -> Dict:
+def _info_reader(
+    broker: Any, request_id: str, timeout_sec: int, config: Dict
+) -> Dict:
     """
     Read from the cloud builder info response queue.
     In case multiple info services responds to the package/image
@@ -697,13 +703,18 @@ def _info_reader(broker: Any, request_id: str, timeout_sec: int) -> Dict:
     :param int timeout_sec:
         Wait time_sec seconds of inactivity on the message
         broker before return.
+    :param dict config: cbctl.yml config hash
     :param Callable func:
         Callback method for response record
     """
+    stop_reading_at = config['runner'].get('count') or 0
+    response_count = 1
     info_records = []
     try:
         timeout_loop_start = time.time()
-        while time.time() < timeout_loop_start + timeout_sec + 1:
+        while time.time() < timeout_loop_start + timeout_sec + 1 and (
+            stop_reading_at == 0 or stop_reading_at >= response_count
+        ):
             message = None
             for message in broker.read(
                 topic=Defaults.get_info_response_queue_name(),
@@ -717,10 +728,18 @@ def _info_reader(broker: Any, request_id: str, timeout_sec: int) -> Dict:
                     broker.acknowledge()
                     if response['request_id'] == request_id:
                         info_records.append(response)
+                    response_count += 1
             if not message:
                 break
     finally:
         broker.close()
+
+    if stop_reading_at > 0 and response_count != stop_reading_at:
+        log.warning(
+            'runner count set to {0} but got {1} responses'.format(
+                stop_reading_at, response_count
+            )
+        )
 
     if not info_records:
         final_info_record = {}

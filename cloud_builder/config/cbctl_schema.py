@@ -29,6 +29,11 @@ cbctl_config_schema = {
                 'required': True,
                 'type': 'string',
                 'nullable': False
+            },
+            'count': {
+                'required': False,
+                'type': 'number',
+                'nullable': False
             }
         }
     }
