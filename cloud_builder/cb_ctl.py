@@ -727,8 +727,9 @@ def _info_reader(
                 if response:
                     broker.acknowledge()
                     if response['request_id'] == request_id:
-                        info_records.append(response)
-                    response_count += 1
+                        if response['utc_modification_time'] != 'none':
+                            info_records.append(response)
+                        response_count += 1
             if not message:
                 break
     finally:

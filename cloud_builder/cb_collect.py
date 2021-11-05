@@ -291,7 +291,7 @@ def group_info_response(
                                 info_records[project_id].append(response)
                             elif project_id:
                                 info_records[project_id] = [response]
-                    response_count += 1
+                        response_count += 1
             if not message:
                 break
     except Exception as issue:
