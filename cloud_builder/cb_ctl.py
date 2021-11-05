@@ -708,12 +708,12 @@ def _info_reader(
         Callback method for response record
     """
     stop_reading_at = config['runner'].get('count') or 0
-    response_count = 1
+    response_count = 0
     info_records = []
     try:
         timeout_loop_start = time.time()
         while time.time() < timeout_loop_start + timeout_sec + 1 and (
-            stop_reading_at == 0 or stop_reading_at >= response_count
+            stop_reading_at == 0 or stop_reading_at > response_count
         ):
             message = None
             for message in broker.read(

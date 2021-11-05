@@ -246,14 +246,14 @@ def group_info_response(
     :rtype: Dict
     """
     stop_reading_at = len(request_id_list) * runner_count
-    response_count = 1
+    response_count = 0
     info_records: Dict[str, List] = {}
     # Read package info responses and group them by a unique id
     # consisting out of: project-package-arch-dist information
     try:
         timeout_loop_start = time.time()
         while time.time() < timeout_loop_start + timeout_sec + 1 and (
-            stop_reading_at == 0 or stop_reading_at >= response_count
+            stop_reading_at == 0 or stop_reading_at > response_count
         ):
             message = None
             for message in broker.read(
