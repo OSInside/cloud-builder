@@ -24,13 +24,14 @@ suseInsertService sshd
 suseInsertService cloud-netconfig.timer
 
 # Activate services CB
-suseInsertService cb-fetch
+# suseInsertService cb-fetch
 
-if [ "$kiwi_profiles" = "EC2-HVM" ];then
-    # Activate/De-activeta services
-    suseInsertService chronyd
-    suseInsertService cloud-init-local
-    suseInsertService cloud-init
-    suseInsertService cloud-config
-    suseInsertService cloud-final
-fi
+# Activate/De-activeta services
+baseInsertService chronyd
+baseInsertService cloud-init-local
+baseInsertService cloud-init
+baseInsertService cloud-config
+baseInsertService cloud-final
+
+chown -R fedora /home/fedora
+chgrp -R fedora /home/fedora

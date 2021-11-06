@@ -1,0 +1,3 @@
+runner:
+  ssh_user: cb-collect
+  ssh_pkey_file: /home/fedora/.ssh/id_cb_collect

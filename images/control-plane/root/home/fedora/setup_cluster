@@ -1,0 +1,66 @@
+#!/bin/bash
+set -e
+
+source setup_cluster.cfg
+
+pushd /usr/local/kafka_2.12-2.2.1
+
+# standard topics...
+for topic in cb-response cb-info-request cb-info-response; do
+    ./bin/kafka-topics.sh \
+        --create \
+        --zookeeper ${ZookeeperConnectString} \
+        --replication-factor 2 \
+        --partitions 1 \
+        --topic ${topic}
+done
+
+# runner group topics...
+for topic in ${runner_topics}; do
+    ./bin/kafka-topics.sh \
+        --create \
+        --zookeeper ${ZookeeperConnectString} \
+        --replication-factor 2 \
+        --partitions 10 \
+        --topic ${topic}
+done
+
+# retention times...
+for topic in ${runner_topics}; do
+    ./bin/kafka-topics.sh \
+        --alter \
+        --zookeeper ${ZookeeperConnectString} \
+        --config retention.ms=3600000 \
+        --topic ${topic}
+done
+for topic in cb-info-response cb-info-request; do
+    ./bin/kafka-topics.sh \
+        --alter \
+        --zookeeper ${ZookeeperConnectString} \
+        --config retention.ms=120000 \
+        --topic ${topic}
+done
+
+# update BootstrapServersString
+sudo sed -ie "s@  host:.*@  host: ${BootstrapServersString}@" \
+    /etc/cloud_builder_broker.yml
+# update this_host name
+sudo sed -ie "s@this_host:.*@this_host: ${this_host}@" \
+    /etc/cloud_builder_broker.yml
+
+# update BootstrapServersString on runners
+runner_count=0
+for runner in ${runners};do
+    ssh -i ~/.ssh/id_cb_collect cb-collect@${runner} \
+        sudo sed -ie \"s@  host:.*@  host: ${BootstrapServersString}@\" \
+        /etc/cloud_builder_broker.yml
+    ssh -i ~/.ssh/id_cb_collect cb-collect@${runner} \
+        sudo sed -ie \"s@this_host:.*@this_host: ${runner}@\" \
+        /etc/cloud_builder_broker.yml
+    ssh -i ~/.ssh/id_cb_collect cb-collect@${runner} \
+        sudo systemctl restart cb-scheduler cb-info
+    runner_count=$((runner_count + 1))
+done
+
+# setup runner count
+echo "  count: ${runner_count}" >> ~/.config/cb/cbctl.yml

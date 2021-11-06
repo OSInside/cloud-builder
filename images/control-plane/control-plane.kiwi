@@ -1,72 +1,65 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<!-- The line below is required in order to use the multibuild OBS features -->
-<!-- OBS-Profiles: @BUILD_FLAVOR@ -->
-<!-- OBS-ExclusiveArch: aarch64 x86_64 -->
-
 <image schemaversion="7.4" name="CB-ControlPlane" displayname="CB-ControlPlane">
     <description type="system">
         <author>Marcus Schäfer</author>
         <contact>marcus.schaefer@gmail.com</contact>
         <specification>Cloud Builder ControlPlane</specification>
     </description>
-    <profiles>
-        <profile name="EC2-HVM" description="EC2 HVM Guest Image"/>
-    </profiles>
     <preferences>
         <version>1.0.0</version>
-        <packagemanager>zypper</packagemanager>
+        <packagemanager>dnf</packagemanager>
         <rpm-check-signatures>false</rpm-check-signatures>
         <locale>en_US</locale>
         <keytable>us.map.gz</keytable>
         <timezone>UTC</timezone>
     </preferences>
-    <preferences profiles="EC2-HVM">
+    <preferences>
         <type image="oem" filesystem="xfs" bootpartition="false" kernelcmdline="console=ttyS0 multipath=off net.ifnames=0 nvme_core.io_timeout=4294967295 nvme_core.admin_timeout=4294967295 8250.nr_uarts=4 dis_ucode_ldr" devicepersistency="by-label" firmware="efi">
             <oemconfig>
                 <oem-resize>false</oem-resize>
             </oemconfig>
             <bootloader name="grub2" console="serial" timeout="1"/>
             <size unit="M">10240</size>
-            <machine xen_loader="hvmloader"/>
         </type>
     </preferences>
     <users>
         <user password="$1$wYJUgpM5$RXMMeASDc035eX.NbYWFl0" home="/root" name="root" groups="root"/>
     </users>
-    <repository type="rpm-md">
-        <source path="obs://Virtualization:Appliances:Staging/openSUSE_Leap_15.3"/>
+    <users>
+        <user password="$1$wYJUgpM5$RXMMeASDc035eX.NbYWFl0" home="/home/fedora" name="fedora" groups="fedora"/>
+    </users>
+    <repository type="rpm-md" alias="Fedora34" sourcetype="metalink">
+        <source path="https://mirrors.fedoraproject.org/metalink?repo=fedora-34&amp;arch=x86_64"/>
     </repository>
-    <repository type="rpm-md">
-        <source path="https://download.opensuse.org/distribution/leap/15.3/repo/oss/"/>
+    <repository type="rpm-md" alias="Fedora34-updates" sourcetype="metalink">
+        <source path="https://mirrors.fedoraproject.org/metalink?repo=updates-released-f34&amp;arch=x86_64"/>
+    </repository>
+    <repository type="rpm-md" priority="1" alias="CB">
+        <source path="obs://Virtualization:Appliances:Staging/Fedora_34"/>
     </repository>
     <packages type="image">
-        <package name="patterns-base-minimal_base"/>
+        <namedCollection name="network-server"/>
         <package name="grub2"/>
-        <package name="grub2-x86_64-efi" arch="x86_64"/>
-        <package name="grub2-arm64-efi" arch="aarch64"/>
-        <package name="kernel-default"/>
+        <package name="kernel"/>
+        <package name="selinux-policy-targeted"/>
+        <package name="dhclient"/>
+        <package name="NetworkManager"/>
+        <package name="vim"/>
+        <package name="tzdata"/>
+        <package name="git"/>
         <package name="python3-cloud_builder"/>
-    </packages>
-    <packages type="image" profiles="EC2-HVM">
-        <archive name="ec2-hvm-root.tar.gz"/>
-        <package name="aws-cli"/>
-        <package name="cloud-netconfig-ec2"/>
-        <package name="grub2-x86_64-xen" arch="x86_64"/>
-        <package name="python3-ec2imgutils"/>
-        <package name="python3-ec2metadata"/>
-        <package name="xen-libs" arch="x86_64"/>
-        <package name="xen-tools-domU" arch="x86_64"/>
         <package name="cloud-init"/>
-        <package name="cloud-init-config-suse"/>
+        <package name="awscli"/>
+        <package name="java-1.8.0-openjdk"/>
+        <package name="dmidecode"/>
     </packages>
     <packages type="bootstrap">
-        <package name="udev"/>
+        <package name="glibc-all-langpacks"/>
         <package name="filesystem"/>
-        <package name="glibc-locale"/>
-        <package name="cracklib-dict-full"/>
-        <package name="ca-certificates"/>
-        <package name="ca-certificates-mozilla"/>
-        <package name="openSUSE-release"/>
+        <package name="basesystem"/>
+        <package name="grub2-efi-x64" arch="x86_64"/>
+        <package name="grub2-efi-x64-modules" arch="x86_64"/>
+        <package name="shim-x64" arch="x86_64"/>
     </packages>
 </image>
