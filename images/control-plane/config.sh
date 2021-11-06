@@ -33,5 +33,11 @@ baseInsertService cloud-init
 baseInsertService cloud-config
 baseInsertService cloud-final
 
+# Create cb-collect key pair
+mkdir -p /home/fedora/.ssh
+chmod 700 /home/fedora/.ssh
+ssh-keygen -t rsa -f /home/fedora/.ssh/id_cb_collect -q
+
+# Fix permissions
 chown -R fedora /home/fedora
 chgrp -R fedora /home/fedora
