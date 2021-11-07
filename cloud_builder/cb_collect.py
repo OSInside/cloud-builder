@@ -48,7 +48,9 @@ options:
 import os
 import time
 import yaml
-import threading
+from threading import (
+    Thread, Lock
+)
 from datetime import datetime
 from docopt import docopt
 from cloud_builder.version import __version__
@@ -367,6 +369,8 @@ def build_repos(
     :param Any broker: Instance of broker factory
     :param int timeout: Read timeout on info response queue
     """
+    thread_lock = Lock()
+
     while(True):
         update_project()
         projects_tree = build_project_tree()
@@ -383,11 +387,11 @@ def build_repos(
             time.sleep(update_interval)
             continue
         for project_id in runner_responses.keys():
-            project_repo_thread = threading.Thread(
+            project_repo_thread = Thread(
                 target=build_project_repo,
                 args=(
                     project_id, runner_responses[project_id],
-                    ssh_pkey_file, user, log
+                    ssh_pkey_file, user, thread_lock, log
                 )
             )
             project_repo_thread.start()
@@ -513,9 +517,9 @@ def cleanup_project_repo_packages_targets(
 
 def build_project_repo(
     project_id: str, runner_responses_for_project: Dict,
-    ssh_pkey_file: str, user: str, log: CBCloudLogger
+    ssh_pkey_file: str, user: str, thread_lock: Lock, log: CBCloudLogger
 ) -> None:
-    if not _set_lock(project_id):
+    if not _set_lock(project_id, thread_lock):
         log.info(f'Repo sync for {project_id} is locked')
         return
     target_path = os.path.normpath(
@@ -677,12 +681,16 @@ def _create_rpm_repo(target_path: str, log: CBCloudLogger) -> None:
     # - signing of package files via rpmsign
 
 
-def _set_lock(project_id: str) -> bool:
+def _set_lock(project_id: str, thread_lock: Lock) -> bool:
     """
-    Create lock file for the given project path
-    Returns False if lock is already present
+    Create lock file for the given project path. Returns
+    False if lock is already present. During the creation
+    of the file based lock a mutex lock is set to ensure
+    no other thread interferes with the file lock for the
+    project path.
 
     :param str project_id: unique path name to describe project
+    :param Lock lock: Mutex Lock
 
     :return:
         Bool value indicating if lock is set or not.
@@ -690,15 +698,19 @@ def _set_lock(project_id: str) -> bool:
 
     :rtype: bool
     """
+    thread_lock.acquire()
+    lock_set_action = False
     lock_file = '/var/lock/{0}.lock'.format(
         project_id.replace(os.sep, '_')
     )
     if os.path.isfile(lock_file):
-        return False
+        lock_set_action = False
     else:
         with open(lock_file, 'w'):
             pass
-    return True
+        lock_set_action = True
+    thread_lock.release()
+    return lock_set_action
 
 
 def _set_free(project_id: str) -> None:
