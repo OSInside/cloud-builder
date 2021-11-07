@@ -53,6 +53,7 @@
         <package name="awscli"/>
         <package name="java-1.8.0-openjdk"/>
         <package name="dmidecode"/>
+        <archive name="collect-key-unsafe.tgz"/>
     </packages>
     <packages type="bootstrap">
         <package name="glibc-all-langpacks"/>
