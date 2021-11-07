@@ -35,7 +35,7 @@
     <repository type="rpm-md" alias="Fedora34-updates" sourcetype="metalink">
         <source path="https://mirrors.fedoraproject.org/metalink?repo=updates-released-f34&amp;arch=x86_64"/>
     </repository>
-    <repository type="rpm-md" priority="1" alias="CB">
+    <repository type="rpm-md" priority="1" alias="CB" imageinclude="true">
         <source path="obs://Virtualization:Appliances:Staging/Fedora_34"/>
     </repository>
     <packages type="image">
@@ -53,6 +53,14 @@
         <package name="awscli"/>
         <package name="java-1.8.0-openjdk"/>
         <package name="dmidecode"/>
+        <package name="xfsprogs"/>
+        <package name="firewalld"/>
+        <package name="iputils"/>
+        <package name="openssh"/>
+        <package name="openssh-clients"/>
+        <package name="openssh-server"/>
+        <package name="vim"/>
+        <package name="sudo"/>
         <archive name="collect-key-unsafe.tgz"/>
     </packages>
     <packages type="bootstrap">
