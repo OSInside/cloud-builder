@@ -9,11 +9,11 @@ for runner in ${runners};do
 done
 
 # update BootstrapServersString/this_host on runners and collector
-for runner in ${runners} ${collector};do
-    ssh -i ~/.ssh/id_cb_collect cb-collect@${runner} \
+for machine in ${runners} ${collector};do
+    ssh -i ~/.ssh/id_cb_collect cb-collect@${machine} \
         sudo sed -ie \"s@  host:.*@  host: ${BootstrapServersString}@\" \
         /etc/cloud_builder_broker.yml
-    ssh -i ~/.ssh/id_cb_collect cb-collect@${runner} \
+    ssh -i ~/.ssh/id_cb_collect cb-collect@${machine} \
         sudo sed -ie \"s@this_host:.*@this_host: ${runner}@\" \
         /etc/cloud_builder_broker.yml
 done
