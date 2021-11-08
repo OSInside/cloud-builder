@@ -60,3 +60,6 @@ sudo sed -ie \"s@CB_PROJECT=.*@CB_PROJECT=${source_repo}@\" \
 
 # setup runner count here for cb-ctl
 echo "  count: ${runner_count}" >> ~/.config/cb/cbctl.yml
+
+# restart fetcher
+sudo systemctl restart cb-fetch

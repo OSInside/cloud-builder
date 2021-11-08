@@ -27,7 +27,7 @@ for runner in ${runners};do
         sudo sed -ie \"s@CB_PROJECT=.*@CB_PROJECT=${source_repo}@\" \
         /etc/cloud_builder
     ssh -i ~/.ssh/id_cb_collect cb-collect@${runner} \
-        sudo systemctl restart cb-scheduler cb-info
+        sudo systemctl restart cb-fetch-once cb-scheduler cb-info
 done
 
 # update CB_RUNNERS/CB_PROJECT on collector and restart services

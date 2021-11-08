@@ -1,7 +1,7 @@
 [Unit]
 Description=CB Project Info Service
 After=syslog.target
-Requires=network-online.target
+Requires=network-online.target cb-fetch-once
 
 [Service]
 EnvironmentFile=-/etc/cloud_builder
