@@ -21,11 +21,16 @@ baseInsertService cloud-config
 baseInsertService cloud-final
 
 # Activate services CB
-baseInsertService cb-fetch
+baseInsertService cb-collect
+baseInsertService apache2
 
-# Fix permissions
-chown -R fedora /home/fedora
-chgrp -R fedora /home/fedora
+# Set collect pkey reference
+sed -ie "s@CB_SSH_PKEY=.*@CB_SSH_PKEY=\"/root/.ssh/id_cb_collect\"@" \
+    /etc/cloud_builder
+
+# Set collect user reference
+sed -ie "s@CB_SSH_USER=.*@CB_SSH_USER=\"cb-collect\"@" \
+    /etc/cloud_builder
 
 #======================================
 # Setup default target, multi-user

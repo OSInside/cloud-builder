@@ -62,7 +62,7 @@
         <package name="vim"/>
         <package name="sudo"/>
         <package name="rsync"/>
-        <package name="fedora-rpmdevtools"/>
+        <package name="apache2"/>
         <archive name="collect-key-unsafe.tgz"/>
     </packages>
     <packages type="bootstrap">
