@@ -62,7 +62,7 @@
         <package name="vim"/>
         <package name="sudo"/>
         <package name="rsync"/>
-        <package name="apache2"/>
+        <package name="httpd"/>
         <archive name="collect-key-unsafe.tgz"/>
     </packages>
     <packages type="bootstrap">
