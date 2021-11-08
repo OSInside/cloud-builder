@@ -21,11 +21,20 @@ baseInsertService cloud-config
 baseInsertService cloud-final
 
 # Activate services CB
-baseInsertService cb-fetch
+baseInsertService cb-fetch-once
+baseInsertService cb-scheduler
+baseInsertService cb-info
+
+# Add cb-collect to sudoers
+echo "cb-collect ALL=NOPASSWD: ALL" >> /etc/sudoers
+
+# Set runner info service to respond always
+sed -ie "s@CB_INFO_RESPONSE_TYPE=.*@CB_INFO_RESPONSE_TYPE=\"--respond-always\"@" \
+    /etc/cloud_builder
 
 # Fix permissions
-chown -R fedora /home/fedora
-chgrp -R fedora /home/fedora
+chown -R cb-collect /home/cb-collect
+chgrp -R cb-collect /home/cb-collect
 
 #======================================
 # Setup default target, multi-user

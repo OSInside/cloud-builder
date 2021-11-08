@@ -48,7 +48,7 @@ sudo sed -ie "s@  host:.*@  host: ${BootstrapServersString}@" \
 sudo sed -ie "s@this_host:.*@this_host: ${this_host}@" \
     /etc/cloud_builder_broker.yml
 
-# update BootstrapServersString on runners
+# update BootstrapServersString/this_host on runners
 runner_count=0
 for runner in ${runners};do
     ssh -i ~/.ssh/id_cb_collect cb-collect@${runner} \
@@ -57,10 +57,17 @@ for runner in ${runners};do
     ssh -i ~/.ssh/id_cb_collect cb-collect@${runner} \
         sudo sed -ie \"s@this_host:.*@this_host: ${runner}@\" \
         /etc/cloud_builder_broker.yml
-    ssh -i ~/.ssh/id_cb_collect cb-collect@${runner} \
-        sudo systemctl restart cb-scheduler cb-info
     runner_count=$((runner_count + 1))
 done
 
-# setup runner count
+# update CB_RUNNERS on runners and restart services
+for runner in ${runners};do
+    ssh -i ~/.ssh/id_cb_collect cb-collect@${runner} \
+        sudo sed -ie \"s@CB_RUNNERS=.*@CB_RUNNERS=${runner_count}@\" \
+        /etc/cloud_builder
+    ssh -i ~/.ssh/id_cb_collect cb-collect@${runner} \
+        sudo systemctl restart cb-scheduler cb-info
+done
+
+# setup runner count here for cb-ctl
 echo "  count: ${runner_count}" >> ~/.config/cb/cbctl.yml
