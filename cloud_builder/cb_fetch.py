@@ -45,6 +45,7 @@ from cloud_builder.build_request.build_request import CBBuildRequest
 from cloud_builder.broker import CBMessageBroker
 from cloud_builder.response.response import CBResponse
 from kiwi.command import Command
+from kiwi.path import Path
 from apscheduler.schedulers.background import BlockingScheduler
 from kiwi.privileges import Privileges
 from typing import (
@@ -93,10 +94,10 @@ def main() -> None:
     log.set_logfile()
 
     project_dir = Defaults.get_runner_project_dir()
-    if not os.path.isdir(project_dir):
-        Command.run(
-            ['git', 'clone', args['--project'], project_dir]
-        )
+    Path.wipe(project_dir)
+    Command.run(
+        ['git', 'clone', args['--project'], project_dir]
+    )
     if not args['--single-shot']:
         update_project(log)
 

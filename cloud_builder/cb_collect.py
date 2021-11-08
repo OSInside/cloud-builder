@@ -113,10 +113,10 @@ def main() -> None:
     log.set_logfile()
 
     project_dir = Defaults.get_runner_project_dir()
-    if not os.path.isdir(project_dir):
-        Command.run(
-            ['git', 'clone', args['--project'], project_dir]
-        )
+    Path.wipe(project_dir)
+    Command.run(
+        ['git', 'clone', args['--project'], project_dir]
+    )
 
     broker = CBMessageBroker.new(
         'kafka', config_file=Defaults.get_broker_config()
