@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<image schemaversion="7.4" name="CB-ControlPlane" displayname="CB-ControlPlane">
+<image schemaversion="7.4" name="CB-RunnerFedora" displayname="CB-RunnerFedora">
     <description type="system">
         <author>Marcus Schäfer</author>
         <contact>marcus.schaefer@gmail.com</contact>
-        <specification>Cloud Builder ControlPlane</specification>
+        <specification>Cloud Builder Runner(fedora)</specification>
     </description>
     <preferences>
         <version>1.0.0</version>
