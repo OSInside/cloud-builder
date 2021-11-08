@@ -1,0 +1,5 @@
+#!/bin/bash
+set -e
+
+~/setup_cluster
+~/setup_services
