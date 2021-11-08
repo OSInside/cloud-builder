@@ -1,0 +1,3 @@
+broker:
+  host: BootstrapServersString
+this_host: external_IP_or_Hostname_of_this_instance
