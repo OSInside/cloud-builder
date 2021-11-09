@@ -71,7 +71,7 @@
         <package name="vim"/>
         <package name="sudo"/>
         <package name="lvm2"/>
-        <package name="syslinux"/>
+        <package name="syslinux" arch="x86_64"/>
         <package name="kiwi-systemdeps"/>
     </packages>
     <packages type="bootstrap">
