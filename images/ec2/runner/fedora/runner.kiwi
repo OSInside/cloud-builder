@@ -47,12 +47,12 @@
         <source path="obsrepositories:/"/>
     </repository>
     <packages type="image">
-        <namedCollection name="network-server"/>
         <package name="grub2"/>
         <package name="kernel"/>
         <package name="selinux-policy-targeted"/>
         <package name="dhclient"/>
         <package name="NetworkManager"/>
+        <package name="dbus-daemon"/>
         <package name="vim"/>
         <package name="tzdata"/>
         <package name="git"/>
