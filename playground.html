@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Playground &mdash; Cloud Builder 0.2.35 documentation</title>
+  <title>Playground &mdash; Cloud Builder 0.2.36 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/custom.css" type="text/css" />
@@ -204,71 +204,18 @@ $ sudo cb-ctl --build-package-local --dist focal
 <h2>Simple Cluster Setup<a class="headerlink" href="#simple-cluster-setup" title="Permalink to this headline">¶</a></h2>
 <p>Using Kafka as a service produces costs. In Amazon the MSK service
 cannot be simply stopped and restarted, it can only be deleted and
-created from scratch. For this action several opportunities exists.
-One of the simplest ist a shell script called from the control plane
-instance and after creation of the MSK service via the web
-console or the <code class="xref py py-obj docutils literal notranslate"><span class="pre">aws</span></code> tool using the AWS API.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/bin/bash</span>
-
-<span class="nb">set</span> -e
-
-<span class="nb">source</span> setup_cluster.cfg
-
-<span class="nb">pushd</span> kafka_2.12-2.2.1
-
-<span class="c1"># standard topics...</span>
-<span class="k">for</span> topic <span class="k">in</span> cb-response cb-info-request cb-info-response<span class="p">;</span> <span class="k">do</span>
-    ./bin/kafka-topics.sh <span class="se">\</span>
-        --create <span class="se">\</span>
-        --zookeeper <span class="si">${</span><span class="nv">ZookeeperConnectString</span><span class="si">}</span> <span class="se">\</span>
-        --replication-factor <span class="m">2</span> <span class="se">\</span>
-        --partitions <span class="m">1</span> <span class="se">\</span>
-        --topic <span class="si">${</span><span class="nv">topic</span><span class="si">}</span>
-<span class="k">done</span>
-
-<span class="c1"># runner group topics...</span>
-<span class="k">for</span> topic <span class="k">in</span> fedora suse<span class="p">;</span> <span class="k">do</span>
-    ./bin/kafka-topics.sh <span class="se">\</span>
-        --create <span class="se">\</span>
-        --zookeeper <span class="si">${</span><span class="nv">ZookeeperConnectString</span><span class="si">}</span> <span class="se">\</span>
-        --replication-factor <span class="m">2</span> <span class="se">\</span>
-        --partitions <span class="m">10</span> <span class="se">\</span>
-        --topic <span class="si">${</span><span class="nv">topic</span><span class="si">}</span>
-<span class="k">done</span>
-
-<span class="c1"># retention times...</span>
-<span class="k">for</span> topic <span class="k">in</span> fedora suse<span class="p">;</span> <span class="k">do</span>
-    ./bin/kafka-topics.sh <span class="se">\</span>
-        --alter <span class="se">\</span>
-        --zookeeper <span class="si">${</span><span class="nv">ZookeeperConnectString</span><span class="si">}</span> <span class="se">\</span>
-        --config retention.ms<span class="o">=</span><span class="m">3600000</span> <span class="se">\</span>
-        --topic <span class="si">${</span><span class="nv">topic</span><span class="si">}</span>
-<span class="k">done</span>
-<span class="k">for</span> topic <span class="k">in</span> cb-info-response cb-info-request<span class="p">;</span> <span class="k">do</span>
-    ./bin/kafka-topics.sh <span class="se">\</span>
-        --alter <span class="se">\</span>
-        --zookeeper <span class="si">${</span><span class="nv">ZookeeperConnectString</span><span class="si">}</span> <span class="se">\</span>
-        --config retention.ms<span class="o">=</span><span class="m">120000</span> <span class="se">\</span>
-        --topic <span class="si">${</span><span class="nv">topic</span><span class="si">}</span>
-<span class="k">done</span>
-
-<span class="c1"># update BootstrapServersString</span>
-sudo sed -ie <span class="s2">&quot;s@  host:.*@  host: </span><span class="si">${</span><span class="nv">BootstrapServersString</span><span class="si">}</span><span class="s2">@&quot;</span> <span class="se">\</span>
-    /etc/cloud_builder_broker.yml
-
-<span class="c1"># update BootstrapServersString on runners</span>
-<span class="nv">runner_leap1</span><span class="o">=</span>ec2-52-59-149-213.eu-central-1.compute.amazonaws.com
-<span class="nv">runner_fedora1</span><span class="o">=</span>ec2-18-185-71-79.eu-central-1.compute.amazonaws.com
-<span class="nv">runner_fedora2</span><span class="o">=</span>ec2-18-197-141-15.eu-central-1.compute.amazonaws.com
-<span class="k">for</span> runner <span class="k">in</span> <span class="si">${</span><span class="nv">runner_leap1</span><span class="si">}</span> <span class="si">${</span><span class="nv">runner_fedora1</span><span class="si">}</span> <span class="si">${</span><span class="nv">runner_fedora2</span><span class="si">}</span><span class="p">;</span><span class="k">do</span>
-    ssh -i ~/.ssh/id_cb_collect cb-collect@<span class="si">${</span><span class="nv">runner</span><span class="si">}</span> <span class="se">\</span>
-        sudo sed -ie <span class="se">\&quot;</span>s@  host:.*@  host: <span class="si">${</span><span class="nv">BootstrapServersString</span><span class="si">}</span>@<span class="se">\&quot;</span> <span class="se">\</span>
-        /etc/cloud_builder_broker.yml
-    ssh -i ~/.ssh/id_cb_collect cb-collect@<span class="si">${</span><span class="nv">runner</span><span class="si">}</span> <span class="se">\</span>
-        sudo systemctl restart cb-scheduler cb-info
-<span class="k">done</span>
-</pre></div>
-</div>
+created from scratch. On deletion the MSK topics and its configuration
+will be gone and needs to be reconfigured after startup. For this
+process several options exists. One of the simplest ist a shell
+script called from the control plane instance and after creation of
+the MSK service via the web console or the <code class="xref py py-obj docutils literal notranslate"><span class="pre">aws</span></code> tool using
+the AWS API.</p>
+<p>Please find an implementation in shell to startup and configure
+a Cloud Builder cluster when all instances in the cloud and MSK are running
+here:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/OSInside/cloud-builder/tree/master/images/ec2/control-plane/root/home/fedora">https://github.com/OSInside/cloud-builder/tree/master/images/ec2/control-plane/root/home/fedora</a></p></li>
+</ul>
 </section>
 </section>
 

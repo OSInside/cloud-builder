@@ -54,7 +54,7 @@ production environment.
 
    .. code:: bash
 
-      $ sudo zypper addrepo https://download.opensuse.org/repositories/Virtualization:/Appliances:/Staging/openSUSE_Leap_15.3 cloud-builder
+      $ sudo zypper addrepo https://download.opensuse.org/repositories/Virtualization:/Appliances:/CloudBuilder/openSUSE_Leap_15.3 cloud-builder
       $ sudo zypper install python3-cloud_builder
 
 4. **Install Kafka admin utilities**

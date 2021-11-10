@@ -60,69 +60,15 @@ Simple Cluster Setup
 
 Using Kafka as a service produces costs. In Amazon the MSK service
 cannot be simply stopped and restarted, it can only be deleted and
-created from scratch. For this action several opportunities exists.
-One of the simplest ist a shell script called from the control plane
-instance and after creation of the MSK service via the web
-console or the `aws` tool using the AWS API.
+created from scratch. On deletion the MSK topics and its configuration
+will be gone and needs to be reconfigured after startup. For this
+process several options exists. One of the simplest ist a shell
+script called from the control plane instance and after creation of
+the MSK service via the web console or the `aws` tool using
+the AWS API.
 
-.. code:: bash
+Please find an implementation in shell to startup and configure
+a {CB} cluster when all instances in the cloud and MSK are running
+here:
 
-   #!/bin/bash
-
-   set -e
-
-   source setup_cluster.cfg
-
-   pushd kafka_2.12-2.2.1
-
-   # standard topics...
-   for topic in cb-response cb-info-request cb-info-response; do
-       ./bin/kafka-topics.sh \
-           --create \
-           --zookeeper ${ZookeeperConnectString} \
-           --replication-factor 2 \
-           --partitions 1 \
-           --topic ${topic}
-   done
-
-   # runner group topics...
-   for topic in fedora suse; do
-       ./bin/kafka-topics.sh \
-           --create \
-           --zookeeper ${ZookeeperConnectString} \
-           --replication-factor 2 \
-           --partitions 10 \
-           --topic ${topic}
-   done
-
-   # retention times...
-   for topic in fedora suse; do
-       ./bin/kafka-topics.sh \
-           --alter \
-           --zookeeper ${ZookeeperConnectString} \
-           --config retention.ms=3600000 \
-           --topic ${topic}
-   done
-   for topic in cb-info-response cb-info-request; do
-       ./bin/kafka-topics.sh \
-           --alter \
-           --zookeeper ${ZookeeperConnectString} \
-           --config retention.ms=120000 \
-           --topic ${topic}
-   done
-
-   # update BootstrapServersString
-   sudo sed -ie "s@  host:.*@  host: ${BootstrapServersString}@" \
-       /etc/cloud_builder_broker.yml
-
-   # update BootstrapServersString on runners
-   runner_leap1=ec2-52-59-149-213.eu-central-1.compute.amazonaws.com
-   runner_fedora1=ec2-18-185-71-79.eu-central-1.compute.amazonaws.com
-   runner_fedora2=ec2-18-197-141-15.eu-central-1.compute.amazonaws.com
-   for runner in ${runner_leap1} ${runner_fedora1} ${runner_fedora2};do
-       ssh -i ~/.ssh/id_cb_collect cb-collect@${runner} \
-           sudo sed -ie \"s@  host:.*@  host: ${BootstrapServersString}@\" \
-           /etc/cloud_builder_broker.yml
-       ssh -i ~/.ssh/id_cb_collect cb-collect@${runner} \
-           sudo systemctl restart cb-scheduler cb-info
-   done
+* https://github.com/OSInside/cloud-builder/tree/master/images/ec2/control-plane/root/home/fedora

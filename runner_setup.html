@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Runner Setup &mdash; Cloud Builder 0.2.35 documentation</title>
+  <title>Runner Setup &mdash; Cloud Builder 0.2.36 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/custom.css" type="text/css" />
@@ -212,7 +212,7 @@ Cloud Builder as follows:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ ssh -i PathToPkeyMatchingMySSHKeyPairName <span class="se">\</span>
       ec2-user@InstanceIP
 
-$ sudo zypper addrepo https://download.opensuse.org/repositories/Virtualization:/Appliances:/Staging/openSUSE_Leap_15.3 cloud-builder
+$ sudo zypper addrepo https://download.opensuse.org/repositories/Virtualization:/Appliances:/CloudBuilder/openSUSE_Leap_15.3 cloud-builder
 $ sudo zypper install python3-cloud_builder
 </pre></div>
 </div>
@@ -222,7 +222,7 @@ Cloud Builder as follows:</p>
       fedora@InstanceIP
 
 $ sudo dnf config-manager <span class="se">\</span>
-      --add-repo https://download.opensuse.org/repositories/Virtualization:/Appliances:/Staging/Fedora_34 <span class="se">\</span>
+      --add-repo https://download.opensuse.org/repositories/Virtualization:/Appliances:/CloudBuilder/Fedora_34 <span class="se">\</span>
       --enable --nogpgcheck
 $ sudo dnf install python3-cloud_builder
 </pre></div>
