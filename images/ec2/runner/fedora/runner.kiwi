@@ -74,6 +74,7 @@
         <package name="syslinux" arch="x86_64"/>
         <package name="kiwi-systemdeps"/>
         <package name="bash-completion"/>
+        <package name="debootstrap"/>
         <package name="dracut-kiwi-oem-repart"/>
     </packages>
     <packages type="bootstrap">
