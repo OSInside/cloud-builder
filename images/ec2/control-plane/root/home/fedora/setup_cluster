@@ -55,7 +55,7 @@ sudo sed -ie "s@this_host:.*@this_host: ${control_plane}@" \
     /etc/cloud_builder_broker.yml
 
 # update CB_PROJECT here
-sudo sed -ie \"s@CB_PROJECT=.*@CB_PROJECT=${source_repo}@\" \
+sudo sed -ie "s@CB_PROJECT=.*@CB_PROJECT=${source_repo}@" \
     /etc/cloud_builder
 
 # setup runner count here for cb-ctl

@@ -11,9 +11,11 @@ done
 # update BootstrapServersString/this_host on runners and collector
 for machine in ${runners} ${collector};do
     ssh -i ~/.ssh/id_cb_collect cb-collect@${machine} \
+        -o StrictHostKeyChecking=accept-new \
         sudo sed -ie \"s@  host:.*@  host: ${BootstrapServersString}@\" \
         /etc/cloud_builder_broker.yml
     ssh -i ~/.ssh/id_cb_collect cb-collect@${machine} \
+        -o StrictHostKeyChecking=accept-new \
         sudo sed -ie \"s@this_host:.*@this_host: ${runner}@\" \
         /etc/cloud_builder_broker.yml
 done
@@ -21,23 +23,29 @@ done
 # update CB_RUNNERS/CB_PROJECT on runners and restart services
 for runner in ${runners};do
     ssh -i ~/.ssh/id_cb_collect cb-collect@${runner} \
+        -o StrictHostKeyChecking=accept-new \
         sudo sed -ie \"s@CB_RUNNERS=.*@CB_RUNNERS=${runner_count}@\" \
         /etc/cloud_builder
     ssh -i ~/.ssh/id_cb_collect cb-collect@${runner} \
+        -o StrictHostKeyChecking=accept-new \
         sudo sed -ie \"s@CB_PROJECT=.*@CB_PROJECT=${source_repo}@\" \
         /etc/cloud_builder
     ssh -i ~/.ssh/id_cb_collect cb-collect@${runner} \
+        -o StrictHostKeyChecking=accept-new \
         sudo systemctl restart cb-fetch-once cb-scheduler cb-info
 done
 
 # update CB_RUNNERS/CB_PROJECT on collector and restart services
 if [ -n "${collector}" ];then
     ssh -i ~/.ssh/id_cb_collect cb-collect@${collector} \
+        -o StrictHostKeyChecking=accept-new \
         sudo sed -ie \"s@CB_RUNNERS=.*@CB_RUNNERS=${runner_count}@\" \
         /etc/cloud_builder
     ssh -i ~/.ssh/id_cb_collect cb-collect@${collector} \
+        -o StrictHostKeyChecking=accept-new \
         sudo sed -ie \"s@CB_PROJECT=.*@CB_PROJECT=${source_repo}@\" \
         /etc/cloud_builder
     ssh -i ~/.ssh/id_cb_collect cb-collect@${collector} \
+        -o StrictHostKeyChecking=accept-new \
         sudo systemctl restart cb-collect
 fi
