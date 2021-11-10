@@ -16,7 +16,7 @@ for machine in ${runners} ${collector};do
         /etc/cloud_builder_broker.yml
     ssh -i ~/.ssh/id_cb_collect cb-collect@${machine} \
         -o StrictHostKeyChecking=accept-new \
-        sudo sed -ie \"s@this_host:.*@this_host: ${runner}@\" \
+        sudo sed -ie \"s@this_host:.*@this_host: ${machine}@\" \
         /etc/cloud_builder_broker.yml
 done
 
