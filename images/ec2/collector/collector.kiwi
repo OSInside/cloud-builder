@@ -67,6 +67,7 @@
         <package name="sudo"/>
         <package name="rsync"/>
         <package name="httpd"/>
+        <package name="mailcap"/>
         <archive name="collect-key-unsafe.tgz"/>
     </packages>
     <packages type="bootstrap">
