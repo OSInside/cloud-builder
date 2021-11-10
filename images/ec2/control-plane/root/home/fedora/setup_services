@@ -31,11 +31,13 @@ for runner in ${runners};do
 done
 
 # update CB_RUNNERS/CB_PROJECT on collector and restart services
-ssh -i ~/.ssh/id_cb_collect cb-collect@${collector} \
-    sudo sed -ie \"s@CB_RUNNERS=.*@CB_RUNNERS=${runner_count}@\" \
-    /etc/cloud_builder
-ssh -i ~/.ssh/id_cb_collect cb-collect@${collector} \
-    sudo sed -ie \"s@CB_PROJECT=.*@CB_PROJECT=${source_repo}@\" \
-    /etc/cloud_builder
-ssh -i ~/.ssh/id_cb_collect cb-collect@${collector} \
-    sudo systemctl restart cb-collect
+if [ -n "${collector}" ];then
+    ssh -i ~/.ssh/id_cb_collect cb-collect@${collector} \
+        sudo sed -ie \"s@CB_RUNNERS=.*@CB_RUNNERS=${runner_count}@\" \
+        /etc/cloud_builder
+    ssh -i ~/.ssh/id_cb_collect cb-collect@${collector} \
+        sudo sed -ie \"s@CB_PROJECT=.*@CB_PROJECT=${source_repo}@\" \
+        /etc/cloud_builder
+    ssh -i ~/.ssh/id_cb_collect cb-collect@${collector} \
+        sudo systemctl restart cb-collect
+fi

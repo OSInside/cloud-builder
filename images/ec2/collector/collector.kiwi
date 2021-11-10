@@ -17,7 +17,7 @@
     <preferences>
         <type image="oem" filesystem="xfs" bootpartition="false" kernelcmdline="console=ttyS0 multipath=off net.ifnames=0 nvme_core.io_timeout=4294967295 nvme_core.admin_timeout=4294967295 8250.nr_uarts=4 dis_ucode_ldr" devicepersistency="by-label" firmware="efi">
             <oemconfig>
-                <oem-resize>false</oem-resize>
+                <oem-resize>true</oem-resize>
             </oemconfig>
             <bootloader name="grub2" console="serial" timeout="1"/>
             <size unit="M">10240</size>
@@ -68,6 +68,7 @@
         <package name="rsync"/>
         <package name="httpd"/>
         <package name="mailcap"/>
+        <package name="dracut-kiwi-oem-repart"/>
         <archive name="collect-key-unsafe.tgz"/>
     </packages>
     <packages type="bootstrap">
