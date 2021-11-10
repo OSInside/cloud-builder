@@ -40,7 +40,7 @@
         <source path="https://mirrors.fedoraproject.org/metalink?repo=updates-released-f34&amp;arch=x86_64"/>
     </repository>
     <repository type="rpm-md" priority="1" alias="CB" imageinclude="true">
-        <source path="obs://Virtualization:Appliances:Staging/Fedora_34"/>
+        <source path="obs://Virtualization:Appliances:CloudBuilder/Fedora_34"/>
     </repository>
 -->
     <repository type="rpm-md">
