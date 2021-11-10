@@ -27,7 +27,7 @@
 .. sidebar:: Links
 
    * `GitHub Sources <https://github.com/OSInside/cloud-builder>`__
-   * `RPM Packages <http://download.opensuse.org/repositories/Virtualization:/Appliances:/Staging>`__
+   * `RPM Packages <http://download.opensuse.org/repositories/Virtualization:/Appliances:/CloudBuilder>`__
 
 Building Software Packages as a Service
 ---------------------------------------

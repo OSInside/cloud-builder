@@ -65,7 +65,7 @@ created and configured as follows:
       $ ssh -i PathToPkeyMatchingMySSHKeyPairName \
             ec2-user@InstanceIP
 
-      $ sudo zypper addrepo https://download.opensuse.org/repositories/Virtualization:/Appliances:/Staging/openSUSE_Leap_15.3 cloud-builder
+      $ sudo zypper addrepo https://download.opensuse.org/repositories/Virtualization:/Appliances:/CloudBuilder/openSUSE_Leap_15.3 cloud-builder
       $ sudo zypper install python3-cloud_builder
 
    Login to each of the created Fedora runner instances and install
@@ -77,7 +77,7 @@ created and configured as follows:
             fedora@InstanceIP
 
       $ sudo dnf config-manager \
-            --add-repo https://download.opensuse.org/repositories/Virtualization:/Appliances:/Staging/Fedora_34 \
+            --add-repo https://download.opensuse.org/repositories/Virtualization:/Appliances:/CloudBuilder/Fedora_34 \
             --enable --nogpgcheck
       $ sudo dnf install python3-cloud_builder
 
