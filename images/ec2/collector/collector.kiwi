@@ -69,6 +69,7 @@
         <package name="httpd"/>
         <package name="mailcap"/>
         <package name="dracut-kiwi-oem-repart"/>
+        <package name="bash-completion"/>
         <archive name="collect-key-unsafe.tgz"/>
     </packages>
     <packages type="bootstrap">
