@@ -1,6 +1,6 @@
 import sys
 from mock import (
-    patch, Mock
+    patch, Mock, call
 )
 
 from cloud_builder.cb_run import main
@@ -12,17 +12,20 @@ class TestCBRun:
             sys.argv[0]
         ]
 
+    @patch('cloud_builder.cb_run.Path')
     @patch('cloud_builder.cb_run.Privileges.check_for_root_permissions')
     @patch('cloud_builder.cb_run.Command.run')
     @patch('cloud_builder.cb_run.CBResponse')
     @patch('cloud_builder.cb_run.CBCloudLogger')
     @patch('cloud_builder.cb_run.CBMessageBroker')
     @patch('os.system')
+    @patch('os.rename')
     @patch('sys.exit')
     def test_main_normal_runtime(
-        self, mock_sys_exit, mock_os_system, mock_CBMessageBroker,
-        mock_CBCloudLogger, mock_CBResponse, mock_Command_run,
-        mock_Privileges_check_for_root_permissions
+        self, mock_sys_exit, mock_os_rename, mock_os_system,
+        mock_CBMessageBroker, mock_CBCloudLogger, mock_CBResponse,
+        mock_Command_run, mock_Privileges_check_for_root_permissions,
+        mock_Path
     ):
         sys.argv = [
             sys.argv[0],
@@ -44,9 +47,26 @@ class TestCBRun:
             [
                 'find',
                 '/var/tmp/CB/projects/package@dist.arch/home/abuild',
-                '-name', '*.rpm', '-o', '-name', '*.deb'
+                '-name', '*.rpm', '-or', '-name', '*.deb'
             ]
         )
+        mock_Path.create.assert_called_once_with(
+            '/var/tmp/CB/projects/package@dist.arch.tmp'
+        )
+        mock_Path.wipe.call_args_list == [
+            call('/var/tmp/CB/projects/package@dist.arch.tmp'),
+            call('/var/tmp/CB/projects/package@dist.arch')
+        ]
+        assert mock_os_rename.call_args_list == [
+            call(
+                'binaries',
+                '/var/tmp/CB/projects/package@dist.arch.tmp/binaries'
+            ),
+            call(
+                '/var/tmp/CB/projects/package@dist.arch.tmp',
+                '/var/tmp/CB/projects/package@dist.arch'
+            )
+        ]
         response.set_package_build_response.assert_called_once_with(
             message='Package build finished',
             response_code='package build succeeded',
@@ -55,7 +75,7 @@ class TestCBRun:
             'package@dist.arch.prepare.log',
             log_file='/var/tmp/CB/projects/package@dist.arch.build.log',
             solver_file='/var/tmp/CB/projects/package@dist.arch.solver.json',
-            binary_packages=['binaries'],
+            binary_packages=['/var/tmp/CB/projects/package@dist.arch/binaries'],
             exit_code=0
         )
         log.response.assert_called_once_with(

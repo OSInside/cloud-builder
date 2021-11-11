@@ -36,12 +36,15 @@ options:
 import os
 import sys
 from docopt import docopt
+from typing import List
+
 from cloud_builder.version import __version__
 from cloud_builder.exceptions import exception_handler
 from cloud_builder.broker import CBMessageBroker
 from cloud_builder.defaults import Defaults
 from kiwi.privileges import Privileges
 from kiwi.command import Command
+from kiwi.path import Path
 from cloud_builder.cloud_logger import CBCloudLogger
 from cloud_builder.response.response import CBResponse
 
@@ -114,20 +117,36 @@ def main() -> None:
     if exit_code != 0:
         status = status_flags.package_build_failed
     else:
-        # NOTE: currently we are looking for rpm and deb results
-        # only on support of building other package formats the
-        # following code needs to be updated
         status = status_flags.package_build_succeeded
+        package_result_dir = os.path.join(
+            args['--root'], Defaults.get_runner_results_root()
+        )
+        package_lookup: List[str] = []
+        for package_format in Defaults.get_package_formats():
+            if not package_lookup:
+                package_lookup.extend(['-name', package_format])
+            else:
+                package_lookup.extend(['-or', '-name', package_format])
         find_call = Command.run(
-            [
-                'find', os.path.join(
-                    args['--root'], Defaults.get_runner_results_root()
-                ),
-                '-name', '*.rpm', '-o', '-name', '*.deb'
-            ]
+            ['find', package_result_dir] + package_lookup
         )
         if find_call.output:
-            packages = find_call.output.strip().split(os.linesep)
+            package_build_target_dir = f'{args["--root"]}.tmp'
+            Path.wipe(package_build_target_dir)
+            Path.create(package_build_target_dir)
+            for package in find_call.output.strip().split(os.linesep):
+                os.rename(
+                    package, os.sep.join(
+                        [package_build_target_dir, os.path.basename(package)]
+                    )
+                )
+                packages.append(
+                    os.sep.join([args['--root'], os.path.basename(package)])
+                )
+            Path.wipe(args['--root'])
+            os.rename(
+                package_build_target_dir, args['--root']
+            )
             log.info(format(packages))
 
     if not args['--local']:

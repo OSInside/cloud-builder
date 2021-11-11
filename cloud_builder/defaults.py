@@ -16,7 +16,9 @@
 # along with Cloud Builder.  If not, see <http://www.gnu.org/licenses/>
 #
 import os
-from typing import NamedTuple
+from typing import (
+    NamedTuple, List
+)
 
 status_flags = NamedTuple(
     'status_flags', [
@@ -138,6 +140,18 @@ class Defaults:
         :rtype: str
         """
         return 'home/abuild'
+
+    @staticmethod
+    def get_package_formats() -> List[str]:
+        """
+        Return list of package format expressions used in find
+        to lookup package results
+
+        :rtype: list
+        """
+        return [
+            '*.rpm', '*.deb'
+        ]
 
     @staticmethod
     def get_cb_logfile() -> str:
