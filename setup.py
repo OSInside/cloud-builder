@@ -4,7 +4,7 @@
 from os import path
 from setuptools import setup
   
-__version__ = '0.2.36'
+__version__ = '0.2.37'
 
 here = path.abspath(path.dirname(__file__))
 with open(path.join(here, 'README.rst')) as readme:
