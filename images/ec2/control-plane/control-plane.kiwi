@@ -69,6 +69,8 @@
         <package name="sudo"/>
         <package name="dracut-kiwi-oem-repart"/>
         <package name="bash-completion"/>
+        <package name="debootstrap"/>
+        <package name="kiwi-systemdeps"/>
         <archive name="collect-key-unsafe.tgz"/>
     </packages>
     <packages type="bootstrap">
