@@ -130,18 +130,18 @@ class Defaults:
         return 'cb-info-response'
 
     @staticmethod
-    def get_runner_results_root() -> str:
+    def get_runner_result_paths() -> List[str]:
         """
-        Returns the root path below which the used packaging
+        Returns a path list below which the used packaging
         tool stores the build results. At the moment this
         method is aligned to the behavior of the build tool
         provided with the open buildservice project.
 
-        :return: directory path
+        :return: directory path list
 
-        :rtype: str
+        :rtype: list
         """
-        return 'home/abuild'
+        return ['home/abuild', 'usr/src/packages/DEBS']
 
     @staticmethod
     def get_package_formats() -> List[str]:

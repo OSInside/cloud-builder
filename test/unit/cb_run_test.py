@@ -47,6 +47,7 @@ class TestCBRun:
             [
                 'find',
                 '/var/tmp/CB/projects/package@dist.arch/home/abuild',
+                '/var/tmp/CB/projects/package@dist.arch/usr/src/packages/DEBS',
                 '-name', '*.rpm', '-or', '-name', '*.deb'
             ]
         )

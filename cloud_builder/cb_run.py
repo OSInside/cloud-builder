@@ -59,7 +59,7 @@ def main() -> None:
 
     The called run.sh script is expected to run a program
     that builds packages and stores them below the path
-    returned by Defaults.get_runner_results_root()
+    returned by Defaults.get_runner_result_paths()
 
     If the OBS build script is used this will be the
     following directory lookup:
@@ -118,9 +118,11 @@ def main() -> None:
         status = status_flags.package_build_failed
     else:
         status = status_flags.package_build_succeeded
-        package_result_dir = os.path.join(
-            args['--root'], Defaults.get_runner_results_root()
-        )
+        package_result_paths = [
+            os.path.join(
+                args['--root'], path
+            ) for path in Defaults.get_runner_result_paths()
+        ]
         package_lookup: List[str] = []
         for package_format in Defaults.get_package_formats():
             if not package_lookup:
@@ -128,7 +130,7 @@ def main() -> None:
             else:
                 package_lookup.extend(['-or', '-name', package_format])
         find_call = Command.run(
-            ['find', package_result_dir] + package_lookup
+            ['find'] + package_result_paths + package_lookup
         )
         if find_call.output:
             package_build_target_dir = f'{args["--root"]}.tmp'

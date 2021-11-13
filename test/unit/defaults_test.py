@@ -4,8 +4,10 @@ from cloud_builder.defaults import Defaults
 
 
 class TestDefaults:
-    def test_get_runner_results_root(self):
-        assert Defaults.get_runner_results_root() == 'home/abuild'
+    def test_get_runner_result_paths(self):
+        assert Defaults.get_runner_result_paths() == [
+            'home/abuild', 'usr/src/packages/DEBS'
+        ]
 
     def test_get_cb_logfile(self):
         assert Defaults.get_cb_logfile() == '/var/log/cloud_builder.log'
