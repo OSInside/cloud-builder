@@ -19,7 +19,7 @@ environment to satisfy the cb-run requirements
 
 The called run.sh script is expected to run a program
 that builds packages and stores them below the path
-returned by Defaults.get_runner_results_root()
+returned by Defaults.get_runner_result_paths()
 
 If the `build <https://software.opensuse.org/package/build>`__
 script is used this will be the following directory lookup:
