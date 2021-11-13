@@ -130,7 +130,8 @@ def main() -> None:
             else:
                 package_lookup.extend(['-or', '-name', package_format])
         find_call = Command.run(
-            ['find'] + package_result_paths + package_lookup
+            ['find'] + package_result_paths + ['-type', 'f'] + package_lookup,
+            raise_on_error=False
         )
         if find_call.output:
             package_build_target_dir = f'{args["--root"]}.tmp'
@@ -150,6 +151,10 @@ def main() -> None:
                 package_build_target_dir, args['--root']
             )
             log.info(format(packages))
+        else:
+            exit_code = 1
+            status = status_flags.package_build_failed_no_binaries
+            log.error(status)
 
     if not args['--local']:
         response = CBResponse(args['--request-id'], log.get_id())
