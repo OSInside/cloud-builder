@@ -10,7 +10,6 @@ SYNOPSIS
    cb-ctl --build-package-local --dist=<name>
        [--clean]
    cb-ctl --build-package=<package> --project-path=<path> --arch=<name> --dist=<name> --runner-group=<name>
-       [--clean]
    cb-ctl --build-image-local --selection=<name>
    cb-ctl --build-image=<image> --project-path=<path> --arch=<name> --runner-group=<name> --selection=<name>
    cb-ctl --build-dependencies=<package│image> --project-path=<path> --arch=<name> (--dist=<name>|--selection=<name>)

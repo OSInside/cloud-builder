@@ -8,6 +8,8 @@ SYNOPSIS
 
    cb-run -h | --help
    cb-run --root=<root_path> --request-id=<UUID>
+       [--local]
+       [--clean]
 
 DESCRIPTION
 -----------
@@ -20,15 +22,6 @@ environment to satisfy the cb-run requirements
 The called run.sh script is expected to run a program
 that builds packages and stores them below the path
 returned by Defaults.get_runner_result_paths()
-
-If the `build <https://software.opensuse.org/package/build>`__
-script is used this will be the following directory lookup:
-
-.. code:: bash
-
-   root_path
-   └── home
-       └── abuild
 
 At the end of cb-run an information record will be send
 to preserve the result information for later use
@@ -45,3 +38,13 @@ OPTIONS
 --request-id=<UUID>
 
   UUID for this build process
+
+--clean
+
+  Delete chroot system after build and keep
+  only results if there are any
+
+--local
+
+  Operate locally:
+  * do not send results to the message broker
