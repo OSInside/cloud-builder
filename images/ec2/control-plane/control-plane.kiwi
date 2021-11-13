@@ -71,6 +71,7 @@
         <package name="bash-completion"/>
         <package name="debootstrap"/>
         <package name="kiwi-systemdeps"/>
+        <package name="rpm-build"/>
         <archive name="collect-key-unsafe.tgz"/>
     </packages>
     <packages type="bootstrap">

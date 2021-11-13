@@ -76,6 +76,7 @@
         <package name="bash-completion"/>
         <package name="debootstrap"/>
         <package name="dracut-kiwi-oem-repart"/>
+        <package name="rpm-build"/>
     </packages>
     <packages type="bootstrap">
         <package name="glibc-all-langpacks"/>
