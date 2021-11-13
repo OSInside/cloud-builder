@@ -14,21 +14,22 @@ class TestCBPrepare:
             sys.argv[0]
         ]
 
+    @patch('cloud_builder.cb_prepare.Defaults.get_kiwi')
     @patch('cloud_builder.cb_prepare.Privileges.check_for_root_permissions')
     @patch('cloud_builder.cb_prepare.Command.run')
     @patch('cloud_builder.cb_prepare.CBResponse')
     @patch('cloud_builder.cb_prepare.CBCloudLogger')
     @patch('cloud_builder.cb_prepare.CBMessageBroker')
-    @patch('cloud_builder.cb_prepare.Path')
     @patch('cloud_builder.cb_prepare.DataSync')
     @patch('os.system')
     @patch('sys.exit')
     def test_main_normal_runtime(
         self, mock_sys_exit, mock_os_system, mock_DataSync,
-        mock_Path, mock_CBMessageBroker,
-        mock_CBCloudLogger, mock_CBResponse, mock_Command_run,
-        mock_Privileges_check_for_root_permissions
+        mock_CBMessageBroker, mock_CBCloudLogger, mock_CBResponse,
+        mock_Command_run, mock_Privileges_check_for_root_permissions,
+        mock_Defaults_get_kiwi
     ):
+        mock_Defaults_get_kiwi.return_value = 'kiwi-ng'
         sys.argv = [
             sys.argv[0],
             '--root', '/var/tmp/CB/projects/package@dist.arch',
@@ -44,7 +45,6 @@ class TestCBPrepare:
         mock_Command_run.return_value.output = \
             'stdout-data\n{"resolved-packages": {"zypper":{"key":"val"}}}'
         mock_Command_run.return_value.error = 'stderr-data'
-        mock_Path.which.return_value = 'kiwi-ng'
         run_script = dedent('''
             #!/bin/bash
 
@@ -124,18 +124,20 @@ class TestCBPrepare:
             response, mock_CBMessageBroker.new.return_value
         )
 
+    @patch('cloud_builder.cb_prepare.Defaults.get_kiwi')
     @patch('cloud_builder.cb_prepare.Privileges.check_for_root_permissions')
     @patch('cloud_builder.cb_prepare.CBCloudLogger')
-    @patch('cloud_builder.cb_prepare.Path')
     @patch('cloud_builder.cb_prepare.DataSync')
     @patch('os.system')
     @patch('os.WEXITSTATUS')
     @patch('sys.exit')
     def test_main_solver_ok_prepare_failed(
         self, mock_sys_exit, mock_os_WEXITSTATUS, mock_os_system,
-        mock_DataSync, mock_Path, mock_CBCloudLogger,
-        mock_Privileges_check_for_root_permissions
+        mock_DataSync, mock_CBCloudLogger,
+        mock_Privileges_check_for_root_permissions,
+        mock_Defaults_get_kiwi
     ):
+        mock_Defaults_get_kiwi.return_value = 'kiwi-ng'
         sys.argv = [
             sys.argv[0],
             '--root',
@@ -149,7 +151,6 @@ class TestCBPrepare:
         log = Mock()
         mock_CBCloudLogger.return_value = log
         mock_os_WEXITSTATUS.return_value = 1
-        mock_Path.which.return_value = 'kiwi-ng'
 
         with patch.dict('os.environ', {'HOME': 'ROOT_HOME'}):
             main()
@@ -168,22 +169,24 @@ class TestCBPrepare:
         ))
         assert not mock_DataSync.called
 
+    @patch('cloud_builder.cb_prepare.Defaults.get_kiwi')
     @patch('cloud_builder.cb_prepare.Privileges.check_for_root_permissions')
     @patch('cloud_builder.cb_prepare.Command.run')
     @patch('cloud_builder.cb_prepare.CBResponse')
     @patch('cloud_builder.cb_prepare.CBCloudLogger')
     @patch('cloud_builder.cb_prepare.CBMessageBroker')
-    @patch('cloud_builder.cb_prepare.Path')
     @patch('cloud_builder.cb_prepare.DataSync')
     @patch('os.system')
     @patch('os.WEXITSTATUS')
     @patch('sys.exit')
     def test_package_source_sync_failed(
         self, mock_sys_exit, mock_os_WEXITSTATUS, mock_os_system,
-        mock_DataSync, mock_Path, mock_CBMessageBroker,
-        mock_CBCloudLogger, mock_CBResponse, mock_Command_run,
-        mock_Privileges_check_for_root_permissions
+        mock_DataSync, mock_CBMessageBroker, mock_CBCloudLogger,
+        mock_CBResponse, mock_Command_run,
+        mock_Privileges_check_for_root_permissions,
+        mock_Defaults_get_kiwi
     ):
+        mock_Defaults_get_kiwi.return_value = 'kiwi-ng'
         sys.argv = [
             sys.argv[0],
             '--root', '/var/tmp/CB/projects/package@dist.arch',
@@ -198,7 +201,6 @@ class TestCBPrepare:
         mock_Command_run.return_value.returncode = 0
         mock_os_WEXITSTATUS.return_value = 0
         mock_DataSync.side_effect = Exception('sync error')
-        mock_Path.which.return_value = 'kiwi-ng'
 
         with patch.dict('os.environ', {'HOME': 'ROOT_HOME'}):
             with patch('builtins.open', create=True) as mock_open:

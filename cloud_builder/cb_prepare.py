@@ -59,7 +59,6 @@ from cloud_builder.defaults import Defaults
 from kiwi.command import Command
 from kiwi.utils.sync import DataSync
 from kiwi.privileges import Privileges
-from kiwi.path import Path
 
 
 @exception_handler
@@ -130,10 +129,7 @@ def main() -> None:
         )
     )
     kiwi_run_caller_options = [
-        Path.which(
-            'kiwi-ng', alternative_lookup_paths=['/usr/local/bin']
-        ),
-        '--profile', dist_profile
+        Defaults.get_kiwi(), '--profile', dist_profile
     ]
     if args['--local']:
         kiwi_run_caller_options.append('--debug')
@@ -261,9 +257,7 @@ def resolve_build_dependencies(
         'solver_log': ''
     }
     kiwi_call = [
-        Path.which(
-            'kiwi-ng', alternative_lookup_paths=['/usr/local/bin']
-        )
+        Defaults.get_kiwi()
     ]
     if profiles:
         kiwi_call.extend(profiles)

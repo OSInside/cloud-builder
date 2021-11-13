@@ -20,6 +20,8 @@ from typing import (
     NamedTuple, List
 )
 
+from kiwi.path import Path
+
 status_flags = NamedTuple(
     'status_flags', [
         ('package_rebuild', str),
@@ -268,6 +270,24 @@ class Defaults:
         :rtype: str
         """
         return os.path.join(Defaults.__conf_path(), 'cbctl.yml')
+
+    @staticmethod
+    def get_kiwi() -> str:
+        """
+        Lookup kiwi binary
+
+        :return:
+            A file path or the default binary name to run kiwi-ng
+
+        :rtype: str
+        """
+        for kiwi in ['kiwi-ng', 'kiwi-ng-3']:
+            kiwi_path = Path.which(
+                kiwi, alternative_lookup_paths=['/usr/local/bin']
+            )
+            if kiwi_path:
+                return kiwi_path
+        return 'kiwi-ng'
 
     @staticmethod
     def __conf_path() -> str:

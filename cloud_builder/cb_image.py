@@ -64,7 +64,6 @@ from cloud_builder.cb_prepare import resolve_build_dependencies
 from cloud_builder.defaults import Defaults
 
 from kiwi.privileges import Privileges
-from kiwi.path import Path
 
 
 @exception_handler
@@ -135,9 +134,7 @@ def main() -> None:
             )
 
     # Build and package image
-    kiwi_binary = Path.which(
-        'kiwi-ng', alternative_lookup_paths=['/usr/local/bin']
-    )
+    kiwi_binary = Defaults.get_kiwi()
     kiwi_build = [kiwi_binary]
     if not args['--local']:
         kiwi_build.extend(

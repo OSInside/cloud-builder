@@ -94,3 +94,15 @@ class TestDefaults:
 
     def test_get_repo_root(self):
         assert Defaults.get_repo_root() == '/srv/www/projects'
+
+    @patch('kiwi.defaults.Path.which')
+    def test_get_kiwi(self, mock_Path_which):
+        mock_Path_which.return_value = None
+        assert Defaults.get_kiwi() == 'kiwi-ng'
+
+        mock_Path_which.reset_mock()
+        mock_Path_which.return_value = '/path/to/kiwi-ng'
+        assert Defaults.get_kiwi() == mock_Path_which.return_value
+        mock_Path_which.assert_called_once_with(
+            'kiwi-ng', alternative_lookup_paths=['/usr/local/bin']
+        )
