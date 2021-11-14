@@ -282,9 +282,7 @@ def handle_build_requests(
 def update_source_repo(request: Dict, log: CBCloudLogger) -> None:
     status_flags = Defaults.get_status_flags()
     if request['action'] == status_flags.package_rebuild or \
-       request['action'] == status_flags.package_rebuild_clean or \
        request['action'] == status_flags.package_source_rebuild or \
-       request['action'] == status_flags.package_source_rebuild_clean or \
        request['action'] == status_flags.image_rebuild or \
        request['action'] == status_flags.image_source_rebuild:
         log.info('Update project git source repo prior build')
@@ -331,14 +329,9 @@ def build_package(
     reset_build_if_running(
         request, log, broker
     )
-    status_flags = Defaults.get_status_flags()
-    buildroot_rebuild = False
-    if request['action'] == status_flags.package_source_rebuild_clean or \
-       request['action'] == status_flags.package_rebuild_clean:
-        buildroot_rebuild = True
     log.info('Starting package build process')
     Command.run(
-        ['bash', create_package_run_script(request, buildroot_rebuild)]
+        ['bash', create_package_run_script(request)]
     )
 
 
@@ -685,7 +678,7 @@ def create_image_run_script(
 
 
 def create_package_run_script(
-    request: Dict, buildroot_rebuild: bool, local_build: bool = False
+    request: Dict, buildroot_rebuild: bool = True, local_build: bool = False
 ) -> str:
     """
     Create script to call cb-prepare followed by cb-run
@@ -752,10 +745,6 @@ def create_package_run_script(
 
             touch {build_root}.build.log
 
-            if {buildroot_rebuild}; then
-                rm -rf {build_root}
-            fi
-
             function finish {{
                 kill $(jobs -p) &>/dev/null
             }}
@@ -767,13 +756,13 @@ def create_package_run_script(
                     --profile {dist_profile} \\
                     --request-id {request_id}
                 cb-run --root {build_root} &> {build_root}.build.log \\
-                    --request-id {request_id}
+                    --request-id {request_id} \\
+                    --clean
             }} &>>{build_root}.run.log &
 
             echo $! > {build_root}.pid
             echo $! > {build_pid_file}
         ''').format(
-            buildroot_rebuild='true' if buildroot_rebuild else 'false',
             package_source_path=package_source_path,
             dist_profile=dist_profile,
             build_root=build_root,

@@ -19,12 +19,8 @@ class TestDefaults:
         flags = Defaults.get_status_flags()
         assert flags.package_rebuild == \
             'package rebuild requested'
-        assert flags.package_rebuild_clean == \
-            'package rebuild on new buildroot'
         assert flags.package_source_rebuild == \
             'package rebuild due to source change'
-        assert flags.package_source_rebuild_clean == \
-            'package rebuild on new buildroot due to source change'
         assert flags.package_build_failed == \
             'package build failed'
         assert flags.package_build_succeeded == \

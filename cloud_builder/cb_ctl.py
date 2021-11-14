@@ -20,7 +20,6 @@ usage: cb-ctl -h | --help
        cb-ctl --build-package-local --dist=<name>
            [--clean]
        cb-ctl --build-package=<package> --project-path=<path> --arch=<name> --dist=<name> --runner-group=<name>
-           [--clean]
        cb-ctl --build-image-local --selection=<name>
        cb-ctl --build-image=<image> --project-path=<path> --arch=<name> --runner-group=<name> --selection=<name>
        cb-ctl --build-dependencies=<package│image> --project-path=<path> --arch=<name> (--dist=<name>|--selection=<name>)
@@ -194,8 +193,7 @@ def main() -> None:
             args['--project-path'],
             args['--arch'],
             args['--dist'],
-            args['--runner-group'],
-            bool(args['--clean'])
+            args['--runner-group']
         )
     elif args['--build-package-local']:
         build_package_local(
@@ -307,14 +305,13 @@ def get_config() -> Dict:
 
 def build_package(
     broker: Any, package: str, project_path: str,
-    arch: str, dist: str, runner_group: str, clean_buildroot: bool
+    arch: str, dist: str, runner_group: str
 ) -> None:
     status_flags = Defaults.get_status_flags()
     package_request = CBBuildRequest()
     package_request.set_package_build_request(
         _get_target_path(project_path, package),
         arch, dist, runner_group,
-        status_flags.package_rebuild_clean if clean_buildroot else
         status_flags.package_rebuild
     )
     broker.send_build_request(package_request)

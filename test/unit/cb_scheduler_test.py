@@ -276,7 +276,7 @@ class TestCBScheduler:
         mock_Defaults_get_runner_project_dir.return_value = \
             'cloud_builder_sources'
         request = {
-            'action': self.status_flags.package_rebuild_clean,
+            'action': self.status_flags.package_rebuild,
             'package': {
                 'arch': 'x86_64',
                 'dist': 'TW'
@@ -289,7 +289,7 @@ class TestCBScheduler:
         mock_reset_build_if_running.assert_called_once_with(
             request, log, broker
         )
-        mock_create_package_run_script.assert_called_once_with(request, True)
+        mock_create_package_run_script.assert_called_once_with(request)
         mock_Command_run.assert_called_once_with(
             ['bash', mock_create_package_run_script.return_value]
         )
@@ -793,7 +793,7 @@ class TestCBScheduler:
         mock_Defaults.get_runner_root.return_value = \
             Defaults.get_runner_root()
         request = {
-            'action': self.status_flags.package_source_rebuild_clean,
+            'action': self.status_flags.package_source_rebuild,
             'package': {
                 'arch': 'x86_64',
                 'dist': 'TW'
@@ -811,10 +811,6 @@ class TestCBScheduler:
 
             touch /var/tmp/CB/projects/MS/vim@TW.x86_64.build.log
 
-            if true; then
-                rm -rf /var/tmp/CB/projects/MS/vim@TW.x86_64
-            fi
-
             function finish {
                 kill $(jobs -p) &>/dev/null
             }
@@ -826,7 +822,8 @@ class TestCBScheduler:
                     --profile TW.x86_64 \\
                     --request-id c8becd30-a5f6-43a6-a4f4-598ec1115b17
                 cb-run --root /var/tmp/CB/projects/MS/vim@TW.x86_64 &> /var/tmp/CB/projects/MS/vim@TW.x86_64.build.log \\
-                    --request-id c8becd30-a5f6-43a6-a4f4-598ec1115b17
+                    --request-id c8becd30-a5f6-43a6-a4f4-598ec1115b17 \\
+                    --clean
             } &>>/var/tmp/CB/projects/MS/vim@TW.x86_64.run.log &
 
             echo $! > /var/tmp/CB/projects/MS/vim@TW.x86_64.pid

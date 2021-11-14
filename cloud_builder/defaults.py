@@ -25,9 +25,7 @@ from kiwi.path import Path
 status_flags = NamedTuple(
     'status_flags', [
         ('package_rebuild', str),
-        ('package_rebuild_clean', str),
         ('package_source_rebuild', str),
-        ('package_source_rebuild_clean', str),
         ('package_build_failed', str),
         ('package_build_failed_no_binaries', str),
         ('image_build_failed', str),
@@ -200,9 +198,7 @@ class Defaults:
         """
         return status_flags(
             package_rebuild='package rebuild requested',
-            package_rebuild_clean='package rebuild on new buildroot',
             package_source_rebuild='package rebuild due to source change',
-            package_source_rebuild_clean='package rebuild on new buildroot due to source change',
             package_build_failed='package build failed',
             package_build_failed_no_binaries='package build failed, no binaries found',
             image_build_failed='image build failed',

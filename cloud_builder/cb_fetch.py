@@ -196,16 +196,6 @@ def send_package_update_request(
 ) -> None:
     status_flags = Defaults.get_status_flags()
     request_action = status_flags.package_source_rebuild
-    buildroot_config = os.path.join(
-        Defaults.get_cloud_builder_meta_dir(),
-        Defaults.get_cloud_builder_meta_build_root_file_name()
-    )
-
-    if buildroot_config in changed_projects[project_source_path]:
-        # buildroot setup is part of changes list. This
-        # triggers a new build of the package buildroot
-        request_action = status_flags.package_source_rebuild_clean
-
     for target in project_config.get('distributions') or []:
         package_request = CBBuildRequest()
         package_request.set_package_build_request(
