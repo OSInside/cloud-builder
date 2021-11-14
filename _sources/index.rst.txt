@@ -12,30 +12,30 @@
 .. toctree::
    :maxdepth: 1
 
-   infrastructure_setup
-   source_setup
-   kafka_broker_setup
-   control_plane_setup
-   runner_setup
-   request_package_build
-   auto_rebuild_on_source_change
-   auto_rebuild_on_build_dependencies
-   collect_and_build_project_repos
+   quickstart
+   cluster_setup_from_scratch
+   cluster_setup_from_cb_amis
    commands
-   playground
 
 .. sidebar:: Links
 
    * `GitHub Sources <https://github.com/OSInside/cloud-builder>`__
    * `RPM Packages <http://download.opensuse.org/repositories/Virtualization:/Appliances:/CloudBuilder>`__
 
-Building Software Packages as a Service
----------------------------------------
+Building Software Packages and Appliances as a Service
+------------------------------------------------------
 
 The {CB} project provides a collection of services which
-allows to stand up a package building backend to build software
-packages through a messaging API. Primarily **rpm** packages but also
-other package formats like **deb**, **pacman** and alike are possible.
+allows to stand up a package and appliance building backend to
+build software packages as well as system images through a
+messaging API. Primarily **rpm** and **deb** package formats
+are supported as well as any image type supported by the
+`KIWI <https://osinside.github.io/kiwi>`__ appliance builder.
+{CB} is designed to run in cloud environments and this
+documentation describes how to run {CB} in
+`AWS (Amazon Web Services)`. However, in general the environment
+to run the {CB} services is not restricted to a specific
+cloud framework.
 
 Why
 ---
@@ -50,41 +50,64 @@ the cloud. If managing package sources and build metadata
 should be done completely in git. If one ore more of this aspects
 are a matching criteria, this project might be interesting.
 
-Design Aspects
---------------
+Architecture
+------------
 
-The {CB} services introduced in :ref:`services` are designed to run in
-cloud environments and utilizes *message broker* and *VM instances* cloud
-services to operate. In general the environment to run the {CB} services is
-not restricted to a specific framework. However, for the sake of this
-documentation and for my understanding of a production ready pipeline the
-following cloud and services will be used:
+The {CB} architecture consists out of three major components:
 
-Amazon EC2:
-  To let {CB} services run, instances in EC2 are used
-
-Amazon MSK:
-  {CB} services uses the Apacke Kafka message broker to communicate
-  for request and response information. From a {CB} implementation
-  perspective other brokers could be easily added via a new interface
-  class. However, it depends on the broker features
-  if it makes sense to use this message broker together with {CB}.
-  Apacke Kafka was choosen because it allows for the
-  *Publish/Subscribe* mode and for the *Shared Queue* mode in a
-  nice way. Especially The *Shared Queue* mode in combination
-  with the topic partition setup is used to distribute build requests
-  across the available runner instances.
-
-Git:
-  The package sources and all {CB} metadata must be stored in a git
-  repository and the {CB} services fetches information from there
-  as needed. The idea behind this is that package sources and metadata
+The Sources:
+  The package and image sources and all metadata to build them with {CB}
+  must be stored in a git repository from which the {CB} services fetches
+  information. The idea behind this is that package sources and metadata
   is treated like code and git is great in managing code. The history
   in Git allows to track any information about changes in the life
-  time of a package.
+  time of a package or image. For details how to setup the source
+  repo see: :ref:`sources`
 
-Learn how to setup the infrastructure to start with {CB}
-:ref:`infrastructure-setup`
+The Messaging API:
+  {CB} services uses the Apacke Kafka message broker to communicate
+  for request and response information. From a {CB} implementation
+  perspective other brokers could be added via a new interface
+  class. However, it depends on the broker features if it makes
+  sense to use this message broker together with {CB}. Apacke Kafka
+  was choosen because it allows for the *Publish/Subscribe* mode
+  and for the *Shared Queue* mode in a nice way. Especially The
+  *Shared Queue* mode in combination with the topic partition setup
+  is used to distribute build requests across the available runner
+  instances. For details hot to setup the messaging API see:
+  :ref:`kafka-broker-setup`
+
+The {CB} Services:
+  The {CB} services introduced in :ref:`services` implements the actual
+  functionality to allow building a package, or fetching information
+  about a package, or building repos from packages, and so on. The
+  services runs on one or more machines representing a certain
+  functionality like a `runner` to build packages and images or a
+  `collector` to create repositories from build results. The collection
+  of all machines represents the {CB} cluster.
+
+The following diagram shows how the {CB} services play together
+and provides a visual overview about the system.
+
+.. figure:: .images/cb-design.png
+    :align: center
+    :alt: Cloud Builder Architecture
+
+    Cloud Builder Architecture
+
+.. note::
+   The minimal infrastructure to build packages with {CB} requires:
+
+   * A git repo with the package sources.
+     There is the `cloud-builder-packages <https://github.com/OSInside/cloud-builder-packages>`__
+     example repo
+   * A Kafka message broker. The focus will be on
+     `Amzon MSK <https://docs.aws.amazon.com/msk/latest/developerguide/before-you-begin.html>`__
+   * A runner instance with the cb-info and cb-scheduler services running.
+
+   As the idea of {CB} is to come up with a scalable system that
+   is configurable to the needs of the user, some of the services
+   are optional on top of the minimal infrastructure.
 
 Contact
 -------
@@ -98,5 +121,3 @@ Contact
   `Matrix <https://matrix.to/#kiwi:matrix.org>`__ on the web
   or by using the supported
   `clients <https://matrix.org/docs/projects/clients-matrix>`__.
-
-  Remember to have fun :-)

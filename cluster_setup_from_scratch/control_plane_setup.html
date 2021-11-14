@@ -4,21 +4,21 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Create and Install the Control Plane &mdash; Cloud Builder 0.2.40 documentation</title>
-      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-      <link rel="stylesheet" href="_static/css/custom.css" type="text/css" />
+  <title>Create and Install the Control Plane &mdash; Cloud Builder 0.2.41 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
   <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
+    <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-        <script src="_static/jquery.js"></script>
-        <script src="_static/underscore.js"></script>
-        <script src="_static/doctools.js"></script>
-    <script src="_static/js/theme.js"></script>
-    <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" />
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Runner Setup" href="runner_setup.html" />
     <link rel="prev" title="Kafka Message Broker Setup" href="kafka_broker_setup.html" /> 
 </head>
@@ -28,10 +28,10 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="index.html" class="icon icon-home"> Cloud Builder
+            <a href="../index.html" class="icon icon-home"> Cloud Builder
           </a>
 <div role="search">
-  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
@@ -39,94 +39,95 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="infrastructure_setup.html">Infrastructure Setup</a></li>
-<li class="toctree-l1"><a class="reference internal" href="source_setup.html">Cloud Builder Source Setup</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="source_setup/git_package_source_setup.html">Git Package Source Setup</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="source_setup/git_package_source_setup.html#understanding-the-project-structure">Understanding the project structure</a></li>
-<li class="toctree-l3"><a class="reference internal" href="source_setup/git_package_source_setup.html#understanding-cb-cloud-builder-yml">Understanding <code class="file docutils literal notranslate"><span class="pre">.cb/cloud_builder.yml</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="source_setup/git_package_source_setup.html#understanding-cb-build-root-kiwi">Understanding <code class="file docutils literal notranslate"><span class="pre">.cb/build_root.kiwi</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quickstart.html">Quick Start</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../quickstart.html#cloud-builder-source-setup">Cloud Builder Source Setup</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../quickstart/git_package_source_setup.html">Git Package Source Setup</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../quickstart/git_package_source_setup.html#understanding-the-project-structure">Understanding the project structure</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../quickstart/git_package_source_setup.html#understanding-cb-cloud-builder-yml">Understanding <code class="file docutils literal notranslate"><span class="pre">.cb/cloud_builder.yml</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../quickstart/git_package_source_setup.html#understanding-cb-build-root-kiwi">Understanding <code class="file docutils literal notranslate"><span class="pre">.cb/build_root.kiwi</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="source_setup/git_image_source_setup.html">Git Image Source Setup</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="source_setup/git_image_source_setup.html#understanding-the-project-structure">Understanding the project structure</a></li>
-<li class="toctree-l3"><a class="reference internal" href="source_setup/git_image_source_setup.html#understanding-cb-cloud-builder-yml">Understanding <code class="file docutils literal notranslate"><span class="pre">.cb/cloud_builder.yml</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="kafka_broker_setup.html">Kafka Message Broker Setup</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Create and Install the Control Plane</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#control-plane-configuration">Control Plane Configuration</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="runner_setup.html">Runner Setup</a></li>
-<li class="toctree-l1"><a class="reference internal" href="request_package_build.html">Request a Package Build</a></li>
-<li class="toctree-l1"><a class="reference internal" href="auto_rebuild_on_source_change.html">Auto Rebuild on Package Source Change</a></li>
-<li class="toctree-l1"><a class="reference internal" href="auto_rebuild_on_build_dependencies.html">Auto Rebuild on Package Build Dependency Changes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="collect_and_build_project_repos.html">Collect and Build Project Repos</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="collect_and_build_project_repos.html#create-and-setup-the-reposerver-instance">Create and Setup the reposerver instance</a></li>
-<li class="toctree-l2"><a class="reference internal" href="collect_and_build_project_repos.html#setup-apache-to-serve-the-repos">Setup Apache to Serve the Repos</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="commands.html">Overview Cloud Builder Services</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="commands/cb_fetch.html">cb-fetch</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="commands/cb_fetch.html#synopsis">SYNOPSIS</a></li>
-<li class="toctree-l3"><a class="reference internal" href="commands/cb_fetch.html#description">DESCRIPTION</a></li>
-<li class="toctree-l3"><a class="reference internal" href="commands/cb_fetch.html#options">OPTIONS</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="commands/cb_scheduler.html">cb-scheduler</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="commands/cb_scheduler.html#synopsis">SYNOPSIS</a></li>
-<li class="toctree-l3"><a class="reference internal" href="commands/cb_scheduler.html#description">DESCRIPTION</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="commands/cb_scheduler.html#building-a-package">Building a package:</a></li>
-<li class="toctree-l4"><a class="reference internal" href="commands/cb_scheduler.html#build-an-os-image">Build an OS image:</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="commands/cb_scheduler.html#options">OPTIONS</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="commands/cb_prepare.html">cb-prepare</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="commands/cb_prepare.html#synopsis">SYNOPSIS</a></li>
-<li class="toctree-l3"><a class="reference internal" href="commands/cb_prepare.html#description">DESCRIPTION</a></li>
-<li class="toctree-l3"><a class="reference internal" href="commands/cb_prepare.html#options">OPTIONS</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="commands/cb_run.html">cb-run</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="commands/cb_run.html#synopsis">SYNOPSIS</a></li>
-<li class="toctree-l3"><a class="reference internal" href="commands/cb_run.html#description">DESCRIPTION</a></li>
-<li class="toctree-l3"><a class="reference internal" href="commands/cb_run.html#options">OPTIONS</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="commands/cb_image.html">cb-image</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="commands/cb_image.html#synopsis">SYNOPSIS</a></li>
-<li class="toctree-l3"><a class="reference internal" href="commands/cb_image.html#description">DESCRIPTION</a></li>
-<li class="toctree-l3"><a class="reference internal" href="commands/cb_image.html#options">OPTIONS</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="commands/cb_info.html">cb-info</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="commands/cb_info.html#synopsis">SYNOPSIS</a></li>
-<li class="toctree-l3"><a class="reference internal" href="commands/cb_info.html#description">DESCRIPTION</a></li>
-<li class="toctree-l3"><a class="reference internal" href="commands/cb_info.html#options">OPTIONS</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="commands/cb_depsolver.html">cb-depsolver</a></li>
-<li class="toctree-l2"><a class="reference internal" href="commands/cb_collect.html">cb-collect</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="commands/cb_collect.html#synopsis">SYNOPSIS</a></li>
-<li class="toctree-l3"><a class="reference internal" href="commands/cb_collect.html#description">DESCRIPTION</a></li>
-<li class="toctree-l3"><a class="reference internal" href="commands/cb_collect.html#options">OPTIONS</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="commands/cb_ctl.html">cb-ctl</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="commands/cb_ctl.html#synopsis">SYNOPSIS</a></li>
-<li class="toctree-l3"><a class="reference internal" href="commands/cb_ctl.html#description">DESCRIPTION</a></li>
-<li class="toctree-l3"><a class="reference internal" href="commands/cb_ctl.html#options">OPTIONS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../quickstart/git_image_source_setup.html">Git Image Source Setup</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../quickstart/git_image_source_setup.html#understanding-the-project-structure">Understanding the project structure</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../quickstart/git_image_source_setup.html#understanding-cb-cloud-builder-yml">Understanding <code class="file docutils literal notranslate"><span class="pre">.cb/cloud_builder.yml</span></code></a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="playground.html">Playground</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="playground.html#building-debian-packages">Building Debian Packages</a></li>
-<li class="toctree-l2"><a class="reference internal" href="playground.html#simple-cluster-setup">Simple Cluster Setup</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="../cluster_setup_from_scratch.html">Setup Cloud Builder From Scratch</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="kafka_broker_setup.html">Kafka Message Broker Setup</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Create and Install the Control Plane</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#control-plane-configuration">Control Plane Configuration</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="runner_setup.html">Runner Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="request_package_build.html">Request a Package Build</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auto_rebuild_on_source_change.html">Auto Rebuild on Package Source Change</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auto_rebuild_on_build_dependencies.html">Auto Rebuild on Package Build Dependency Changes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="collect_and_build_project_repos.html">Collect and Build Project Repos</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="collect_and_build_project_repos.html#create-and-setup-the-reposerver-instance">Create and Setup the reposerver instance</a></li>
+<li class="toctree-l3"><a class="reference internal" href="collect_and_build_project_repos.html#setup-apache-to-serve-the-repos">Setup Apache to Serve the Repos</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../cluster_setup_from_cb_amis.html">Setup Cloud Builder From AMIs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands.html">Overview Cloud Builder Services</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../commands/cb_fetch.html">cb-fetch</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../commands/cb_fetch.html#synopsis">SYNOPSIS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../commands/cb_fetch.html#description">DESCRIPTION</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../commands/cb_fetch.html#options">OPTIONS</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../commands/cb_scheduler.html">cb-scheduler</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../commands/cb_scheduler.html#synopsis">SYNOPSIS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../commands/cb_scheduler.html#description">DESCRIPTION</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../commands/cb_scheduler.html#building-a-package">Building a package:</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../commands/cb_scheduler.html#build-an-os-image">Build an OS image:</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../commands/cb_scheduler.html#options">OPTIONS</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../commands/cb_prepare.html">cb-prepare</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../commands/cb_prepare.html#synopsis">SYNOPSIS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../commands/cb_prepare.html#description">DESCRIPTION</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../commands/cb_prepare.html#options">OPTIONS</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../commands/cb_run.html">cb-run</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../commands/cb_run.html#synopsis">SYNOPSIS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../commands/cb_run.html#description">DESCRIPTION</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../commands/cb_run.html#options">OPTIONS</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../commands/cb_image.html">cb-image</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../commands/cb_image.html#synopsis">SYNOPSIS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../commands/cb_image.html#description">DESCRIPTION</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../commands/cb_image.html#options">OPTIONS</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../commands/cb_info.html">cb-info</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../commands/cb_info.html#synopsis">SYNOPSIS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../commands/cb_info.html#description">DESCRIPTION</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../commands/cb_info.html#options">OPTIONS</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../commands/cb_depsolver.html">cb-depsolver</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../commands/cb_collect.html">cb-collect</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../commands/cb_collect.html#synopsis">SYNOPSIS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../commands/cb_collect.html#description">DESCRIPTION</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../commands/cb_collect.html#options">OPTIONS</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../commands/cb_ctl.html">cb-ctl</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../commands/cb_ctl.html#synopsis">SYNOPSIS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../commands/cb_ctl.html#description">DESCRIPTION</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../commands/cb_ctl.html#options">OPTIONS</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -137,17 +138,18 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="index.html">Cloud Builder</a>
+          <a href="../index.html">Cloud Builder</a>
       </nav>
 
       <div class="wy-nav-content">
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../cluster_setup_from_scratch.html">Setup Cloud Builder From Scratch</a> &raquo;</li>
       <li>Create and Install the Control Plane</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="_sources/control_plane_setup.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/cluster_setup_from_scratch/control_plane_setup.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>

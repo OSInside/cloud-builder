@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Auto Rebuild on Package Build Dependency Changes &mdash; Cloud Builder 0.2.40 documentation</title>
+  <title>Setup Cloud Builder From AMIs &mdash; Cloud Builder 0.2.41 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/custom.css" type="text/css" />
@@ -19,8 +19,8 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Collect and Build Project Repos" href="collect_and_build_project_repos.html" />
-    <link rel="prev" title="Auto Rebuild on Package Source Change" href="auto_rebuild_on_source_change.html" /> 
+    <link rel="next" title="Overview Cloud Builder Services" href="commands.html" />
+    <link rel="prev" title="Collect and Build Project Repos" href="cluster_setup_from_scratch/collect_and_build_project_repos.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -39,35 +39,41 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="infrastructure_setup.html">Infrastructure Setup</a></li>
-<li class="toctree-l1"><a class="reference internal" href="source_setup.html">Cloud Builder Source Setup</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="source_setup/git_package_source_setup.html">Git Package Source Setup</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="source_setup/git_package_source_setup.html#understanding-the-project-structure">Understanding the project structure</a></li>
-<li class="toctree-l3"><a class="reference internal" href="source_setup/git_package_source_setup.html#understanding-cb-cloud-builder-yml">Understanding <code class="file docutils literal notranslate"><span class="pre">.cb/cloud_builder.yml</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="source_setup/git_package_source_setup.html#understanding-cb-build-root-kiwi">Understanding <code class="file docutils literal notranslate"><span class="pre">.cb/build_root.kiwi</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quick Start</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#cloud-builder-source-setup">Cloud Builder Source Setup</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="quickstart/git_package_source_setup.html">Git Package Source Setup</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="quickstart/git_package_source_setup.html#understanding-the-project-structure">Understanding the project structure</a></li>
+<li class="toctree-l4"><a class="reference internal" href="quickstart/git_package_source_setup.html#understanding-cb-cloud-builder-yml">Understanding <code class="file docutils literal notranslate"><span class="pre">.cb/cloud_builder.yml</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="quickstart/git_package_source_setup.html#understanding-cb-build-root-kiwi">Understanding <code class="file docutils literal notranslate"><span class="pre">.cb/build_root.kiwi</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="source_setup/git_image_source_setup.html">Git Image Source Setup</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="source_setup/git_image_source_setup.html#understanding-the-project-structure">Understanding the project structure</a></li>
-<li class="toctree-l3"><a class="reference internal" href="source_setup/git_image_source_setup.html#understanding-cb-cloud-builder-yml">Understanding <code class="file docutils literal notranslate"><span class="pre">.cb/cloud_builder.yml</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="quickstart/git_image_source_setup.html">Git Image Source Setup</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="quickstart/git_image_source_setup.html#understanding-the-project-structure">Understanding the project structure</a></li>
+<li class="toctree-l4"><a class="reference internal" href="quickstart/git_image_source_setup.html#understanding-cb-cloud-builder-yml">Understanding <code class="file docutils literal notranslate"><span class="pre">.cb/cloud_builder.yml</span></code></a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="kafka_broker_setup.html">Kafka Message Broker Setup</a></li>
-<li class="toctree-l1"><a class="reference internal" href="control_plane_setup.html">Create and Install the Control Plane</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="control_plane_setup.html#control-plane-configuration">Control Plane Configuration</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="runner_setup.html">Runner Setup</a></li>
-<li class="toctree-l1"><a class="reference internal" href="request_package_build.html">Request a Package Build</a></li>
-<li class="toctree-l1"><a class="reference internal" href="auto_rebuild_on_source_change.html">Auto Rebuild on Package Source Change</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Auto Rebuild on Package Build Dependency Changes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="collect_and_build_project_repos.html">Collect and Build Project Repos</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="collect_and_build_project_repos.html#create-and-setup-the-reposerver-instance">Create and Setup the reposerver instance</a></li>
-<li class="toctree-l2"><a class="reference internal" href="collect_and_build_project_repos.html#setup-apache-to-serve-the-repos">Setup Apache to Serve the Repos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cluster_setup_from_scratch.html">Setup Cloud Builder From Scratch</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="cluster_setup_from_scratch/kafka_broker_setup.html">Kafka Message Broker Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cluster_setup_from_scratch/control_plane_setup.html">Create and Install the Control Plane</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="cluster_setup_from_scratch/control_plane_setup.html#control-plane-configuration">Control Plane Configuration</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="cluster_setup_from_scratch/runner_setup.html">Runner Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cluster_setup_from_scratch/request_package_build.html">Request a Package Build</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cluster_setup_from_scratch/auto_rebuild_on_source_change.html">Auto Rebuild on Package Source Change</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cluster_setup_from_scratch/auto_rebuild_on_build_dependencies.html">Auto Rebuild on Package Build Dependency Changes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cluster_setup_from_scratch/collect_and_build_project_repos.html">Collect and Build Project Repos</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="cluster_setup_from_scratch/collect_and_build_project_repos.html#create-and-setup-the-reposerver-instance">Create and Setup the reposerver instance</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cluster_setup_from_scratch/collect_and_build_project_repos.html#setup-apache-to-serve-the-repos">Setup Apache to Serve the Repos</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Setup Cloud Builder From AMIs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="commands.html">Overview Cloud Builder Services</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="commands/cb_fetch.html">cb-fetch</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="commands/cb_fetch.html#synopsis">SYNOPSIS</a></li>
@@ -124,11 +130,6 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="playground.html">Playground</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="playground.html#building-debian-packages">Building Debian Packages</a></li>
-<li class="toctree-l2"><a class="reference internal" href="playground.html#simple-cluster-setup">Simple Cluster Setup</a></li>
-</ul>
-</li>
 </ul>
 
         </div>
@@ -145,9 +146,9 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Auto Rebuild on Package Build Dependency Changes</li>
+      <li>Setup Cloud Builder From AMIs</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="_sources/auto_rebuild_on_build_dependencies.rst.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/cluster_setup_from_cb_amis.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -155,33 +156,30 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="auto-rebuild-on-package-build-dependency-changes">
-<span id="auto-rebuild-on-build-dependencies"></span><h1>Auto Rebuild on Package Build Dependency Changes<a class="headerlink" href="#auto-rebuild-on-package-build-dependency-changes" title="Permalink to this headline">¶</a></h1>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>I need to implement the cb-depsolver service first</p>
+  <section id="setup-cloud-builder-from-amis">
+<span id="cluster-setup-from-cb-amis"></span><h1>Setup Cloud Builder From AMIs<a class="headerlink" href="#setup-cloud-builder-from-amis" title="Permalink to this headline">¶</a></h1>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This document provides information how to setup Cloud Builder from
+the AMI (Amazon Machine Images) registered in Amazon EC2.
+As of now the AMIs are not part of the general catalog and
+needs to be shared by me with interested people. Therefore
+the following procedure can only work if you reach out to
+me such that I can share the required AMI IDs with your
+Amazon account.</p>
 </div>
+<p>For a simpler and straight forward way to setup Cloud Builder in Amazon,
+three pre-configured AMIs were registered. One to create an
+instance for the <code class="xref py py-obj docutils literal notranslate"><span class="pre">control-plane</span></code>, one for creating an <code class="xref py py-obj docutils literal notranslate"><span class="pre">collector</span></code>
+instance and one to create one or more <code class="xref py py-obj docutils literal notranslate"><span class="pre">runner</span></code> instances. All
+AMIs are based on the <code class="xref py py-obj docutils literal notranslate"><span class="pre">Fedora</span></code> distribution and comes with many
+tools from other distributions pre-installed, such that the runners
+can build packages and images for a variety of different
+distributions.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Design Idea</p>
-<ol class="arabic simple">
-<li><p>Use libsatsolver via the libsolv python binding as
-implemented in the KIWI API and command
-<code class="xref py py-obj docutils literal notranslate"><span class="pre">kiwi</span> <span class="pre">image</span> <span class="pre">info</span> <span class="pre">--description</span> <span class="pre">build_root.kiwi</span> <span class="pre">--resolve-package-list</span></code>
-Solving over the <code class="xref py py-obj docutils literal notranslate"><span class="pre">build_root.kiwi</span></code> file provides the dependency
-tree for all package build required packages (BuildRequires).</p></li>
-<li><p>Create a shasum over the dependency result from step 1</p></li>
-<li><p>Compare the shasum from the solver result with a former solver
-result and send a package build request to the message broker
-if there was a change</p></li>
-<li><p>Periodically run the solver operations over all packages.
-This is a CPU intensive task.</p></li>
-</ol>
-<p>The detection of a dependency change via the shasum is the simplest
-solution. Maybe there could be a more fine grained detection
-mechanism. The dependency result would contain all information
-to apply for other ways to detect a dependency change that should
-trigger a rebuild</p>
+<p>I need to come up with the aws sequence of commands to run
+the cluster. Stay tuned :)</p>
 </div>
 </section>
 
@@ -189,8 +187,8 @@ trigger a rebuild</p>
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="auto_rebuild_on_source_change.html" class="btn btn-neutral float-left" title="Auto Rebuild on Package Source Change" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="collect_and_build_project_repos.html" class="btn btn-neutral float-right" title="Collect and Build Project Repos" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="cluster_setup_from_scratch/collect_and_build_project_repos.html" class="btn btn-neutral float-left" title="Collect and Build Project Repos" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="commands.html" class="btn btn-neutral float-right" title="Overview Cloud Builder Services" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

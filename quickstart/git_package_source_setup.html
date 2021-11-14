@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Git Package Source Setup &mdash; Cloud Builder 0.2.40 documentation</title>
+  <title>Git Package Source Setup &mdash; Cloud Builder 0.2.41 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
@@ -20,7 +20,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Git Image Source Setup" href="git_image_source_setup.html" />
-    <link rel="prev" title="Cloud Builder Source Setup" href="../source_setup.html" /> 
+    <link rel="prev" title="Quick Start" href="../quickstart.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -39,35 +39,41 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../infrastructure_setup.html">Infrastructure Setup</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="../source_setup.html">Cloud Builder Source Setup</a><ul class="current">
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Git Package Source Setup</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#understanding-the-project-structure">Understanding the project structure</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#understanding-cb-cloud-builder-yml">Understanding <code class="file docutils literal notranslate"><span class="pre">.cb/cloud_builder.yml</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#understanding-cb-build-root-kiwi">Understanding <code class="file docutils literal notranslate"><span class="pre">.cb/build_root.kiwi</span></code></a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../quickstart.html">Quick Start</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../quickstart.html#cloud-builder-source-setup">Cloud Builder Source Setup</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Git Package Source Setup</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#understanding-the-project-structure">Understanding the project structure</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#understanding-cb-cloud-builder-yml">Understanding <code class="file docutils literal notranslate"><span class="pre">.cb/cloud_builder.yml</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#understanding-cb-build-root-kiwi">Understanding <code class="file docutils literal notranslate"><span class="pre">.cb/build_root.kiwi</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="git_image_source_setup.html">Git Image Source Setup</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="git_image_source_setup.html#understanding-the-project-structure">Understanding the project structure</a></li>
-<li class="toctree-l3"><a class="reference internal" href="git_image_source_setup.html#understanding-cb-cloud-builder-yml">Understanding <code class="file docutils literal notranslate"><span class="pre">.cb/cloud_builder.yml</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="git_image_source_setup.html">Git Image Source Setup</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="git_image_source_setup.html#understanding-the-project-structure">Understanding the project structure</a></li>
+<li class="toctree-l4"><a class="reference internal" href="git_image_source_setup.html#understanding-cb-cloud-builder-yml">Understanding <code class="file docutils literal notranslate"><span class="pre">.cb/cloud_builder.yml</span></code></a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../kafka_broker_setup.html">Kafka Message Broker Setup</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../control_plane_setup.html">Create and Install the Control Plane</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../control_plane_setup.html#control-plane-configuration">Control Plane Configuration</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../runner_setup.html">Runner Setup</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../request_package_build.html">Request a Package Build</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../auto_rebuild_on_source_change.html">Auto Rebuild on Package Source Change</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../auto_rebuild_on_build_dependencies.html">Auto Rebuild on Package Build Dependency Changes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../collect_and_build_project_repos.html">Collect and Build Project Repos</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../collect_and_build_project_repos.html#create-and-setup-the-reposerver-instance">Create and Setup the reposerver instance</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../collect_and_build_project_repos.html#setup-apache-to-serve-the-repos">Setup Apache to Serve the Repos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../cluster_setup_from_scratch.html">Setup Cloud Builder From Scratch</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../cluster_setup_from_scratch/kafka_broker_setup.html">Kafka Message Broker Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../cluster_setup_from_scratch/control_plane_setup.html">Create and Install the Control Plane</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../cluster_setup_from_scratch/control_plane_setup.html#control-plane-configuration">Control Plane Configuration</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="../cluster_setup_from_scratch/runner_setup.html">Runner Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../cluster_setup_from_scratch/request_package_build.html">Request a Package Build</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../cluster_setup_from_scratch/auto_rebuild_on_source_change.html">Auto Rebuild on Package Source Change</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../cluster_setup_from_scratch/auto_rebuild_on_build_dependencies.html">Auto Rebuild on Package Build Dependency Changes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../cluster_setup_from_scratch/collect_and_build_project_repos.html">Collect and Build Project Repos</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../cluster_setup_from_scratch/collect_and_build_project_repos.html#create-and-setup-the-reposerver-instance">Create and Setup the reposerver instance</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../cluster_setup_from_scratch/collect_and_build_project_repos.html#setup-apache-to-serve-the-repos">Setup Apache to Serve the Repos</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../cluster_setup_from_cb_amis.html">Setup Cloud Builder From AMIs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../commands.html">Overview Cloud Builder Services</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../commands/cb_fetch.html">cb-fetch</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../commands/cb_fetch.html#synopsis">SYNOPSIS</a></li>
@@ -124,11 +130,6 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../playground.html">Playground</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../playground.html#building-debian-packages">Building Debian Packages</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../playground.html#simple-cluster-setup">Simple Cluster Setup</a></li>
-</ul>
-</li>
 </ul>
 
         </div>
@@ -145,10 +146,10 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
-          <li><a href="../source_setup.html">Cloud Builder Source Setup</a> &raquo;</li>
+          <li><a href="../quickstart.html">Quick Start</a> &raquo;</li>
       <li>Git Package Source Setup</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="../_sources/source_setup/git_package_source_setup.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/quickstart/git_package_source_setup.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -405,7 +406,7 @@ It would also be possible to continue with the example
 git repo and move to the real sources later.</p>
 </div>
 <p>Learn how to setup the message broker service
-<a class="reference internal" href="../kafka_broker_setup.html#kafka-broker-setup"><span class="std std-ref">Kafka Message Broker Setup</span></a></p>
+<a class="reference internal" href="../cluster_setup_from_scratch/kafka_broker_setup.html#kafka-broker-setup"><span class="std std-ref">Kafka Message Broker Setup</span></a></p>
 </section>
 </section>
 
@@ -413,7 +414,7 @@ git repo and move to the real sources later.</p>
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="../source_setup.html" class="btn btn-neutral float-left" title="Cloud Builder Source Setup" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../quickstart.html" class="btn btn-neutral float-left" title="Quick Start" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="git_image_source_setup.html" class="btn btn-neutral float-right" title="Git Image Source Setup" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 

@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Auto Rebuild on Package Source Change &mdash; Cloud Builder 0.2.41 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Auto Rebuild on Package Build Dependency Changes" href="auto_rebuild_on_build_dependencies.html" />
+    <link rel="prev" title="Request a Package Build" href="request_package_build.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> Cloud Builder
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../quickstart.html">Quick Start</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../quickstart.html#cloud-builder-source-setup">Cloud Builder Source Setup</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../quickstart/git_package_source_setup.html">Git Package Source Setup</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../quickstart/git_package_source_setup.html#understanding-the-project-structure">Understanding the project structure</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../quickstart/git_package_source_setup.html#understanding-cb-cloud-builder-yml">Understanding <code class="file docutils literal notranslate"><span class="pre">.cb/cloud_builder.yml</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../quickstart/git_package_source_setup.html#understanding-cb-build-root-kiwi">Understanding <code class="file docutils literal notranslate"><span class="pre">.cb/build_root.kiwi</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../quickstart/git_image_source_setup.html">Git Image Source Setup</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../quickstart/git_image_source_setup.html#understanding-the-project-structure">Understanding the project structure</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../quickstart/git_image_source_setup.html#understanding-cb-cloud-builder-yml">Understanding <code class="file docutils literal notranslate"><span class="pre">.cb/cloud_builder.yml</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="../cluster_setup_from_scratch.html">Setup Cloud Builder From Scratch</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="kafka_broker_setup.html">Kafka Message Broker Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="control_plane_setup.html">Create and Install the Control Plane</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="control_plane_setup.html#control-plane-configuration">Control Plane Configuration</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="runner_setup.html">Runner Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="request_package_build.html">Request a Package Build</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Auto Rebuild on Package Source Change</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auto_rebuild_on_build_dependencies.html">Auto Rebuild on Package Build Dependency Changes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="collect_and_build_project_repos.html">Collect and Build Project Repos</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="collect_and_build_project_repos.html#create-and-setup-the-reposerver-instance">Create and Setup the reposerver instance</a></li>
+<li class="toctree-l3"><a class="reference internal" href="collect_and_build_project_repos.html#setup-apache-to-serve-the-repos">Setup Apache to Serve the Repos</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../cluster_setup_from_cb_amis.html">Setup Cloud Builder From AMIs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands.html">Overview Cloud Builder Services</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../commands/cb_fetch.html">cb-fetch</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../commands/cb_fetch.html#synopsis">SYNOPSIS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../commands/cb_fetch.html#description">DESCRIPTION</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../commands/cb_fetch.html#options">OPTIONS</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../commands/cb_scheduler.html">cb-scheduler</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../commands/cb_scheduler.html#synopsis">SYNOPSIS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../commands/cb_scheduler.html#description">DESCRIPTION</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../commands/cb_scheduler.html#building-a-package">Building a package:</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../commands/cb_scheduler.html#build-an-os-image">Build an OS image:</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../commands/cb_scheduler.html#options">OPTIONS</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../commands/cb_prepare.html">cb-prepare</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../commands/cb_prepare.html#synopsis">SYNOPSIS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../commands/cb_prepare.html#description">DESCRIPTION</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../commands/cb_prepare.html#options">OPTIONS</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../commands/cb_run.html">cb-run</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../commands/cb_run.html#synopsis">SYNOPSIS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../commands/cb_run.html#description">DESCRIPTION</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../commands/cb_run.html#options">OPTIONS</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../commands/cb_image.html">cb-image</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../commands/cb_image.html#synopsis">SYNOPSIS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../commands/cb_image.html#description">DESCRIPTION</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../commands/cb_image.html#options">OPTIONS</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../commands/cb_info.html">cb-info</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../commands/cb_info.html#synopsis">SYNOPSIS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../commands/cb_info.html#description">DESCRIPTION</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../commands/cb_info.html#options">OPTIONS</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../commands/cb_depsolver.html">cb-depsolver</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../commands/cb_collect.html">cb-collect</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../commands/cb_collect.html#synopsis">SYNOPSIS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../commands/cb_collect.html#description">DESCRIPTION</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../commands/cb_collect.html#options">OPTIONS</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../commands/cb_ctl.html">cb-ctl</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../commands/cb_ctl.html#synopsis">SYNOPSIS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../commands/cb_ctl.html#description">DESCRIPTION</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../commands/cb_ctl.html#options">OPTIONS</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Cloud Builder</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../cluster_setup_from_scratch.html">Setup Cloud Builder From Scratch</a> &raquo;</li>
+      <li>Auto Rebuild on Package Source Change</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/cluster_setup_from_scratch/auto_rebuild_on_source_change.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="auto-rebuild-on-package-source-change">
+<span id="auto-rebuild-on-source-change"></span><h1>Auto Rebuild on Package Source Change<a class="headerlink" href="#auto-rebuild-on-package-source-change" title="Permalink to this headline">¶</a></h1>
+<p>If packages should be rebuild on a change of the package
+sources in the Git master branch, one option to do this is
+to run the <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-fetch</span></code> service. This service periodically
+checks for changes in the git and creates package build
+requests under the following conditions:</p>
+<ol class="arabic simple">
+<li><p><strong>Package source(s) has changed:</strong></p></li>
+</ol>
+<blockquote>
+<div><p>One ore more files of the package sources has changed.
+The created packaged build request is eligble to reuse
+an eventual existing buildroot on the selected runner</p>
+</div></blockquote>
+<ol class="arabic simple" start="2">
+<li><p><strong>Package source(s) and/or metadata has changed:</strong></p></li>
+</ol>
+<blockquote>
+<div><p>Similar to the first case with the difference that a
+change on the package metadata <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb/cloud_builder.yml</span></code> and/or
+<code class="xref py py-obj docutils literal notranslate"><span class="pre">cb/build_root.kiwi</span></code> will force a cleanup and rebuild of
+an eventual existing buildroot on the selected runner</p>
+</div></blockquote>
+<p>To start the <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-fetch</span></code> service either a new instance in
+the cloud must be started or the control plane instance
+can be used. Since the control plane has no hard job to
+perform it’s fairly fine to use it as source control service
+as well.</p>
+<p>The following steps needs to be done run <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-fetch</span></code> on the
+control plane:</p>
+<ol class="arabic">
+<li><p><strong>Login to the control plane</strong></p>
+<p>See <a class="reference internal" href="control_plane_setup.html#control-plane-setup"><span class="std std-ref">Create and Install the Control Plane</span></a> for details</p>
+</li>
+<li><p><strong>Configure the fetcher update intervall</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ sudo vi /etc/cloud_builder
+
+<span class="nv">CB_UPDATE</span><span class="o">=</span><span class="m">30</span>
+</pre></div>
+</div>
+<p>Change or keep the default value of 30 seconds as you see fit.</p>
+</li>
+<li><p><strong>Start</strong> <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-fetch</span></code> <strong>service</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ sudo systemctl start cb-fetch
+</pre></div>
+</div>
+</li>
+</ol>
+<p>To read the actions taken by the <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-fetch</span></code> service one can watch
+on the Cloud Builder info response messages as follows:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ cb-ctl cb-ctl --watch <span class="se">\</span>
+    --filter-service-name cb-fetch <span class="se">\</span>
+    --timeout <span class="m">200</span>
+</pre></div>
+</div>
+<p>In case cb-fetch created a new package build request, information
+like in the following example will be provided:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="o">{</span>
+    <span class="s2">&quot;identity&quot;</span>: <span class="s2">&quot;CBFetch:18.193.45.127:15259:xclock&quot;</span>,
+    <span class="s2">&quot;message&quot;</span>: <span class="s2">&quot;Package update request scheduled&quot;</span>,
+    <span class="s2">&quot;project&quot;</span>: <span class="s2">&quot;projects/MS/xclock&quot;</span>,
+    <span class="s2">&quot;request_id&quot;</span>: <span class="s2">&quot;d309d5d2-f2e0-11eb-9538-06be1098538e&quot;</span>,
+    <span class="s2">&quot;response_code&quot;</span>: <span class="s2">&quot;package rebuild due to source change&quot;</span>,
+    <span class="s2">&quot;schema_version&quot;</span>: <span class="m">0</span>.2,
+    <span class="s2">&quot;target&quot;</span>: <span class="o">{</span>
+        <span class="s2">&quot;arch&quot;</span>: <span class="s2">&quot;x86_64&quot;</span>,
+        <span class="s2">&quot;dist&quot;</span>: <span class="s2">&quot;TW&quot;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</pre></div>
+</div>
+<p>The provided <code class="xref py py-obj docutils literal notranslate"><span class="pre">request_id</span></code> can be used to check on the status
+of the package build process as follows:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ cb-ctl cb-ctl --watch <span class="se">\</span>
+    --filter-request-id d309d5d2-f2e0-11eb-9538-06be1098538e <span class="se">\</span>
+    --timeout <span class="m">5</span>
+</pre></div>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="request_package_build.html" class="btn btn-neutral float-left" title="Request a Package Build" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="auto_rebuild_on_build_dependencies.html" class="btn btn-neutral float-right" title="Auto Rebuild on Package Build Dependency Changes" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Marcus Schäfer.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

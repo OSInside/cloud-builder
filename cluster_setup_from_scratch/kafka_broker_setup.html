@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kafka Message Broker Setup &mdash; Cloud Builder 0.2.41 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Create and Install the Control Plane" href="control_plane_setup.html" />
+    <link rel="prev" title="Setup Cloud Builder From Scratch" href="../cluster_setup_from_scratch.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> Cloud Builder
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../quickstart.html">Quick Start</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../quickstart.html#cloud-builder-source-setup">Cloud Builder Source Setup</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../quickstart/git_package_source_setup.html">Git Package Source Setup</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../quickstart/git_package_source_setup.html#understanding-the-project-structure">Understanding the project structure</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../quickstart/git_package_source_setup.html#understanding-cb-cloud-builder-yml">Understanding <code class="file docutils literal notranslate"><span class="pre">.cb/cloud_builder.yml</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../quickstart/git_package_source_setup.html#understanding-cb-build-root-kiwi">Understanding <code class="file docutils literal notranslate"><span class="pre">.cb/build_root.kiwi</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../quickstart/git_image_source_setup.html">Git Image Source Setup</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../quickstart/git_image_source_setup.html#understanding-the-project-structure">Understanding the project structure</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../quickstart/git_image_source_setup.html#understanding-cb-cloud-builder-yml">Understanding <code class="file docutils literal notranslate"><span class="pre">.cb/cloud_builder.yml</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="../cluster_setup_from_scratch.html">Setup Cloud Builder From Scratch</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Kafka Message Broker Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="control_plane_setup.html">Create and Install the Control Plane</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="control_plane_setup.html#control-plane-configuration">Control Plane Configuration</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="runner_setup.html">Runner Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="request_package_build.html">Request a Package Build</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auto_rebuild_on_source_change.html">Auto Rebuild on Package Source Change</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auto_rebuild_on_build_dependencies.html">Auto Rebuild on Package Build Dependency Changes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="collect_and_build_project_repos.html">Collect and Build Project Repos</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="collect_and_build_project_repos.html#create-and-setup-the-reposerver-instance">Create and Setup the reposerver instance</a></li>
+<li class="toctree-l3"><a class="reference internal" href="collect_and_build_project_repos.html#setup-apache-to-serve-the-repos">Setup Apache to Serve the Repos</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../cluster_setup_from_cb_amis.html">Setup Cloud Builder From AMIs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../commands.html">Overview Cloud Builder Services</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../commands/cb_fetch.html">cb-fetch</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../commands/cb_fetch.html#synopsis">SYNOPSIS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../commands/cb_fetch.html#description">DESCRIPTION</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../commands/cb_fetch.html#options">OPTIONS</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../commands/cb_scheduler.html">cb-scheduler</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../commands/cb_scheduler.html#synopsis">SYNOPSIS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../commands/cb_scheduler.html#description">DESCRIPTION</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../commands/cb_scheduler.html#building-a-package">Building a package:</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../commands/cb_scheduler.html#build-an-os-image">Build an OS image:</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../commands/cb_scheduler.html#options">OPTIONS</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../commands/cb_prepare.html">cb-prepare</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../commands/cb_prepare.html#synopsis">SYNOPSIS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../commands/cb_prepare.html#description">DESCRIPTION</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../commands/cb_prepare.html#options">OPTIONS</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../commands/cb_run.html">cb-run</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../commands/cb_run.html#synopsis">SYNOPSIS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../commands/cb_run.html#description">DESCRIPTION</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../commands/cb_run.html#options">OPTIONS</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../commands/cb_image.html">cb-image</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../commands/cb_image.html#synopsis">SYNOPSIS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../commands/cb_image.html#description">DESCRIPTION</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../commands/cb_image.html#options">OPTIONS</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../commands/cb_info.html">cb-info</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../commands/cb_info.html#synopsis">SYNOPSIS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../commands/cb_info.html#description">DESCRIPTION</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../commands/cb_info.html#options">OPTIONS</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../commands/cb_depsolver.html">cb-depsolver</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../commands/cb_collect.html">cb-collect</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../commands/cb_collect.html#synopsis">SYNOPSIS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../commands/cb_collect.html#description">DESCRIPTION</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../commands/cb_collect.html#options">OPTIONS</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../commands/cb_ctl.html">cb-ctl</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../commands/cb_ctl.html#synopsis">SYNOPSIS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../commands/cb_ctl.html#description">DESCRIPTION</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../commands/cb_ctl.html#options">OPTIONS</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Cloud Builder</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../cluster_setup_from_scratch.html">Setup Cloud Builder From Scratch</a> &raquo;</li>
+      <li>Kafka Message Broker Setup</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/cluster_setup_from_scratch/kafka_broker_setup.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="kafka-message-broker-setup">
+<span id="kafka-broker-setup"></span><h1>Kafka Message Broker Setup<a class="headerlink" href="#kafka-message-broker-setup" title="Permalink to this headline">¶</a></h1>
+<p>The heart of Cloud Builder is the message broker. The messaging system
+is the foundation of the Cloud Builder API. All data send and read is
+validated against a Cerberus based schema definition. The used
+schema implements the API for the service. Only successfully
+validated data will be handled.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>There are some messaging services available. Currently
+Cloud Builder implements support for the Kafka message broker only.
+Thus the following information is specific to Apache Kafka</p>
+</div>
+<p>For Cloud Builder it is immaterial from where it can access the kafka
+service. Because of this reason it can be a self manufactored
+local solution, an offer by a managed service provider like
+<a class="reference external" href="https://aiven.io/">Aiven</a> or a cloud service offering like
+Amazon MSK. For good performance it is recommended to place
+the kafka service near to the Cloud Builder services with regards to
+the network and region.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The current implementation of kafka in Cloud Builder assumes the most
+simple access method to the kafka service. This requires kafka
+to run in the same network from which cb- tools and services
+are used. If Cloud Builder gains some attraction this will be extended
+such that the config file to store the access credentials can
+also work with SSL and certificate based information.</p>
+</div>
+<p>As the focus of this documentation is to run Cloud Builder in the Amazon
+cloud, the promotion for kafka is set to Amazon MSK. A good start
+to get kafka running in Amazon can be found here:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://docs.aws.amazon.com/msk/latest/developerguide/getting-started.html">https://docs.aws.amazon.com/msk/latest/developerguide/getting-started.html</a></p></li>
+</ul>
+<p>Once a kafka message broker is running in some way shape or form
+the next step in setting up the Cloud Builder build cluster is the launch of
+the <code class="xref py py-obj docutils literal notranslate"><span class="pre">control</span> <span class="pre">plane</span></code>. Learn how to start and configure the <code class="xref py py-obj docutils literal notranslate"><span class="pre">control</span> <span class="pre">plane</span></code>
+next: <a class="reference internal" href="control_plane_setup.html#control-plane-setup"><span class="std std-ref">Create and Install the Control Plane</span></a></p>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../cluster_setup_from_scratch.html" class="btn btn-neutral float-left" title="Setup Cloud Builder From Scratch" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="control_plane_setup.html" class="btn btn-neutral float-right" title="Create and Install the Control Plane" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Marcus Schäfer.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

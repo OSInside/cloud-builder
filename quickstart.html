@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Overview Cloud Builder Services &mdash; Cloud Builder 0.2.41 documentation</title>
+  <title>Quick Start &mdash; Cloud Builder 0.2.41 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/custom.css" type="text/css" />
@@ -19,8 +19,8 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="cb-fetch" href="commands/cb_fetch.html" />
-    <link rel="prev" title="Setup Cloud Builder From AMIs" href="cluster_setup_from_cb_amis.html" /> 
+    <link rel="next" title="Git Package Source Setup" href="quickstart/git_package_source_setup.html" />
+    <link rel="prev" title="Cloud Builder Documentation" href="index.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -39,8 +39,8 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quick Start</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="quickstart.html#cloud-builder-source-setup">Cloud Builder Source Setup</a><ul>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Quick Start</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#cloud-builder-source-setup">Cloud Builder Source Setup</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="quickstart/git_package_source_setup.html">Git Package Source Setup</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="quickstart/git_package_source_setup.html#understanding-the-project-structure">Understanding the project structure</a></li>
 <li class="toctree-l4"><a class="reference internal" href="quickstart/git_package_source_setup.html#understanding-cb-cloud-builder-yml">Understanding <code class="file docutils literal notranslate"><span class="pre">.cb/cloud_builder.yml</span></code></a></li>
@@ -74,7 +74,7 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="cluster_setup_from_cb_amis.html">Setup Cloud Builder From AMIs</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Overview Cloud Builder Services</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="commands.html">Overview Cloud Builder Services</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="commands/cb_fetch.html">cb-fetch</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="commands/cb_fetch.html#synopsis">SYNOPSIS</a></li>
 <li class="toctree-l3"><a class="reference internal" href="commands/cb_fetch.html#description">DESCRIPTION</a></li>
@@ -146,9 +146,9 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Overview Cloud Builder Services</li>
+      <li>Quick Start</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="_sources/commands.rst.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/quickstart.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -156,77 +156,88 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="overview-cloud-builder-services">
-<span id="services"></span><h1>Overview Cloud Builder Services<a class="headerlink" href="#overview-cloud-builder-services" title="Permalink to this headline">¶</a></h1>
+  <section id="quick-start">
+<span id="quickstart"></span><h1>Quick Start<a class="headerlink" href="#quick-start" title="Permalink to this headline">¶</a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>This document provides a list of the existing Cloud Builder services
-for version 0.2.41.</p>
+<p>This document provides information how to get started with Cloud Builder
+and follows up with information about the structure of the package
+and image source files such that Cloud Builder can consume them.</p>
 </div>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="commands/cb_fetch.html">cb-fetch</a></li>
-<li class="toctree-l1"><a class="reference internal" href="commands/cb_scheduler.html">cb-scheduler</a></li>
-<li class="toctree-l1"><a class="reference internal" href="commands/cb_prepare.html">cb-prepare</a></li>
-<li class="toctree-l1"><a class="reference internal" href="commands/cb_run.html">cb-run</a></li>
-<li class="toctree-l1"><a class="reference internal" href="commands/cb_image.html">cb-image</a></li>
-<li class="toctree-l1"><a class="reference internal" href="commands/cb_info.html">cb-info</a></li>
-<li class="toctree-l1"><a class="reference internal" href="commands/cb_depsolver.html">cb-depsolver</a></li>
-<li class="toctree-l1"><a class="reference internal" href="commands/cb_collect.html">cb-collect</a></li>
-<li class="toctree-l1"><a class="reference internal" href="commands/cb_ctl.html">cb-ctl</a></li>
+<p>The Cloud Builder services are designed to let users create a build backend for
+packages and images. However, for a quick start this is a lot of
+information and can lead to an overload with information from different
+technology areas.</p>
+<p>So let’s start in small steps and with the idea to just let Cloud Builder
+build a package and see how that works. For building a package
+on your local system it would be enough to install the <code class="xref py py-obj docutils literal notranslate"><span class="pre">python3-cloud_builder</span></code>
+package and checkout the example <code class="xref py py-obj docutils literal notranslate"><span class="pre">cloud-builder-packages</span></code> git repository
+for some example package and image sources. Because there is no information
+about the host system on which these packages would be installed, I’d
+like to also eliminate that source of trouble and simply start a local
+virtual machine of a <code class="xref py py-obj docutils literal notranslate"><span class="pre">runner</span></code> image which exists for Cloud Builder to usually
+serve as one <code class="xref py py-obj docutils literal notranslate"><span class="pre">runner</span></code> system in a Cloud Builder cluster.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The requirements for the host system to perform the following
+steps are set to:</p>
+<ul class="simple">
+<li><p>Qemu KVM installed and available on the host</p></li>
+<li><p>A connection to the Internet</p></li>
 </ul>
 </div>
-<dl class="simple">
-<dt>cb-fetch:</dt><dd><p>Clones the referenced package source git repository.
-In addition it provides a package rebuild service on
-source changes</p>
-</dd>
-<dt>cb-scheduler:</dt><dd><p>Listens to incomming package build requests and builds the
-package with help from <strong>cb-prepare</strong> and <strong>cb-run</strong>.
-Also supports building OS images with help from <strong>cb-image</strong>.
-If a package or an image should be build is configured via
-the <code class="file docutils literal notranslate"><span class="pre">.cb/cloud_builder.yml</span></code> package metadata. Multiple
-schedulers on as many compute instances increases
-the build performance.</p>
-</dd>
-<dt>cb-prepare:</dt><dd><p>Prepares the buildroot environment within the package gets
-build. Creation of that buildroot is done with
-<a class="reference external" href="https://osinside.github.io/kiwi">KIWI</a> which supports
-all major distributions, such that packages for a wide
-range of distributions can be build.</p>
-</dd>
-<dt>cb-run:</dt><dd><p>Builds the package inside of the buildroot environment.
-Cloud Builder uses SUSE’s <a class="reference external" href="https://software.opensuse.org/package/build">build</a>
-tool to build packages. The tool supports a wide range of
-package formats.</p>
-</dd>
-<dt>cb-image:</dt><dd><p>Builds OS images using <a class="reference external" href="https://osinside.github.io/kiwi">KIWI</a></p>
-</dd>
-<dt>cb-info:</dt><dd><p>Looks up package information. This service should run on
-any instance with a cb-scheduler such that information
-about packages built on that instance can be retrieved.</p>
-</dd>
-<dt>cb-depsolver:</dt><dd><p>Computes build dependencies for each package in the git
-repository using the satsolver library. In case a dependency
-has changed the package gets rebuild.</p>
-</dd>
-<dt>cb-collect:</dt><dd><p>Collects information for each package in the git, downloads
-the package binaries and creates project specific repositories.
-The cb-info service is a requirement if the collector will
-be used.</p>
-</dd>
-<dt>cb-ctl:</dt><dd><p>Cloud Builder control utility to communicate with services, send
-requests, get information and more</p>
-</dd>
-</dl>
+<p>The following steps needs to be done to start a Cloud Builder runner locally
+on your system:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ wget https://download.opensuse.org/repositories/Virtualization:/Appliances:/CloudBuilder:/EC2:/fedora/images/CB-RunnerFedora.x86_64.raw.xz
+
+$ xz -d CB-RunnerFedora.x86_64.raw.xz
+
+$ qemu-kvm <span class="se">\</span>
+    -m <span class="m">4096</span> <span class="se">\</span>
+    -netdev user,id<span class="o">=</span>user0 <span class="se">\</span>
+    -device virtio-net-pci,netdev<span class="o">=</span>user0 <span class="se">\</span>
+    -serial stdio <span class="se">\</span>
+    -drive <span class="nv">file</span><span class="o">=</span>CB-RunnerFedora.x86_64.raw,if<span class="o">=</span>virtio
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Login to the system with user <code class="xref py py-obj docutils literal notranslate"><span class="pre">root</span></code> pwd <code class="xref py py-obj docutils literal notranslate"><span class="pre">linux</span></code>. This login
+option is only available with direct console access. If this
+image is used in cloud frameworks all local login options will
+be disabled through <code class="xref py py-obj docutils literal notranslate"><span class="pre">cloud-init</span></code></p>
+</div>
+<p>Once logged in to the <code class="xref py py-obj docutils literal notranslate"><span class="pre">runner</span></code> system, perform the following steps
+to build a package. As example the <code class="xref py py-obj docutils literal notranslate"><span class="pre">xsnow</span></code> package for <code class="xref py py-obj docutils literal notranslate"><span class="pre">Debian</span> <span class="pre">unstable</span></code>
+is used:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ <span class="nb">cd</span> cloud-builder-packages/projects/Debian/xsnow
+
+$ cb-ctl --build-package-local --dist unstable
+</pre></div>
+</div>
+<p>Congrats ! you build your first package with Cloud Builder. Feel free to try other
+package builds from the example git repo checkout in <code class="file docutils literal notranslate"><span class="pre">cloud-builder-packages</span></code>.
+After this, a good next step is to get familiar with the Cloud Builder metadata
+which exists below the <code class="file docutils literal notranslate"><span class="pre">.cb</span></code> directory in each package and image
+source data. Learn more about the Cloud Builder source setup in the following
+chapters.</p>
+<section id="cloud-builder-source-setup">
+<span id="sources"></span><h2>Cloud Builder Source Setup<a class="headerlink" href="#cloud-builder-source-setup" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="quickstart/git_package_source_setup.html">Git Package Source Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart/git_image_source_setup.html">Git Image Source Setup</a></li>
+</ul>
+</div>
+</section>
 </section>
 
 
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="cluster_setup_from_cb_amis.html" class="btn btn-neutral float-left" title="Setup Cloud Builder From AMIs" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="commands/cb_fetch.html" class="btn btn-neutral float-right" title="cb-fetch" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="index.html" class="btn btn-neutral float-left" title="Cloud Builder Documentation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="quickstart/git_package_source_setup.html" class="btn btn-neutral float-right" title="Git Package Source Setup" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
