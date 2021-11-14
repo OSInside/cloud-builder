@@ -19,7 +19,7 @@ function _cbctl {
         for comp in $prev $cmd;do
             case "$comp" in
                 "--build-package")
-                    __comp_reply "--project-path --arch --dist --runner-group --clean"
+                    __comp_reply "--project-path --arch --dist --runner-group"
                     return 0
                     ;;
                 "--build-package-local")
