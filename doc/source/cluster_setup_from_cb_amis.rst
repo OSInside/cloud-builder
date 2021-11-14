@@ -15,7 +15,7 @@ Setup Cloud Builder From AMIs
 
 For a simpler and straight forward way to setup {CB} in Amazon,
 three pre-configured AMIs were registered. One to create an
-instance for the `control-plane`, one for creating an `collector`
+instance for the `control-plane`, one for creating a `collector`
 instance and one to create one or more `runner` instances. All
 AMIs are based on the `Fedora` distribution and comes with many
 tools from other distributions pre-installed, such that the runners

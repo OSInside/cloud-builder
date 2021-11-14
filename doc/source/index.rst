@@ -21,6 +21,7 @@
 
    * `GitHub Sources <https://github.com/OSInside/cloud-builder>`__
    * `RPM Packages <http://download.opensuse.org/repositories/Virtualization:/Appliances:/CloudBuilder>`__
+   * `Amazon EC2 Images <https://download.opensuse.org/repositories/Virtualization:/Appliances:/CloudBuilder:/EC2:/fedora/images>`__
 
 Building Software Packages and Appliances as a Service
 ------------------------------------------------------
@@ -74,7 +75,7 @@ The Messaging API:
   and for the *Shared Queue* mode in a nice way. Especially The
   *Shared Queue* mode in combination with the topic partition setup
   is used to distribute build requests across the available runner
-  instances. For details hot to setup the messaging API see:
+  instances. For details how to setup the messaging API see:
   :ref:`kafka-broker-setup`
 
 The {CB} Services:
