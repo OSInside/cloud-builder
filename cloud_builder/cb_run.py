@@ -19,6 +19,7 @@
 usage: cb-run -h | --help
        cb-run --root=<root_path> --request-id=<UUID>
            [--local]
+           [--clean]
 
 options:
     --root=<root_path>
@@ -28,6 +29,10 @@ options:
 
     --request-id=<UUID>
         UUID for this build process
+
+    --clean
+        Delete chroot system after build and keep
+        only results if there are any
 
     --local
         Operate locally:
@@ -60,13 +65,6 @@ def main() -> None:
     The called run.sh script is expected to run a program
     that builds packages and stores them below the path
     returned by Defaults.get_runner_result_paths()
-
-    If the OBS build script is used this will be the
-    following directory lookup:
-
-    root_path
-    └── home
-        └── abuild
 
     At the end of cb-run an information record will be send
     to preserve the result information for later use
@@ -114,6 +112,11 @@ def main() -> None:
     status_flags = Defaults.get_status_flags()
     packages = []
 
+    # create binaries directory to hold build results
+    package_build_target_dir = f'{args["--root"]}.binaries'
+    Path.wipe(package_build_target_dir)
+    Path.create(package_build_target_dir)
+
     if exit_code != 0:
         status = status_flags.package_build_failed
     else:
@@ -134,9 +137,6 @@ def main() -> None:
             raise_on_error=False
         )
         if find_call.output:
-            package_build_target_dir = f'{args["--root"]}.tmp'
-            Path.wipe(package_build_target_dir)
-            Path.create(package_build_target_dir)
             for package in find_call.output.strip().split(os.linesep):
                 os.rename(
                     package, os.sep.join(
@@ -146,15 +146,30 @@ def main() -> None:
                 packages.append(
                     os.sep.join([args['--root'], os.path.basename(package)])
                 )
-            Path.wipe(args['--root'])
-            os.rename(
-                package_build_target_dir, args['--root']
-            )
             log.info(format(packages))
         else:
             exit_code = 1
             status = status_flags.package_build_failed_no_binaries
             log.error(status)
+
+    if args['--clean']:
+        # delete build root and rename .binaries directory
+        # to become the new build root
+        Path.wipe(args['--root'])
+        os.rename(
+            package_build_target_dir, args['--root']
+        )
+    elif packages:
+        # keep build root and move .binaries into it,
+        # then delete .binaries
+        for package in packages:
+            Path.wipe(package)
+            os.rename(
+                os.sep.join(
+                    [package_build_target_dir, os.path.basename(package)]
+                ), package
+            )
+        Path.wipe(package_build_target_dir)
 
     if not args['--local']:
         response = CBResponse(args['--request-id'], log.get_id())
