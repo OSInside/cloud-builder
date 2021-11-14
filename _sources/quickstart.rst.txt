@@ -17,7 +17,7 @@ technology areas.
 So let's start in small steps and with the idea to just let {CB}
 build a package and see how that works. For building a package
 on your local system it would be enough to install the `python3-cloud_builder`
-package and checkout the example `cloud-builder-packages` git repository
+package and checkout the example `cloud-builder-packages <https://github.com/OSInside/cloud-builder-packages>`__ git repository
 for some example package and image sources. Because there is no information
 about the host system on which these packages would be installed, I'd
 like to also eliminate that source of trouble and simply start a local
@@ -61,12 +61,12 @@ is used:
 
 .. code:: bash
 
-   $ cd cloud-builder-packages/projects/Debian/xsnow
+   $ cd cloud_builder_sources/projects/Debian/xsnow
 
    $ cb-ctl --build-package-local --dist unstable
 
 Congrats ! you build your first package with {CB}. Feel free to try other
-package builds from the example git repo checkout in :file:`cloud-builder-packages`.
+package builds from the example git repo checkout in :file:`cloud_builder_sources`.
 After this, a good next step is to get familiar with the {CB} metadata
 which exists below the :file:`.cb` directory in each package and image
 source data. Learn more about the {CB} source setup in the following

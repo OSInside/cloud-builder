@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Quick Start &mdash; Cloud Builder 0.2.41 documentation</title>
+  <title>Quick Start &mdash; Cloud Builder 0.2.42 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/custom.css" type="text/css" />
@@ -171,7 +171,7 @@ technology areas.</p>
 <p>So let’s start in small steps and with the idea to just let Cloud Builder
 build a package and see how that works. For building a package
 on your local system it would be enough to install the <code class="xref py py-obj docutils literal notranslate"><span class="pre">python3-cloud_builder</span></code>
-package and checkout the example <code class="xref py py-obj docutils literal notranslate"><span class="pre">cloud-builder-packages</span></code> git repository
+package and checkout the example <a class="reference external" href="https://github.com/OSInside/cloud-builder-packages">cloud-builder-packages</a> git repository
 for some example package and image sources. Because there is no information
 about the host system on which these packages would be installed, I’d
 like to also eliminate that source of trouble and simply start a local
@@ -210,13 +210,13 @@ be disabled through <code class="xref py py-obj docutils literal notranslate"><s
 <p>Once logged in to the <code class="xref py py-obj docutils literal notranslate"><span class="pre">runner</span></code> system, perform the following steps
 to build a package. As example the <code class="xref py py-obj docutils literal notranslate"><span class="pre">xsnow</span></code> package for <code class="xref py py-obj docutils literal notranslate"><span class="pre">Debian</span> <span class="pre">unstable</span></code>
 is used:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ <span class="nb">cd</span> cloud-builder-packages/projects/Debian/xsnow
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ <span class="nb">cd</span> cloud_builder_sources/projects/Debian/xsnow
 
 $ cb-ctl --build-package-local --dist unstable
 </pre></div>
 </div>
 <p>Congrats ! you build your first package with Cloud Builder. Feel free to try other
-package builds from the example git repo checkout in <code class="file docutils literal notranslate"><span class="pre">cloud-builder-packages</span></code>.
+package builds from the example git repo checkout in <code class="file docutils literal notranslate"><span class="pre">cloud_builder_sources</span></code>.
 After this, a good next step is to get familiar with the Cloud Builder metadata
 which exists below the <code class="file docutils literal notranslate"><span class="pre">.cb</span></code> directory in each package and image
 source data. Learn more about the Cloud Builder source setup in the following
