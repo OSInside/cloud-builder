@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Setup Cloud Builder From AMIs &mdash; Cloud Builder 0.2.43 documentation</title>
+  <title>Setup Cloud Builder From AMIs &mdash; Cloud Builder 0.2.44 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/custom.css" type="text/css" />
@@ -73,7 +73,11 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Setup Cloud Builder From AMIs</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Setup Cloud Builder From AMIs</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#create-cluster">Create Cluster</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="commands.html">Overview Cloud Builder Services</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="commands/cb_fetch.html">cb-fetch</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="commands/cb_fetch.html#synopsis">SYNOPSIS</a></li>
@@ -168,19 +172,200 @@ the following procedure can only work if you reach out to
 me such that I can share the required AMI IDs with your
 Amazon account.</p>
 </div>
-<p>For a simpler and straight forward way to setup Cloud Builder in Amazon,
+<p>For a simple and straight forward way to setup Cloud Builder in Amazon,
 three pre-configured AMIs were registered. One to create an
 instance for the <code class="xref py py-obj docutils literal notranslate"><span class="pre">control-plane</span></code>, one for creating a <code class="xref py py-obj docutils literal notranslate"><span class="pre">collector</span></code>
-instance and one to create one or more <code class="xref py py-obj docutils literal notranslate"><span class="pre">runner</span></code> instances. All
+instance and one for creating [N with N&gt;=1] <code class="xref py py-obj docutils literal notranslate"><span class="pre">runner</span></code> instances. All
 AMIs are based on the <code class="xref py py-obj docutils literal notranslate"><span class="pre">Fedora</span></code> distribution and comes with many
 tools from other distributions pre-installed, such that the runners
 can build packages and images for a variety of different
 distributions.</p>
+<section id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Permalink to this headline">¶</a></h2>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Prior launching AWS services, it’s important to understand that
+infrastructure as a service produces costs. The following procedure
+is done in a low cost model but is <strong>not</strong> free of charge.
+Take this into account when working with the cloud.</p>
+</div>
+<p>The setup procedure will use the Amazon MSK (Kafka) service as
+well as the Amazon EC2 (Compute Nodes) service. For launching,
+it’s required to know about the security group and subnets within
+the services should be launched. The following steps assumes
+some experience with the AWS cloud environment and does not
+deeply explain the concepts used outside of the scope of the Cloud Builder
+setup.</p>
+<p>Fetch the security group ID as follows:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ aws ec2 describe-security-groups
+</pre></div>
+</div>
+<p>Fetch the subnet IDs from available regions as follows:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ aws ec2 describe-subnets
+</pre></div>
+</div>
+</section>
+<section id="create-cluster">
+<h2>Create Cluster<a class="headerlink" href="#create-cluster" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic">
+<li><p><strong>Launch Amazon MSK:</strong></p>
+<p>Create the file <code class="file docutils literal notranslate"><span class="pre">cb-msk-setup.json</span></code> with the following content:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="nt">&quot;InstanceType&quot;</span><span class="p">:</span> <span class="s2">&quot;kafka.t3.small&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;BrokerAZDistribution&quot;</span><span class="p">:</span> <span class="s2">&quot;DEFAULT&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;SecurityGroups&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;sg-MySecuritGroupId&quot;</span>
+    <span class="p">],</span>
+    <span class="nt">&quot;StorageInfo&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;EbsStorageInfo&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&quot;VolumeSize&quot;</span><span class="p">:</span> <span class="mi">1</span>
+        <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="nt">&quot;ClientSubnets&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;subnet-MySubnetIdRegionX&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;subnet-MySubnetIdRegionY&quot;</span>
+    <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Start the messaging API as follows:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ <span class="nv">ClusterArn</span><span class="o">=</span><span class="k">$(</span>
+    aws kafka create-cluster <span class="se">\</span>
+        --cluster-name <span class="s2">&quot;cloud-builder&quot;</span> <span class="se">\</span>
+        --broker-node-group-info file://cb-msk-setup.json <span class="se">\</span>
+        --encryption-info <span class="nv">EncryptionInTransit</span><span class="o">={</span><span class="nv">ClientBroker</span><span class="o">=</span><span class="s2">&quot;PLAINTEXT&quot;</span><span class="o">}</span> <span class="se">\</span>
+        --kafka-version <span class="s2">&quot;2.6.2&quot;</span> <span class="se">\</span>
+        --number-of-broker-nodes <span class="m">2</span> <span class="p">|</span> <span class="se">\</span>
+    grep ClusterArn <span class="p">|</span> cut -f4 -d<span class="se">\&quot;</span>
+  <span class="k">)</span>
+</pre></div>
+</div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>I need to come up with the aws sequence of commands to run
-the cluster. Stay tuned :)</p>
+<p>The <code class="xref py py-obj docutils literal notranslate"><span class="pre">create-cluster</span></code> call will respond with a <code class="xref py py-obj docutils literal notranslate"><span class="pre">ClusterArn</span></code> value
+which gets stored in the <em>$ClusterArn</em> shell variable. This value is
+needed for any operation to retrieve information from the MSK service</p>
 </div>
+<p>The startup of the MSK service can take several minutes.
+During that time call the following command to fetch the
+zookeeper connection string. Please note as long as the
+cluster is in state <code class="xref py py-obj docutils literal notranslate"><span class="pre">CREATING</span></code> there will be no zookeeper
+connection string printed:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ aws kafka describe-cluster --cluster-arn <span class="si">${</span><span class="nv">ClusterArn</span><span class="si">}</span>
+</pre></div>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Do not continue until there is a ZookeeperConnectString</p>
+</div>
+</li>
+<li><p><strong>Launch the Control Plane:</strong></p>
+<p>Start the <code class="xref py py-obj docutils literal notranslate"><span class="pre">control</span> <span class="pre">plane</span></code> as follows:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ aws ec2 run-instances <span class="se">\</span>
+    --count <span class="m">1</span> <span class="se">\</span>
+    --image-id ami-0641c1ac6db821f59 <span class="se">\</span>
+    --tag-specifications <span class="s1">&#39;ResourceType=instance,Tags=[{Key=Name,Value=cb-control-plane}]&#39;</span> <span class="se">\</span>
+    --instance-type t2.micro <span class="se">\</span>
+    --key-name MySSHKeyPairName
+</pre></div>
+</div>
+</li>
+<li><p><strong>Launch the Collector:</strong></p>
+<p>Start the <code class="xref py py-obj docutils literal notranslate"><span class="pre">collector</span></code> as follows:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ aws ec2 run-instances <span class="se">\</span>
+    --count <span class="m">1</span> <span class="se">\</span>
+    --image-id ami-0a33de229d8c3a832 <span class="se">\</span>
+    --tag-specifications <span class="s1">&#39;ResourceType=instance,Tags=[{Key=Name,Value=cb-collect}]&#39;</span> <span class="se">\</span>
+    --instance-type t2.micro <span class="se">\</span>
+    --key-name MySSHKeyPairName
+</pre></div>
+</div>
+</li>
+<li><p><strong>Launch the Runners:</strong></p>
+<p>Start the <code class="xref py py-obj docutils literal notranslate"><span class="pre">runners</span></code> as follows:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ <span class="k">for</span> name <span class="k">in</span> cb-runner-1 cb-runner-2<span class="p">;</span><span class="k">do</span>
+    aws ec2 run-instances <span class="se">\</span>
+        --count <span class="m">1</span> <span class="se">\</span>
+        --image-id ami-0beda72d2abd9e15a <span class="se">\</span>
+        --tag-specifications <span class="s2">&quot;ResourceType=instance,Tags=[{Key=Name,Value=</span><span class="nv">$name</span><span class="s2">}]&quot;</span> <span class="se">\</span>
+        --instance-type t2.micro <span class="se">\</span>
+        --key-name MySSHKeyPairName
+  <span class="k">done</span>
+</pre></div>
+</div>
+</li>
+<li><p><strong>Provision Cloud Builder Services:</strong></p>
+<p>Create the script <code class="file docutils literal notranslate"><span class="pre">setup_cb.cfg.sh</span></code> and place the following content</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/bin/bash</span>
+
+<span class="nb">set</span> -e
+
+<span class="nv">ClusterArn</span><span class="o">=</span><span class="s2">&quot;Provide ClusterArn, Information From Step 1&quot;</span><span class="p">;</span> <span class="nb">echo</span> <span class="s2">&quot;</span><span class="si">${</span><span class="nv">ClusterArn</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">;</span> <span class="nb">exit</span> <span class="m">1</span>
+
+<span class="nv">BootstrapBrokerString</span><span class="o">=</span><span class="k">$(</span>
+    aws kafka get-bootstrap-brokers --cluster-arn <span class="si">${</span><span class="nv">ClusterArn</span><span class="si">}</span> <span class="p">|</span> <span class="se">\</span>
+    grep BootstrapBrokerString <span class="p">|</span> cut -f4 -d<span class="se">\&quot;</span>
+<span class="k">)</span>
+<span class="nv">ZookeeperConnectString</span><span class="o">=</span><span class="k">$(</span>
+    aws kafka describe-cluster --cluster-arn <span class="si">${</span><span class="nv">ClusterArn</span><span class="si">}</span> <span class="p">|</span> <span class="se">\</span>
+    grep ZookeeperConnectString <span class="p">|</span> cut -f4 -d<span class="se">\&quot;</span>
+<span class="k">)</span>
+<span class="nv">CBControlPlane</span><span class="o">=</span><span class="k">$(</span>
+    aws ec2 describe-instances --filters <span class="s2">&quot;Name=tag-value,Values=cb-control-plane&quot;</span> <span class="p">|</span> <span class="se">\</span>
+    grep -m <span class="m">1</span> PrivateDnsName <span class="p">|</span> cut -f4 -d<span class="se">\&quot;</span>
+<span class="k">)</span>
+<span class="nv">CBCollect</span><span class="o">=</span><span class="k">$(</span>
+    aws ec2 describe-instances --filters <span class="s2">&quot;Name=tag-value,Values=cb-collect&quot;</span> <span class="p">|</span> <span class="se">\</span>
+    grep -m <span class="m">1</span> PrivateDnsName <span class="p">|</span> cut -f4 -d<span class="se">\&quot;</span>
+<span class="k">)</span>
+<span class="nv">CBRunners</span><span class="o">=</span><span class="s2">&quot;&quot;</span>
+<span class="k">for</span> name <span class="k">in</span> cb-runner-1 cb-runner-2<span class="p">;</span><span class="k">do</span>
+    <span class="nv">runner</span><span class="o">=</span><span class="k">$(</span>
+        aws ec2 describe-instances --filters <span class="s2">&quot;Name=tag-value,Values=</span><span class="si">${</span><span class="nv">name</span><span class="si">}</span><span class="s2">&quot;</span> <span class="p">|</span> <span class="se">\</span>
+        grep -m <span class="m">1</span> PrivateDnsName <span class="p">|</span> cut -f4 -d<span class="se">\&quot;</span>
+    <span class="k">)</span>
+    <span class="nv">CBRunners</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">CBRunners</span><span class="si">}</span><span class="s2"> </span><span class="si">${</span><span class="nv">runner</span><span class="si">}</span><span class="s2">&quot;</span>
+<span class="k">done</span>
+
+cat <span class="s">&lt;&lt;EOF</span>
+<span class="s"># ZookeeperConnectString</span>
+<span class="s">ZookeeperConnectString=&quot;${ZookeeperConnectString}&quot;</span>
+
+<span class="s"># BootstrapBrokerString</span>
+<span class="s">BootstrapServersString=&quot;${BootstrapBrokerString}&quot;</span>
+
+<span class="s"># internal host name of the control plane</span>
+<span class="s">control_plane=&quot;${CBControlPlane}&quot;</span>
+
+<span class="s"># git source repo for packages/images</span>
+<span class="s">source_repo=&quot;https://github.com/OSInside/cloud-builder-packages.git&quot;</span>
+
+<span class="s"># runner group names in the form &quot;name_a name_b ...&quot;</span>
+<span class="s">runner_topics=&quot;fedora&quot;</span>
+
+<span class="s"># internal host name of the collector</span>
+<span class="s">collector=&quot;${CBCollect}&quot;</span>
+
+<span class="s"># internal host names of the runners in the form &quot;host_a host_b ...&quot;</span>
+<span class="s">runners=&quot;$(echo ${CBRunners})&quot;</span>
+<span class="s">EOF</span>
+</pre></div>
+</div>
+<p>Create the file <code class="file docutils literal notranslate"><span class="pre">setup_cb.cfg</span></code> as follows:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ bash setup_cb.cfg.sh &gt; setup_cb.cfg
+</pre></div>
+</div>
+<p>Copy the setup file to the <code class="xref py py-obj docutils literal notranslate"><span class="pre">control-plane</span></code> and provision the cluster</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ scp -i PathToPkeyMatchingMySSHKeyPairName <span class="se">\</span>
+    setup_cb.cfg fedora@ControlPlanePublicInstanceIP:~
+
+$ ssh -i PathToPkeyMatchingMySSHKeyPairName <span class="se">\</span>
+    fedora@ControlPlanePublicInstanceIP ~fedora/setup_cb
+</pre></div>
+</div>
+</li>
+</ol>
+</section>
 </section>
 
 
