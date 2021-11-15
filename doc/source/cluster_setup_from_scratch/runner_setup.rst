@@ -23,24 +23,17 @@ created and configured as follows:
 
 1. **Start runner instances**
 
-   For the `fedora` runner group the Fedora34 distribution
-   is used. For the `suse` runner group the Leap15.3 distribution
+   For the `fedora` runner group the Fedora distribution
+   is used. For the `suse` runner group the Leap distribution
    is used.
 
    .. code:: bash
 
-      $ leap_15_3_ami=ami-0b4f49bedf96b14c9
-      $ fedora_34_ami=ami-0b2a401a8b3f4edd3
+      leap_15_3_ami=ami-0b4f49bedf96b14c9
+      user_leap=ec2-user
 
-      $ for runner in ${leap_15_3_ami} ${fedora_34_ami}; do
-            aws ec2 run-instances \
-                --image-id ${runner} \
-                --count 2 \
-                --instance-type t2.micro \
-                --key-name MySSHKeyPairName \
-                --security-group-ids sg-MyGroup \
-                --subnet-id subnet-MySubNet;
-        done
+      fedora_34_ami=ami-0b2a401a8b3f4edd3
+      user_fedora=fedora
 
    .. note::
 
@@ -51,9 +44,7 @@ created and configured as follows:
       and some less powerful machines. For package and/or
       image builds which are known to consume a lot of resources
       a runner group can be used that meets these requirements.
-      That way the costs can be balanced. The selected free
-      (no costs) instance type `t2.micro` used in the example
-      above, is not sufficient for a production system.
+      That way the costs can be balanced.
 
 2. **Install {CB} on the runners**
 
@@ -63,7 +54,7 @@ created and configured as follows:
    .. code:: bash
 
       $ ssh -i PathToPkeyMatchingMySSHKeyPairName \
-            ec2-user@InstanceIP
+            ${user_leap}@InstanceIP
 
       $ sudo zypper addrepo https://download.opensuse.org/repositories/Virtualization:/Appliances:/CloudBuilder/openSUSE_Leap_15.3 cloud-builder
       $ sudo zypper install python3-cloud_builder
@@ -74,7 +65,7 @@ created and configured as follows:
    .. code:: bash
 
       $ ssh -i PathToPkeyMatchingMySSHKeyPairName \
-            fedora@InstanceIP
+            ${user_fedora}@InstanceIP
 
       $ sudo dnf config-manager \
             --add-repo https://download.opensuse.org/repositories/Virtualization:/Appliances:/CloudBuilder/Fedora_34 \
@@ -84,10 +75,11 @@ created and configured as follows:
    .. note::
 
       As shown above access to the runners is performaed via `ssh`
-      The username to access Fedora machines in the cloud is set
-      to `fedora`. For Leap machines it is set set to `ec2-user`.
-      This information is explained once and applies to all
-      following steps too.
+      The username to access machines in the cloud can be different
+      compared to the used distribution. In the above example the
+      Fedora based instance provides the `fedora` user, whereas the
+      Leap machines provides the `ec2-user` user. This aspect needs
+      to be taken into account when running instances in the cloud.
 
    .. note:: selinux
 
