@@ -149,6 +149,7 @@ Create Cluster
               --count 1 \
               --image-id ami-0beda72d2abd9e15a \
               --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=$name}]" \
+              --block-device-mapping "DeviceName=/dev/xvda,Ebs={VolumeSize=100}" \
               --instance-type t2.micro \
               --key-name MySSHKeyPairName
         done
