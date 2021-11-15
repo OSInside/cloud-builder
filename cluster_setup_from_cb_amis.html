@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Setup Cloud Builder From AMIs &mdash; Cloud Builder 0.2.45 documentation</title>
+  <title>Setup Cloud Builder From AMIs &mdash; Cloud Builder 0.2.46 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/custom.css" type="text/css" />
@@ -301,8 +301,10 @@ connection string printed:</p>
 
 <span class="nb">set</span> -e
 
-<span class="nv">ClusterArn</span><span class="o">=</span><span class="s2">&quot;Provide ClusterArn, Information From Step 1&quot;</span><span class="p">;</span> <span class="nb">echo</span> <span class="s2">&quot;</span><span class="si">${</span><span class="nv">ClusterArn</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">;</span> <span class="nb">exit</span> <span class="m">1</span>
-
+<span class="nv">ClusterArn</span><span class="o">=</span><span class="k">$(</span>
+    aws kafka list-clusters --cluster-name-filter cloud-builder <span class="p">|</span> <span class="se">\</span>
+    grep CLUSTERINFOLIST <span class="p">|</span> cut -f2 -d<span class="s2">&quot; &quot;</span>
+<span class="k">)</span>
 <span class="nv">BootstrapBrokerString</span><span class="o">=</span><span class="k">$(</span>
     aws kafka get-bootstrap-brokers --cluster-arn <span class="si">${</span><span class="nv">ClusterArn</span><span class="si">}</span> <span class="p">|</span> <span class="se">\</span>
     grep BootstrapBrokerString <span class="p">|</span> cut -f4 -d<span class="se">\&quot;</span>
