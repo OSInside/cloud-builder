@@ -164,8 +164,10 @@ Create Cluster
 
       set -e
 
-      ClusterArn="Provide ClusterArn, Information From Step 1"; echo "${ClusterArn}"; exit 1
-
+      ClusterArn=$(
+          aws kafka list-clusters --cluster-name-filter cloud-builder | \
+          grep CLUSTERINFOLIST | cut -f2 -d" "
+      )
       BootstrapBrokerString=$(
           aws kafka get-bootstrap-brokers --cluster-arn ${ClusterArn} | \
           grep BootstrapBrokerString | cut -f4 -d\"
