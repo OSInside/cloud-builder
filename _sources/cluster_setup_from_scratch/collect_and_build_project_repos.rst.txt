@@ -21,24 +21,15 @@ Create and Setup the reposerver instance
 1. **Start reposerver instance**
 
    For the reposerver there is no real requirement to use a
-   specific linux distribution. It makes the setup procedure
-   simpler to use a distribution for which {CB} packages are
-   provided though. {CB} packages are available for Leap and
-   Fedora at the moment. Thus let's go for Leap as a start
-   and run a Leap 15.3 instance as follows:
+   specific linux distribution. In this document the Leap
+   distribution is used. In AWS EC2 the following AMI ID
+   can be used to run the instance:
 
    .. code:: bash
 
-      $ leap_15_3_ami=ami-0b4f49bedf96b14c9
+      leap_15_3_ami=ami-0b4f49bedf96b14c9
+      username=ec2-user
 
-      $ aws ec2 run-instances \
-          --image-id ${leap_15_3_ami} \
-          --count 1 \
-          --instance-type t2.micro \
-          --key-name MySSHKeyPairName \
-          --security-group-ids sg-MyGroup \
-          --subnet-id subnet-MySubNet;
-   
    .. note::
 
       The reposerver instance requires a good network connection
@@ -54,7 +45,7 @@ Create and Setup the reposerver instance
    .. code:: bash
 
       $ ssh -i PathToPkeyMatchingMySSHKeyPairName \
-            ec2-user@RepoServerInstanceIP
+            ${username}@RepoServerInstanceIP
 
       $ sudo zypper addrepo https://download.opensuse.org/repositories/Virtualization:/Appliances:/CloudBuilder/openSUSE_Leap_15.3 cloud-builder
       $ sudo zypper install python3-cloud_builder

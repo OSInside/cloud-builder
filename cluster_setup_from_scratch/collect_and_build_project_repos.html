@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Collect and Build Project Repos &mdash; Cloud Builder 0.2.46 documentation</title>
+  <title>Collect and Build Project Repos &mdash; Cloud Builder 0.2.47 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
@@ -178,20 +178,11 @@ repositories. Let’s call this instance the <code class="xref py py-obj docutil
 <ol class="arabic">
 <li><p><strong>Start reposerver instance</strong></p>
 <p>For the reposerver there is no real requirement to use a
-specific linux distribution. It makes the setup procedure
-simpler to use a distribution for which Cloud Builder packages are
-provided though. Cloud Builder packages are available for Leap and
-Fedora at the moment. Thus let’s go for Leap as a start
-and run a Leap 15.3 instance as follows:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ <span class="nv">leap_15_3_ami</span><span class="o">=</span>ami-0b4f49bedf96b14c9
-
-$ aws ec2 run-instances <span class="se">\</span>
-    --image-id <span class="si">${</span><span class="nv">leap_15_3_ami</span><span class="si">}</span> <span class="se">\</span>
-    --count <span class="m">1</span> <span class="se">\</span>
-    --instance-type t2.micro <span class="se">\</span>
-    --key-name MySSHKeyPairName <span class="se">\</span>
-    --security-group-ids sg-MyGroup <span class="se">\</span>
-    --subnet-id subnet-MySubNet<span class="p">;</span>
+specific linux distribution. In this document the Leap
+distribution is used. In AWS EC2 the following AMI ID
+can be used to run the instance:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">leap_15_3_ami</span><span class="o">=</span>ami-0b4f49bedf96b14c9
+<span class="nv">username</span><span class="o">=</span>ec2-user
 </pre></div>
 </div>
 <div class="admonition note">
@@ -206,7 +197,7 @@ services are used</p>
 <li><p><strong>Install Cloud Builder on the reposerver</strong></p>
 <p>Login to the reposerver instance and install Cloud Builder as follows:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ ssh -i PathToPkeyMatchingMySSHKeyPairName <span class="se">\</span>
-      ec2-user@RepoServerInstanceIP
+      <span class="si">${</span><span class="nv">username</span><span class="si">}</span>@RepoServerInstanceIP
 
 $ sudo zypper addrepo https://download.opensuse.org/repositories/Virtualization:/Appliances:/CloudBuilder/openSUSE_Leap_15.3 cloud-builder
 $ sudo zypper install python3-cloud_builder

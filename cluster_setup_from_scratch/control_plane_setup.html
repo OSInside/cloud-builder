@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Create and Install the Control Plane &mdash; Cloud Builder 0.2.46 documentation</title>
+  <title>Create and Install the Control Plane &mdash; Cloud Builder 0.2.47 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
@@ -184,24 +184,16 @@ will not apply.</p>
 </div>
 <ol class="arabic">
 <li><p><strong>Start an instance to become the control plane</strong></p>
-<p>The used AMI ID points to a Leap 15.3 system. Currently Cloud Builder
-is packaged for Leap and Fedora. Thus the control plane could
-also be based on Fedora. The following launches for Leap.</p>
+<p>The used AMI ID points to a Leap system.</p>
 <p>Replace the camel case parameter values with your own.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ <span class="nv">leap_15_3_ami</span><span class="o">=</span>ami-0b4f49bedf96b14c9
-$ aws ec2 run-instances <span class="se">\</span>
-    --image-id <span class="si">${</span><span class="nv">leap_15_3_ami</span><span class="si">}</span> <span class="se">\</span>
-    --count <span class="m">1</span> <span class="se">\</span>
-    --instance-type t2.micro <span class="se">\</span>
-    --key-name MySSHKeyPairName <span class="se">\</span>
-    --security-group-ids sg-MyGroup <span class="se">\</span>
-    --subnet-id subnet-MySubNet
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">leap_15_3_ami</span><span class="o">=</span>ami-0b4f49bedf96b14c9
+<span class="nv">username</span><span class="o">=</span>ec2-user
 </pre></div>
 </div>
 </li>
 <li><p><strong>SSH to the control plane</strong></p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ ssh -i PathToPkeyMatchingMySSHKeyPairName <span class="se">\</span>
-      ec2-user@InstanceIP
+      <span class="si">${</span><span class="nv">username</span><span class="si">}</span>@InstanceIP
 </pre></div>
 </div>
 </li>
@@ -234,7 +226,7 @@ Copy and preserve this information temporarily</p>
 </li>
 <li><p><strong>Login to the Control Plane</strong></p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ ssh -i PathToPkeyMatchingMySSHKeyPairName <span class="se">\</span>
-      ec2-user@InstanceIP
+      <span class="si">${</span><span class="nv">username</span><span class="si">}</span>@InstanceIP
 </pre></div>
 </div>
 </li>

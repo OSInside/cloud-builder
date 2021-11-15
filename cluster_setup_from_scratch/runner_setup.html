@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Runner Setup &mdash; Cloud Builder 0.2.46 documentation</title>
+  <title>Runner Setup &mdash; Cloud Builder 0.2.47 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
@@ -181,21 +181,14 @@ On the basis of this build power 4 runner instances must be
 created and configured as follows:</p>
 <ol class="arabic">
 <li><p><strong>Start runner instances</strong></p>
-<p>For the <code class="xref py py-obj docutils literal notranslate"><span class="pre">fedora</span></code> runner group the Fedora34 distribution
-is used. For the <code class="xref py py-obj docutils literal notranslate"><span class="pre">suse</span></code> runner group the Leap15.3 distribution
+<p>For the <code class="xref py py-obj docutils literal notranslate"><span class="pre">fedora</span></code> runner group the Fedora distribution
+is used. For the <code class="xref py py-obj docutils literal notranslate"><span class="pre">suse</span></code> runner group the Leap distribution
 is used.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ <span class="nv">leap_15_3_ami</span><span class="o">=</span>ami-0b4f49bedf96b14c9
-$ <span class="nv">fedora_34_ami</span><span class="o">=</span>ami-0b2a401a8b3f4edd3
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">leap_15_3_ami</span><span class="o">=</span>ami-0b4f49bedf96b14c9
+<span class="nv">user_leap</span><span class="o">=</span>ec2-user
 
-$ <span class="k">for</span> runner <span class="k">in</span> <span class="si">${</span><span class="nv">leap_15_3_ami</span><span class="si">}</span> <span class="si">${</span><span class="nv">fedora_34_ami</span><span class="si">}</span><span class="p">;</span> <span class="k">do</span>
-      aws ec2 run-instances <span class="se">\</span>
-          --image-id <span class="si">${</span><span class="nv">runner</span><span class="si">}</span> <span class="se">\</span>
-          --count <span class="m">2</span> <span class="se">\</span>
-          --instance-type t2.micro <span class="se">\</span>
-          --key-name MySSHKeyPairName <span class="se">\</span>
-          --security-group-ids sg-MyGroup <span class="se">\</span>
-          --subnet-id subnet-MySubNet<span class="p">;</span>
-  <span class="k">done</span>
+<span class="nv">fedora_34_ami</span><span class="o">=</span>ami-0b2a401a8b3f4edd3
+<span class="nv">user_fedora</span><span class="o">=</span>fedora
 </pre></div>
 </div>
 <div class="admonition note">
@@ -207,16 +200,14 @@ which can be designed such that there are some powerful
 and some less powerful machines. For package and/or
 image builds which are known to consume a lot of resources
 a runner group can be used that meets these requirements.
-That way the costs can be balanced. The selected free
-(no costs) instance type <code class="xref py py-obj docutils literal notranslate"><span class="pre">t2.micro</span></code> used in the example
-above, is not sufficient for a production system.</p>
+That way the costs can be balanced.</p>
 </div>
 </li>
 <li><p><strong>Install Cloud Builder on the runners</strong></p>
 <p>Login to each of the created Leap runner instances and install
 Cloud Builder as follows:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ ssh -i PathToPkeyMatchingMySSHKeyPairName <span class="se">\</span>
-      ec2-user@InstanceIP
+      <span class="si">${</span><span class="nv">user_leap</span><span class="si">}</span>@InstanceIP
 
 $ sudo zypper addrepo https://download.opensuse.org/repositories/Virtualization:/Appliances:/CloudBuilder/openSUSE_Leap_15.3 cloud-builder
 $ sudo zypper install python3-cloud_builder
@@ -225,7 +216,7 @@ $ sudo zypper install python3-cloud_builder
 <p>Login to each of the created Fedora runner instances and install
 Cloud Builder as follows:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ ssh -i PathToPkeyMatchingMySSHKeyPairName <span class="se">\</span>
-      fedora@InstanceIP
+      <span class="si">${</span><span class="nv">user_fedora</span><span class="si">}</span>@InstanceIP
 
 $ sudo dnf config-manager <span class="se">\</span>
       --add-repo https://download.opensuse.org/repositories/Virtualization:/Appliances:/CloudBuilder/Fedora_34 <span class="se">\</span>
@@ -236,10 +227,11 @@ $ sudo dnf install python3-cloud_builder
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>As shown above access to the runners is performaed via <code class="xref py py-obj docutils literal notranslate"><span class="pre">ssh</span></code>
-The username to access Fedora machines in the cloud is set
-to <code class="xref py py-obj docutils literal notranslate"><span class="pre">fedora</span></code>. For Leap machines it is set set to <code class="xref py py-obj docutils literal notranslate"><span class="pre">ec2-user</span></code>.
-This information is explained once and applies to all
-following steps too.</p>
+The username to access machines in the cloud can be different
+compared to the used distribution. In the above example the
+Fedora based instance provides the <code class="xref py py-obj docutils literal notranslate"><span class="pre">fedora</span></code> user, whereas the
+Leap machines provides the <code class="xref py py-obj docutils literal notranslate"><span class="pre">ec2-user</span></code> user. This aspect needs
+to be taken into account when running instances in the cloud.</p>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>

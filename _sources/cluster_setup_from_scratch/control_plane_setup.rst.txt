@@ -26,29 +26,21 @@ production environment.
 
 1. **Start an instance to become the control plane**
 
-   The used AMI ID points to a Leap 15.3 system. Currently {CB}
-   is packaged for Leap and Fedora. Thus the control plane could
-   also be based on Fedora. The following launches for Leap.
+   The used AMI ID points to a Leap system.
 
    Replace the camel case parameter values with your own.
 
    .. code:: bash
 
-      $ leap_15_3_ami=ami-0b4f49bedf96b14c9
-      $ aws ec2 run-instances \
-          --image-id ${leap_15_3_ami} \
-          --count 1 \
-          --instance-type t2.micro \
-          --key-name MySSHKeyPairName \
-          --security-group-ids sg-MyGroup \
-          --subnet-id subnet-MySubNet
+      leap_15_3_ami=ami-0b4f49bedf96b14c9
+      username=ec2-user
 
 2. **SSH to the control plane**
 
    .. code:: bash
 
       $ ssh -i PathToPkeyMatchingMySSHKeyPairName \
-            ec2-user@InstanceIP
+            ${username}@InstanceIP
 
 3. **Install {CB} on the control plane**
 
@@ -86,7 +78,7 @@ Now that the control plane runs the following configurations are required:
    .. code:: bash
 
       $ ssh -i PathToPkeyMatchingMySSHKeyPairName \
-            ec2-user@InstanceIP
+            ${username}@InstanceIP
 
 3. **Create {CB} Publish/Subscribe message topics**
 
