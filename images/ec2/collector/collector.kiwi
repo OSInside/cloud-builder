@@ -27,6 +27,9 @@
         <user password="$1$wYJUgpM5$RXMMeASDc035eX.NbYWFl0" home="/root" name="root" groups="root"/>
     </users>
     <users>
+        <user password="$1$wYJUgpM5$RXMMeASDc035eX.NbYWFl0" home="/home/cb-collect" name="cb-collect" groups="cb-collect"/>
+    </users>
+    <users>
         <user password="$1$wYJUgpM5$RXMMeASDc035eX.NbYWFl0" home="/home/fedora" name="fedora" groups="fedora"/>
     </users>
 <!-- for local build

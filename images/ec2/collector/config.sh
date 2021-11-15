@@ -32,9 +32,15 @@ sed -ie "s@CB_SSH_PKEY=.*@CB_SSH_PKEY=\"/root/.ssh/id_cb_collect\"@" \
 sed -ie "s@CB_SSH_USER=.*@CB_SSH_USER=\"cb-collect\"@" \
     /etc/cloud_builder
 
-
 # Create reposerver root
 mkdir -p /srv/www/projects
+
+# Add cb-collect to sudoers
+echo "cb-collect ALL=NOPASSWD: ALL" >> /etc/sudoers
+
+# Fix permissions
+chown -R cb-collect /home/cb-collect
+chgrp -R cb-collect /home/cb-collect
 
 #======================================
 # Setup default target, multi-user
