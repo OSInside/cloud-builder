@@ -2,8 +2,16 @@
 # Helper script to upload and register x86_64 cloud builder
 # images to AWS EC2 for quick setup of a CB build cluster
 
-osc getbinaries \
-    Virtualization:Appliances:CloudBuilder:EC2:fedora images x86_64
+rm -rf binaries
+mkdir -p binaries
+
+pushd binaries
+
+wget https://download.opensuse.org/repositories/Virtualization:/Appliances:/CloudBuilder:/EC2:/fedora/images/CB-Collector.x86_64.raw.xz
+wget https://download.opensuse.org/repositories/Virtualization:/Appliances:/CloudBuilder:/EC2:/fedora/images/CB-ControlPlane.x86_64.raw.xz
+wget https://download.opensuse.org/repositories/Virtualization:/Appliances:/CloudBuilder:/EC2:/fedora/images/CB-RunnerFedora.x86_64.raw.xz
+
+popd
 
 for image in binaries/*.raw.xz; do
     desc=$(basename $image | cut -f1 -d.)
