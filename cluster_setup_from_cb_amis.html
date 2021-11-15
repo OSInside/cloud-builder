@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Setup Cloud Builder From AMIs &mdash; Cloud Builder 0.2.44 documentation</title>
+  <title>Setup Cloud Builder From AMIs &mdash; Cloud Builder 0.2.45 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/custom.css" type="text/css" />
@@ -288,6 +288,7 @@ connection string printed:</p>
         --count <span class="m">1</span> <span class="se">\</span>
         --image-id ami-0beda72d2abd9e15a <span class="se">\</span>
         --tag-specifications <span class="s2">&quot;ResourceType=instance,Tags=[{Key=Name,Value=</span><span class="nv">$name</span><span class="s2">}]&quot;</span> <span class="se">\</span>
+        --block-device-mapping <span class="s2">&quot;DeviceName=/dev/xvda,Ebs={VolumeSize=100}&quot;</span> <span class="se">\</span>
         --instance-type t2.micro <span class="se">\</span>
         --key-name MySSHKeyPairName
   <span class="k">done</span>
