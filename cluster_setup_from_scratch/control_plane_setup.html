@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Create and Install the Control Plane &mdash; Cloud Builder 0.2.47 documentation</title>
+  <title>Create and Install the Control Plane &mdash; Cloud Builder 0.2.48 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
@@ -192,21 +192,21 @@ will not apply.</p>
 </div>
 </li>
 <li><p><strong>SSH to the control plane</strong></p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ ssh -i PathToPkeyMatchingMySSHKeyPairName <span class="se">\</span>
-      <span class="si">${</span><span class="nv">username</span><span class="si">}</span>@InstanceIP
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ssh -i PathToPkeyMatchingMySSHKeyPairName <span class="se">\</span>
+    <span class="si">${</span><span class="nv">username</span><span class="si">}</span>@InstanceIP
 </pre></div>
 </div>
 </li>
 <li><p><strong>Install Cloud Builder on the control plane</strong></p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ sudo zypper addrepo https://download.opensuse.org/repositories/Virtualization:/Appliances:/CloudBuilder/openSUSE_Leap_15.3 cloud-builder
-$ sudo zypper install python3-cloud_builder
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo zypper addrepo https://download.opensuse.org/repositories/Virtualization:/Appliances:/CloudBuilder/openSUSE_Leap_15.3 cloud-builder
+sudo zypper install python3-cloud_builder
 </pre></div>
 </div>
 </li>
 <li><p><strong>Install Kafka admin utilities</strong></p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ sudo zypper install java-1_8_0-openjdk
-$ wget https://archive.apache.org/dist/kafka/2.2.1/kafka_2.12-2.2.1.tgz
-$ tar -xzf kafka_2.12-2.2.1.tgz
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo zypper install java-1_8_0-openjdk
+wget https://archive.apache.org/dist/kafka/2.2.1/kafka_2.12-2.2.1.tgz
+tar -xzf kafka_2.12-2.2.1.tgz
 </pre></div>
 </div>
 </li>
@@ -225,8 +225,8 @@ $ tar -xzf kafka_2.12-2.2.1.tgz
 Copy and preserve this information temporarily</p>
 </li>
 <li><p><strong>Login to the Control Plane</strong></p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ ssh -i PathToPkeyMatchingMySSHKeyPairName <span class="se">\</span>
-      <span class="si">${</span><span class="nv">username</span><span class="si">}</span>@InstanceIP
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ssh -i PathToPkeyMatchingMySSHKeyPairName <span class="se">\</span>
+    <span class="si">${</span><span class="nv">username</span><span class="si">}</span>@InstanceIP
 </pre></div>
 </div>
 </li>
@@ -236,15 +236,15 @@ topics are used by Cloud Builder in Publish/Subscribe mode. This means
 each message is broadcast to all readers. This setting applies
 to the topics <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-response</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-info-request</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-info-response</span></code>.
 Create these topics as follows:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ <span class="nb">cd</span> kafka_2.12-2.2.1
-$ <span class="k">for</span> topic <span class="k">in</span> cb-response cb-info-request cb-info-response<span class="p">;</span> <span class="k">do</span>
-      bin/kafka-topics.sh <span class="se">\</span>
-          --create <span class="se">\</span>
-          --zookeeper ZookeeperConnectString <span class="se">\</span>
-          --replication-factor <span class="m">2</span> <span class="se">\</span>
-          --partitions <span class="m">1</span> <span class="se">\</span>
-          --topic <span class="si">${</span><span class="nv">topic</span><span class="si">}</span><span class="p">;</span>
-  <span class="k">done</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> kafka_2.12-2.2.1
+<span class="k">for</span> topic <span class="k">in</span> cb-response cb-info-request cb-info-response<span class="p">;</span> <span class="k">do</span>
+    bin/kafka-topics.sh <span class="se">\</span>
+        --create <span class="se">\</span>
+        --zookeeper ZookeeperConnectString <span class="se">\</span>
+        --replication-factor <span class="m">2</span> <span class="se">\</span>
+        --partitions <span class="m">1</span> <span class="se">\</span>
+        --topic <span class="si">${</span><span class="nv">topic</span><span class="si">}</span><span class="p">;</span>
+<span class="k">done</span>
 </pre></div>
 </div>
 </li>
@@ -265,15 +265,15 @@ are set:</p>
 </ul>
 <p>This will require to run 4 runner instances later, 2 for each
 runner group. Create the topics for these setup as follows:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ <span class="nb">cd</span> kafka_2.12-2.2.1
-$ <span class="k">for</span> topic <span class="k">in</span> fedora suse<span class="p">;</span> <span class="k">do</span>
-      bin/kafka-topics.sh <span class="se">\</span>
-          --create <span class="se">\</span>
-          --zookeeper ZookeeperConnectString <span class="se">\</span>
-          --replication-factor <span class="m">2</span> <span class="se">\</span>
-          --partitions <span class="m">2</span> <span class="se">\</span>
-          --topic <span class="si">${</span><span class="nv">topic</span><span class="si">}</span><span class="p">;</span>
-  <span class="k">done</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> kafka_2.12-2.2.1
+<span class="k">for</span> topic <span class="k">in</span> fedora suse<span class="p">;</span> <span class="k">do</span>
+    bin/kafka-topics.sh <span class="se">\</span>
+        --create <span class="se">\</span>
+        --zookeeper ZookeeperConnectString <span class="se">\</span>
+        --replication-factor <span class="m">2</span> <span class="se">\</span>
+        --partitions <span class="m">2</span> <span class="se">\</span>
+        --topic <span class="si">${</span><span class="nv">topic</span><span class="si">}</span><span class="p">;</span>
+<span class="k">done</span>
 </pre></div>
 </div>
 </li>
@@ -297,21 +297,21 @@ everything. The default retention time of 7 days is a good
 start but could also increased.</p>
 </dd>
 </dl>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ <span class="nb">cd</span> kafka_2.12-2.2.1
-$ <span class="k">for</span> topic <span class="k">in</span> fedora suse<span class="p">;</span> <span class="k">do</span>
-      bin/kafka-topics.sh <span class="se">\</span>
-          --alter <span class="se">\</span>
-          --zookeeper ZookeeperConnectString <span class="se">\</span>
-          --config retention.ms<span class="o">=</span><span class="m">3600000</span> <span class="se">\</span>
-          --topic <span class="si">${</span><span class="nv">topic</span><span class="si">}</span><span class="p">;</span>
-  <span class="k">done</span>
-$ <span class="k">for</span> topic <span class="k">in</span> cb-info-response cb-info-request<span class="p">;</span> <span class="k">do</span>
-      bin/kafka-topics.sh <span class="se">\</span>
-          --alter <span class="se">\</span>
-          --zookeeper ZookeeperConnectString <span class="se">\</span>
-          --config retention.ms<span class="o">=</span><span class="m">120000</span> <span class="se">\</span>
-          --topic <span class="si">${</span><span class="nv">topic</span><span class="si">}</span><span class="p">;</span>
-  <span class="k">done</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> kafka_2.12-2.2.1
+<span class="k">for</span> topic <span class="k">in</span> fedora suse<span class="p">;</span> <span class="k">do</span>
+    bin/kafka-topics.sh <span class="se">\</span>
+        --alter <span class="se">\</span>
+        --zookeeper ZookeeperConnectString <span class="se">\</span>
+        --config retention.ms<span class="o">=</span><span class="m">3600000</span> <span class="se">\</span>
+        --topic <span class="si">${</span><span class="nv">topic</span><span class="si">}</span><span class="p">;</span>
+<span class="k">done</span>
+<span class="k">for</span> topic <span class="k">in</span> cb-info-response cb-info-request<span class="p">;</span> <span class="k">do</span>
+    bin/kafka-topics.sh <span class="se">\</span>
+        --alter <span class="se">\</span>
+        --zookeeper ZookeeperConnectString <span class="se">\</span>
+        --config retention.ms<span class="o">=</span><span class="m">120000</span> <span class="se">\</span>
+        --topic <span class="si">${</span><span class="nv">topic</span><span class="si">}</span><span class="p">;</span>
+<span class="k">done</span>
 </pre></div>
 </div>
 </li>
@@ -326,7 +326,7 @@ Kafka service and the later runners.</p>
 <p>In the pop up window under the headline <code class="xref py py-obj docutils literal notranslate"><span class="pre">Bootstrap</span> <span class="pre">servers</span></code>
 Copy and preserve this information temporarily</p>
 <p>Create the file <code class="file docutils literal notranslate"><span class="pre">/etc/cloud_builder_broker.yml</span></code> as follows:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ sudo vi /etc/cloud_builder_broker.yml
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo vi /etc/cloud_builder_broker.yml
 </pre></div>
 </div>
 <p>Place the following content:</p>
@@ -341,11 +341,11 @@ the setup of an SSH keypair associated with a trusted user on the
 runner. In the setup procedure of the runner this user is
 created and called <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-collect</span></code>. In the setup procedure of the
 control plane the used SSH keypair is created once as folows:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ ssh-keygen -t rsa -f ~/.ssh/id_cb_collect
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ssh-keygen -t rsa -f ~/.ssh/id_cb_collect
 </pre></div>
 </div>
 <p>Create the file <code class="file docutils literal notranslate"><span class="pre">~/.config/cb/cbctl.yml</span></code> as follows:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ vi ~/.config/cb/cbctl.yml
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>vi ~/.config/cb/cbctl.yml
 </pre></div>
 </div>
 <p>Place the following content:</p>

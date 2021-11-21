@@ -18,7 +18,7 @@ the `MS` project as follows:
 
    .. code:: bash
 
-      $ cb-ctl --build-package xclock --project MS \
+      cb-ctl --build-package xclock --project MS \
           --arch x86_64 --dist TW --runner-group suse
 
    This will return with an information like the following:
@@ -53,7 +53,7 @@ the `MS` project as follows:
 
    .. code:: bash
 
-      $ cb-ctl --watch \
+      cb-ctl --watch \
           --filter-request-id b88becf6-f04f-11eb-8cff-06be1098538e \
           --timeout 5
 

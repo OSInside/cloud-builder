@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Collect and Build Project Repos &mdash; Cloud Builder 0.2.47 documentation</title>
+  <title>Collect and Build Project Repos &mdash; Cloud Builder 0.2.48 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
@@ -196,11 +196,11 @@ services are used</p>
 </li>
 <li><p><strong>Install Cloud Builder on the reposerver</strong></p>
 <p>Login to the reposerver instance and install Cloud Builder as follows:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ ssh -i PathToPkeyMatchingMySSHKeyPairName <span class="se">\</span>
-      <span class="si">${</span><span class="nv">username</span><span class="si">}</span>@RepoServerInstanceIP
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ssh -i PathToPkeyMatchingMySSHKeyPairName <span class="se">\</span>
+    <span class="si">${</span><span class="nv">username</span><span class="si">}</span>@RepoServerInstanceIP
 
-$ sudo zypper addrepo https://download.opensuse.org/repositories/Virtualization:/Appliances:/CloudBuilder/openSUSE_Leap_15.3 cloud-builder
-$ sudo zypper install python3-cloud_builder
+sudo zypper addrepo https://download.opensuse.org/repositories/Virtualization:/Appliances:/CloudBuilder/openSUSE_Leap_15.3 cloud-builder
+sudo zypper install python3-cloud_builder
 </pre></div>
 </div>
 </li>
@@ -273,8 +273,8 @@ can be done as follows:</p>
 <p>See <a class="reference internal" href="control_plane_setup.html#control-plane-setup"><span class="std std-ref">Create and Install the Control Plane</span></a> for details</p>
 </li>
 <li><p>Fetch the <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-collect</span></code> private SSH key and logout from the control plane.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ cat ~/.ssh/id_cb_collect
-$ <span class="nb">exit</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>cat ~/.ssh/id_cb_collect
+<span class="nb">exit</span>
 </pre></div>
 </div>
 </li>
@@ -282,10 +282,10 @@ $ <span class="nb">exit</span>
 <p>In the terminal session with the still active login session on
 the reposerver copy/paste the <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-collect</span></code> SSH private key as
 follows:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ mkdir -p -m <span class="m">0700</span> /root/.ssh
-$ sudo touch /root/.ssh/id_cb_collect
-$ sudo chmod <span class="m">600</span> /root/.ssh/id_cb_collect
-$ sudo vi /root/.ssh/id_cb_collect
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>mkdir -p -m <span class="m">0700</span> /root/.ssh
+sudo touch /root/.ssh/id_cb_collect
+sudo chmod <span class="m">600</span> /root/.ssh/id_cb_collect
+sudo vi /root/.ssh/id_cb_collect
 
   Copy <span class="p">&amp;</span> Paste the SSH private key as it was obtained
   <span class="k">in</span> the former step and safe the file.
@@ -293,7 +293,7 @@ $ sudo vi /root/.ssh/id_cb_collect
 </div>
 <p>Once done reference the path to the private key in the
 <code class="file docutils literal notranslate"><span class="pre">/etc/cloud_builder</span></code> setup file as follows:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ sudo vi /etc/cloud_builder
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo vi /etc/cloud_builder
 
 <span class="nv">CB_SSH_PKEY</span><span class="o">=</span><span class="s2">&quot;/root/.ssh/id_cb_collect&quot;</span>
 </pre></div>
@@ -317,7 +317,7 @@ for build results and information was created. This user, by
 default, is called <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-collect</span></code>. In the setup of the collector
 it’s required to specify the user name which is allowed to
 access the runners as follows:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ sudo vi /etc/cloud_builder
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo vi /etc/cloud_builder
 
 <span class="nv">CB_SSH_USER</span><span class="o">=</span><span class="s2">&quot;cb-collect&quot;</span>
 </pre></div>
@@ -326,7 +326,7 @@ access the runners as follows:</p>
 <li><p><strong>Start</strong> <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-collect</span></code> <strong>service</strong></p>
 <p>Still logged in on the reposerver, start the <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-collect</span></code> service
 as follows:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ sudo systemctl start cb-collect
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo systemctl start cb-collect
 </pre></div>
 </div>
 <p>The service will immediately start to collect package results
@@ -360,7 +360,7 @@ below are likely.</p>
 </div>
 <ol class="arabic">
 <li><p><strong>Install</strong> <code class="xref py py-obj docutils literal notranslate"><span class="pre">Apache</span></code></p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ sudo zypper <span class="k">in</span> apache2
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo zypper <span class="k">in</span> apache2
 </pre></div>
 </div>
 </li>
@@ -387,7 +387,7 @@ the above as an example to get started.</p>
 </div>
 </li>
 <li><p><strong>Start</strong> <code class="xref py py-obj docutils literal notranslate"><span class="pre">Apache</span></code></p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ sudo systemctl start apache2
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo systemctl start apache2
 </pre></div>
 </div>
 </li>

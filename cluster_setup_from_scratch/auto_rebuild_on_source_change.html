@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Auto Rebuild on Package Source Change &mdash; Cloud Builder 0.2.47 documentation</title>
+  <title>Auto Rebuild on Package Source Change &mdash; Cloud Builder 0.2.48 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
@@ -197,7 +197,7 @@ control plane:</p>
 <p>See <a class="reference internal" href="control_plane_setup.html#control-plane-setup"><span class="std std-ref">Create and Install the Control Plane</span></a> for details</p>
 </li>
 <li><p><strong>Configure the fetcher update intervall</strong></p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ sudo vi /etc/cloud_builder
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo vi /etc/cloud_builder
 
 <span class="nv">CB_UPDATE</span><span class="o">=</span><span class="m">30</span>
 </pre></div>
@@ -205,14 +205,14 @@ control plane:</p>
 <p>Change or keep the default value of 30 seconds as you see fit.</p>
 </li>
 <li><p><strong>Start</strong> <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-fetch</span></code> <strong>service</strong></p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ sudo systemctl start cb-fetch
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo systemctl start cb-fetch
 </pre></div>
 </div>
 </li>
 </ol>
 <p>To read the actions taken by the <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-fetch</span></code> service one can watch
 on the Cloud Builder info response messages as follows:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ cb-ctl cb-ctl --watch <span class="se">\</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>cb-ctl cb-ctl --watch <span class="se">\</span>
     --filter-service-name cb-fetch <span class="se">\</span>
     --timeout <span class="m">200</span>
 </pre></div>
@@ -235,7 +235,7 @@ like in the following example will be provided:</p>
 </div>
 <p>The provided <code class="xref py py-obj docutils literal notranslate"><span class="pre">request_id</span></code> can be used to check on the status
 of the package build process as follows:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ cb-ctl cb-ctl --watch <span class="se">\</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>cb-ctl cb-ctl --watch <span class="se">\</span>
     --filter-request-id d309d5d2-f2e0-11eb-9538-06be1098538e <span class="se">\</span>
     --timeout <span class="m">5</span>
 </pre></div>

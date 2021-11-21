@@ -61,9 +61,9 @@ is used:
 
 .. code:: bash
 
-   $ cd cloud_builder_sources/projects/Debian/xsnow
+   cd cloud_builder_sources/projects/Debian/xsnow
 
-   $ cb-ctl --build-package-local --dist unstable
+   cb-ctl --build-package-local --dist unstable
 
 Congrats ! you build your first package with {CB}. Feel free to try other
 package builds from the example git repo checkout in :file:`cloud_builder_sources`.

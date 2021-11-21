@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Setup Cloud Builder From AMIs &mdash; Cloud Builder 0.2.47 documentation</title>
+  <title>Setup Cloud Builder From AMIs &mdash; Cloud Builder 0.2.48 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/custom.css" type="text/css" />
@@ -197,11 +197,11 @@ some experience with the AWS cloud environment and does not
 deeply explain the concepts used outside of the scope of the Cloud Builder
 setup.</p>
 <p>Fetch the security group ID as follows:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ aws ec2 describe-security-groups
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>aws ec2 describe-security-groups
 </pre></div>
 </div>
 <p>Fetch the subnet IDs from available regions as follows:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ aws ec2 describe-subnets
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>aws ec2 describe-subnets
 </pre></div>
 </div>
 </section>
@@ -229,20 +229,22 @@ setup.</p>
 </pre></div>
 </div>
 <p>Start the messaging API as follows:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ <span class="nv">ClusterArn</span><span class="o">=</span><span class="k">$(</span>
-    aws kafka create-cluster <span class="se">\</span>
-        --cluster-name <span class="s2">&quot;cloud-builder&quot;</span> <span class="se">\</span>
-        --broker-node-group-info file://cb-msk-setup.json <span class="se">\</span>
-        --encryption-info <span class="nv">EncryptionInTransit</span><span class="o">={</span><span class="nv">ClientBroker</span><span class="o">=</span><span class="s2">&quot;PLAINTEXT&quot;</span><span class="o">}</span> <span class="se">\</span>
-        --kafka-version <span class="s2">&quot;2.6.2&quot;</span> <span class="se">\</span>
-        --number-of-broker-nodes <span class="m">2</span> <span class="p">|</span> <span class="se">\</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>aws kafka create-cluster <span class="se">\</span>
+    --cluster-name <span class="s2">&quot;cloud-builder&quot;</span> <span class="se">\</span>
+    --broker-node-group-info file://cb-msk-setup.json <span class="se">\</span>
+    --encryption-info <span class="nv">EncryptionInTransit</span><span class="o">={</span><span class="nv">ClientBroker</span><span class="o">=</span><span class="s2">&quot;PLAINTEXT&quot;</span><span class="o">}</span> <span class="se">\</span>
+    --kafka-version <span class="s2">&quot;2.6.2&quot;</span> <span class="se">\</span>
+    --number-of-broker-nodes <span class="m">2</span>
+
+<span class="nv">ClusterArn</span><span class="o">=</span><span class="k">$(</span>
+    aws kafka list-clusters --cluster-name-filter cloud-builder <span class="p">|</span> <span class="se">\</span>
     grep ClusterArn <span class="p">|</span> cut -f4 -d<span class="se">\&quot;</span>
-  <span class="k">)</span>
+<span class="k">)</span>
 </pre></div>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>The <code class="xref py py-obj docutils literal notranslate"><span class="pre">create-cluster</span></code> call will respond with a <code class="xref py py-obj docutils literal notranslate"><span class="pre">ClusterArn</span></code> value
+<p>The <code class="xref py py-obj docutils literal notranslate"><span class="pre">create-cluster</span></code> call describes itself with a <code class="xref py py-obj docutils literal notranslate"><span class="pre">ClusterArn</span></code> value
 which gets stored in the <em>$ClusterArn</em> shell variable. This value is
 needed for any operation to retrieve information from the MSK service</p>
 </div>
@@ -251,7 +253,7 @@ During that time call the following command to fetch the
 zookeeper connection string. Please note as long as the
 cluster is in state <code class="xref py py-obj docutils literal notranslate"><span class="pre">CREATING</span></code> there will be no zookeeper
 connection string printed:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ aws kafka describe-cluster --cluster-arn <span class="si">${</span><span class="nv">ClusterArn</span><span class="si">}</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>aws kafka describe-cluster --cluster-arn <span class="si">${</span><span class="nv">ClusterArn</span><span class="si">}</span>
 </pre></div>
 </div>
 <div class="admonition warning">
@@ -261,9 +263,9 @@ connection string printed:</p>
 </li>
 <li><p><strong>Launch the Control Plane:</strong></p>
 <p>Start the <code class="xref py py-obj docutils literal notranslate"><span class="pre">control</span> <span class="pre">plane</span></code> as follows:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ aws ec2 run-instances <span class="se">\</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>aws ec2 run-instances <span class="se">\</span>
     --count <span class="m">1</span> <span class="se">\</span>
-    --image-id ami-0641c1ac6db821f59 <span class="se">\</span>
+    --image-id ami-0d85d2d5be9150bc4 <span class="se">\</span>
     --tag-specifications <span class="s1">&#39;ResourceType=instance,Tags=[{Key=Name,Value=cb-control-plane}]&#39;</span> <span class="se">\</span>
     --instance-type t2.micro <span class="se">\</span>
     --key-name MySSHKeyPairName
@@ -272,9 +274,9 @@ connection string printed:</p>
 </li>
 <li><p><strong>Launch the Collector:</strong></p>
 <p>Start the <code class="xref py py-obj docutils literal notranslate"><span class="pre">collector</span></code> as follows:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ aws ec2 run-instances <span class="se">\</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>aws ec2 run-instances <span class="se">\</span>
     --count <span class="m">1</span> <span class="se">\</span>
-    --image-id ami-0a33de229d8c3a832 <span class="se">\</span>
+    --image-id ami-0cffb370fef100bd4 <span class="se">\</span>
     --tag-specifications <span class="s1">&#39;ResourceType=instance,Tags=[{Key=Name,Value=cb-collect}]&#39;</span> <span class="se">\</span>
     --instance-type t2.micro <span class="se">\</span>
     --key-name MySSHKeyPairName
@@ -283,15 +285,15 @@ connection string printed:</p>
 </li>
 <li><p><strong>Launch the Runners:</strong></p>
 <p>Start the <code class="xref py py-obj docutils literal notranslate"><span class="pre">runners</span></code> as follows:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ <span class="k">for</span> name <span class="k">in</span> cb-runner-1 cb-runner-2<span class="p">;</span><span class="k">do</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> name <span class="k">in</span> cb-runner-1 cb-runner-2<span class="p">;</span><span class="k">do</span>
     aws ec2 run-instances <span class="se">\</span>
         --count <span class="m">1</span> <span class="se">\</span>
-        --image-id ami-0beda72d2abd9e15a <span class="se">\</span>
+        --image-id ami-0748b62a9dfea7846 <span class="se">\</span>
         --tag-specifications <span class="s2">&quot;ResourceType=instance,Tags=[{Key=Name,Value=</span><span class="nv">$name</span><span class="s2">}]&quot;</span> <span class="se">\</span>
-        --block-device-mapping <span class="s2">&quot;DeviceName=/dev/xvda,Ebs={VolumeSize=100}&quot;</span> <span class="se">\</span>
+        --block-device-mapping <span class="s2">&quot;DeviceName=/dev/sda1,Ebs={VolumeSize=100}&quot;</span> <span class="se">\</span>
         --instance-type t2.micro <span class="se">\</span>
         --key-name MySSHKeyPairName
-  <span class="k">done</span>
+<span class="k">done</span>
 </pre></div>
 </div>
 </li>
@@ -303,7 +305,7 @@ connection string printed:</p>
 
 <span class="nv">ClusterArn</span><span class="o">=</span><span class="k">$(</span>
     aws kafka list-clusters --cluster-name-filter cloud-builder <span class="p">|</span> <span class="se">\</span>
-    grep CLUSTERINFOLIST <span class="p">|</span> cut -f2 -d<span class="s2">&quot; &quot;</span>
+    grep ClusterArn <span class="p">|</span> cut -f4 -d<span class="se">\&quot;</span>
 <span class="k">)</span>
 <span class="nv">BootstrapBrokerString</span><span class="o">=</span><span class="k">$(</span>
     aws kafka get-bootstrap-brokers --cluster-arn <span class="si">${</span><span class="nv">ClusterArn</span><span class="si">}</span> <span class="p">|</span> <span class="se">\</span>
@@ -355,14 +357,14 @@ cat <span class="s">&lt;&lt;EOF</span>
 </pre></div>
 </div>
 <p>Create the file <code class="file docutils literal notranslate"><span class="pre">setup_cb.cfg</span></code> as follows:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ bash setup_cb.cfg.sh &gt; setup_cb.cfg
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>bash setup_cb.cfg.sh &gt; setup_cb.cfg
 </pre></div>
 </div>
 <p>Copy the setup file to the <code class="xref py py-obj docutils literal notranslate"><span class="pre">control-plane</span></code> and provision the cluster</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ scp -i PathToPkeyMatchingMySSHKeyPairName <span class="se">\</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>scp -i PathToPkeyMatchingMySSHKeyPairName <span class="se">\</span>
     setup_cb.cfg fedora@ControlPlanePublicInstanceIP:~
 
-$ ssh -i PathToPkeyMatchingMySSHKeyPairName <span class="se">\</span>
+ssh -i PathToPkeyMatchingMySSHKeyPairName <span class="se">\</span>
     fedora@ControlPlanePublicInstanceIP ~fedora/setup_cb
 </pre></div>
 </div>

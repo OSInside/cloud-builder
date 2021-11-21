@@ -44,13 +44,13 @@ Fetch the security group ID as follows:
 
 .. code:: bash
 
-   $ aws ec2 describe-security-groups
+   aws ec2 describe-security-groups
 
 Fetch the subnet IDs from available regions as follows:
 
 .. code:: bash
 
-   $ aws ec2 describe-subnets
+   aws ec2 describe-subnets
 
 Create Cluster
 --------------
@@ -82,19 +82,21 @@ Create Cluster
 
    .. code:: bash
 
-      $ ClusterArn=$(
-          aws kafka create-cluster \
-              --cluster-name "cloud-builder" \
-              --broker-node-group-info file://cb-msk-setup.json \
-              --encryption-info EncryptionInTransit={ClientBroker="PLAINTEXT"} \
-              --kafka-version "2.6.2" \
-              --number-of-broker-nodes 2 | \
+      aws kafka create-cluster \
+          --cluster-name "cloud-builder" \
+          --broker-node-group-info file://cb-msk-setup.json \
+          --encryption-info EncryptionInTransit={ClientBroker="PLAINTEXT"} \
+          --kafka-version "2.6.2" \
+          --number-of-broker-nodes 2
+
+      ClusterArn=$(
+          aws kafka list-clusters --cluster-name-filter cloud-builder | \
           grep ClusterArn | cut -f4 -d\"
-        )
+      )
 
    .. note::
 
-      The `create-cluster` call will respond with a `ClusterArn` value
+      The `create-cluster` call describes itself with a `ClusterArn` value
       which gets stored in the *$ClusterArn* shell variable. This value is
       needed for any operation to retrieve information from the MSK service
    
@@ -106,7 +108,7 @@ Create Cluster
 
    .. code:: bash
 
-      $ aws kafka describe-cluster --cluster-arn ${ClusterArn}
+      aws kafka describe-cluster --cluster-arn ${ClusterArn}
 
    .. warning::
 
@@ -118,9 +120,9 @@ Create Cluster
 
    .. code:: bash
 
-      $ aws ec2 run-instances \
+      aws ec2 run-instances \
           --count 1 \
-          --image-id ami-0641c1ac6db821f59 \
+          --image-id ami-0d85d2d5be9150bc4 \
           --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=cb-control-plane}]' \
           --instance-type t2.micro \
           --key-name MySSHKeyPairName
@@ -131,9 +133,9 @@ Create Cluster
 
    .. code:: bash
 
-      $ aws ec2 run-instances \
+      aws ec2 run-instances \
           --count 1 \
-          --image-id ami-0a33de229d8c3a832 \
+          --image-id ami-0cffb370fef100bd4 \
           --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=cb-collect}]' \
           --instance-type t2.micro \
           --key-name MySSHKeyPairName
@@ -144,15 +146,15 @@ Create Cluster
 
    .. code:: bash
 
-      $ for name in cb-runner-1 cb-runner-2;do
+      for name in cb-runner-1 cb-runner-2;do
           aws ec2 run-instances \
               --count 1 \
-              --image-id ami-0beda72d2abd9e15a \
+              --image-id ami-0748b62a9dfea7846 \
               --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=$name}]" \
-              --block-device-mapping "DeviceName=/dev/xvda,Ebs={VolumeSize=100}" \
+              --block-device-mapping "DeviceName=/dev/sda1,Ebs={VolumeSize=100}" \
               --instance-type t2.micro \
               --key-name MySSHKeyPairName
-        done
+      done
 
 5. **Provision {CB} Services:**
 
@@ -166,7 +168,7 @@ Create Cluster
 
       ClusterArn=$(
           aws kafka list-clusters --cluster-name-filter cloud-builder | \
-          grep CLUSTERINFOLIST | cut -f2 -d" "
+          grep ClusterArn | cut -f4 -d\"
       )
       BootstrapBrokerString=$(
           aws kafka get-bootstrap-brokers --cluster-arn ${ClusterArn} | \
@@ -220,14 +222,14 @@ Create Cluster
 
    .. code:: bash
 
-      $ bash setup_cb.cfg.sh > setup_cb.cfg
+      bash setup_cb.cfg.sh > setup_cb.cfg
 
    Copy the setup file to the `control-plane` and provision the cluster
 
    .. code:: bash
 
-      $ scp -i PathToPkeyMatchingMySSHKeyPairName \
+      scp -i PathToPkeyMatchingMySSHKeyPairName \
           setup_cb.cfg fedora@ControlPlanePublicInstanceIP:~
 
-      $ ssh -i PathToPkeyMatchingMySSHKeyPairName \
+      ssh -i PathToPkeyMatchingMySSHKeyPairName \
           fedora@ControlPlanePublicInstanceIP ~fedora/setup_cb

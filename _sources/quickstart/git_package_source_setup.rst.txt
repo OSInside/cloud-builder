@@ -35,7 +35,7 @@ example **cloud-builder-packages** git repo from here:
 
 .. code:: bash
 
-   $ git clone https://github.com/OSInside/cloud-builder-packages.git
+   git clone https://github.com/OSInside/cloud-builder-packages.git
 
 Understanding the project structure
 -----------------------------------

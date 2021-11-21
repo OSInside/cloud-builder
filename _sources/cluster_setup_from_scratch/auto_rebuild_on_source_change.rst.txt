@@ -39,7 +39,7 @@ control plane:
 
    .. code:: bash
 
-      $ sudo vi /etc/cloud_builder
+      sudo vi /etc/cloud_builder
 
       CB_UPDATE=30
 
@@ -49,14 +49,14 @@ control plane:
 
    .. code:: bash
 
-      $ sudo systemctl start cb-fetch
+      sudo systemctl start cb-fetch
 
 To read the actions taken by the `cb-fetch` service one can watch
 on the {CB} info response messages as follows:
 
 .. code:: bash
 
-   $ cb-ctl cb-ctl --watch \
+   cb-ctl cb-ctl --watch \
        --filter-service-name cb-fetch \
        --timeout 200
 
@@ -83,6 +83,6 @@ of the package build process as follows:
 
 .. code:: bash
 
-   $ cb-ctl cb-ctl --watch \
+   cb-ctl cb-ctl --watch \
        --filter-request-id d309d5d2-f2e0-11eb-9538-06be1098538e \
        --timeout 5

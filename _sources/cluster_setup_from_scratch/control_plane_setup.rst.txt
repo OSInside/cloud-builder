@@ -39,23 +39,23 @@ production environment.
 
    .. code:: bash
 
-      $ ssh -i PathToPkeyMatchingMySSHKeyPairName \
-            ${username}@InstanceIP
+      ssh -i PathToPkeyMatchingMySSHKeyPairName \
+          ${username}@InstanceIP
 
 3. **Install {CB} on the control plane**
 
    .. code:: bash
 
-      $ sudo zypper addrepo https://download.opensuse.org/repositories/Virtualization:/Appliances:/CloudBuilder/openSUSE_Leap_15.3 cloud-builder
-      $ sudo zypper install python3-cloud_builder
+      sudo zypper addrepo https://download.opensuse.org/repositories/Virtualization:/Appliances:/CloudBuilder/openSUSE_Leap_15.3 cloud-builder
+      sudo zypper install python3-cloud_builder
 
 4. **Install Kafka admin utilities**
 
    .. code:: bash
 
-      $ sudo zypper install java-1_8_0-openjdk
-      $ wget https://archive.apache.org/dist/kafka/2.2.1/kafka_2.12-2.2.1.tgz
-      $ tar -xzf kafka_2.12-2.2.1.tgz
+      sudo zypper install java-1_8_0-openjdk
+      wget https://archive.apache.org/dist/kafka/2.2.1/kafka_2.12-2.2.1.tgz
+      tar -xzf kafka_2.12-2.2.1.tgz
 
 .. _control-plane-config:
 
@@ -77,8 +77,8 @@ Now that the control plane runs the following configurations are required:
 
    .. code:: bash
 
-      $ ssh -i PathToPkeyMatchingMySSHKeyPairName \
-            ${username}@InstanceIP
+      ssh -i PathToPkeyMatchingMySSHKeyPairName \
+          ${username}@InstanceIP
 
 3. **Create {CB} Publish/Subscribe message topics**
 
@@ -90,15 +90,15 @@ Now that the control plane runs the following configurations are required:
 
    .. code:: bash
 
-      $ cd kafka_2.12-2.2.1
-      $ for topic in cb-response cb-info-request cb-info-response; do
-            bin/kafka-topics.sh \
-                --create \
-                --zookeeper ZookeeperConnectString \
-                --replication-factor 2 \
-                --partitions 1 \
-                --topic ${topic};
-        done
+      cd kafka_2.12-2.2.1
+      for topic in cb-response cb-info-request cb-info-response; do
+          bin/kafka-topics.sh \
+              --create \
+              --zookeeper ZookeeperConnectString \
+              --replication-factor 2 \
+              --partitions 1 \
+              --topic ${topic};
+      done
 
 4. **Create {CB} Shared message topic**
 
@@ -122,15 +122,15 @@ Now that the control plane runs the following configurations are required:
 
    .. code:: bash
 
-      $ cd kafka_2.12-2.2.1
-      $ for topic in fedora suse; do
-            bin/kafka-topics.sh \
-                --create \
-                --zookeeper ZookeeperConnectString \
-                --replication-factor 2 \
-                --partitions 2 \
-                --topic ${topic};
-        done
+      cd kafka_2.12-2.2.1
+      for topic in fedora suse; do
+          bin/kafka-topics.sh \
+              --create \
+              --zookeeper ZookeeperConnectString \
+              --replication-factor 2 \
+              --partitions 2 \
+              --topic ${topic};
+      done
 
 5. **Set appropriate retention time for topics**
 
@@ -157,21 +157,21 @@ Now that the control plane runs the following configurations are required:
 
    .. code:: bash
 
-      $ cd kafka_2.12-2.2.1
-      $ for topic in fedora suse; do
-            bin/kafka-topics.sh \
-                --alter \
-                --zookeeper ZookeeperConnectString \
-                --config retention.ms=3600000 \
-                --topic ${topic};
-        done
-      $ for topic in cb-info-response cb-info-request; do
-            bin/kafka-topics.sh \
-                --alter \
-                --zookeeper ZookeeperConnectString \
-                --config retention.ms=120000 \
-                --topic ${topic};
-        done
+      cd kafka_2.12-2.2.1
+      for topic in fedora suse; do
+          bin/kafka-topics.sh \
+              --alter \
+              --zookeeper ZookeeperConnectString \
+              --config retention.ms=3600000 \
+              --topic ${topic};
+      done
+      for topic in cb-info-response cb-info-request; do
+          bin/kafka-topics.sh \
+              --alter \
+              --zookeeper ZookeeperConnectString \
+              --config retention.ms=120000 \
+              --topic ${topic};
+      done
 
 6. **Configure** `cb-ctl`
 
@@ -189,7 +189,7 @@ Now that the control plane runs the following configurations are required:
 
    .. code:: bash
 
-      $ sudo vi /etc/cloud_builder_broker.yml
+      sudo vi /etc/cloud_builder_broker.yml
 
    Place the following content:
 
@@ -208,13 +208,13 @@ Now that the control plane runs the following configurations are required:
 
    .. code:: bash
 
-      $ ssh-keygen -t rsa -f ~/.ssh/id_cb_collect
+      ssh-keygen -t rsa -f ~/.ssh/id_cb_collect
 
    Create the file :file:`~/.config/cb/cbctl.yml` as follows:
 
    .. code:: bash
 
-      $ vi ~/.config/cb/cbctl.yml
+      vi ~/.config/cb/cbctl.yml
 
    Place the following content:
 

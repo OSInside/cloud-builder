@@ -53,24 +53,24 @@ created and configured as follows:
 
    .. code:: bash
 
-      $ ssh -i PathToPkeyMatchingMySSHKeyPairName \
-            ${user_leap}@InstanceIP
+      ssh -i PathToPkeyMatchingMySSHKeyPairName \
+          ${user_leap}@InstanceIP
 
-      $ sudo zypper addrepo https://download.opensuse.org/repositories/Virtualization:/Appliances:/CloudBuilder/openSUSE_Leap_15.3 cloud-builder
-      $ sudo zypper install python3-cloud_builder
+      sudo zypper addrepo https://download.opensuse.org/repositories/Virtualization:/Appliances:/CloudBuilder/openSUSE_Leap_15.3 cloud-builder
+      sudo zypper install python3-cloud_builder
 
    Login to each of the created Fedora runner instances and install
    {CB} as follows:
 
    .. code:: bash
 
-      $ ssh -i PathToPkeyMatchingMySSHKeyPairName \
-            ${user_fedora}@InstanceIP
+      ssh -i PathToPkeyMatchingMySSHKeyPairName \
+          ${user_fedora}@InstanceIP
 
-      $ sudo dnf config-manager \
-            --add-repo https://download.opensuse.org/repositories/Virtualization:/Appliances:/CloudBuilder/Fedora_34 \
-            --enable --nogpgcheck
-      $ sudo dnf install python3-cloud_builder
+      sudo dnf config-manager \
+          --add-repo https://download.opensuse.org/repositories/Virtualization:/Appliances:/CloudBuilder/Fedora_34 \
+          --enable --nogpgcheck
+      sudo dnf install python3-cloud_builder
 
    .. note::
 
@@ -110,27 +110,27 @@ created and configured as follows:
 
       .. code:: bash
 
-         $ cat ~/.ssh/id_cb_collect.pub
-         $ exit
+         cat ~/.ssh/id_cb_collect.pub
+         exit
 
    3. Create and authorize the `cb-collect` user on this runner.
 
       .. code:: bash
 
-         $ sudo -i
-         $ useradd -d /home/cb-collect -m cb-collect
-         $ su -l cb-collect
-         $ mkdir -m 0700 .ssh
-         $ touch .ssh/authorized_keys
-         $ chmod 600 .ssh/authorized_keys
-         $ vi .ssh/authorized_keys
+         sudo -i
+         useradd -d /home/cb-collect -m cb-collect
+         su -l cb-collect
+         mkdir -m 0700 .ssh
+         touch .ssh/authorized_keys
+         chmod 600 .ssh/authorized_keys
+         vi .ssh/authorized_keys
 
            Copy & Paste the SSH pubkey as it was printed on the
            console in step 2. and safe the file
 
-         $ exit
-         $ echo "cb-collect ALL=NOPASSWD: ALL" >> /etc/sudoers
-         $ exit
+         exit
+         echo "cb-collect ALL=NOPASSWD: ALL" >> /etc/sudoers
+         exit
 
 4. **Setup broker connection and runner group on the runners**
 
@@ -246,7 +246,7 @@ created and configured as follows:
 
    .. code:: bash
 
-      $ sudo systemctl start cb-fetch-once
+      sudo systemctl start cb-fetch-once
 
    This will clone the configured CB_PROJECT git repo once on the
    system. The `cb-scheduler` service cares for the repo update via
@@ -259,8 +259,8 @@ created and configured as follows:
 
    .. code:: bash
 
-      $ sudo systemctl start cb-scheduler
-      $ sudo systemctl start cb-info
+      sudo systemctl start cb-scheduler
+      sudo systemctl start cb-info
 
 Congrats, the {CB} package build backend is now running and can
 build packages for Fedore/RHEL and SUSE/SLES based packages.

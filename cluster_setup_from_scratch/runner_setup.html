@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Runner Setup &mdash; Cloud Builder 0.2.47 documentation</title>
+  <title>Runner Setup &mdash; Cloud Builder 0.2.48 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
@@ -206,22 +206,22 @@ That way the costs can be balanced.</p>
 <li><p><strong>Install Cloud Builder on the runners</strong></p>
 <p>Login to each of the created Leap runner instances and install
 Cloud Builder as follows:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ ssh -i PathToPkeyMatchingMySSHKeyPairName <span class="se">\</span>
-      <span class="si">${</span><span class="nv">user_leap</span><span class="si">}</span>@InstanceIP
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ssh -i PathToPkeyMatchingMySSHKeyPairName <span class="se">\</span>
+    <span class="si">${</span><span class="nv">user_leap</span><span class="si">}</span>@InstanceIP
 
-$ sudo zypper addrepo https://download.opensuse.org/repositories/Virtualization:/Appliances:/CloudBuilder/openSUSE_Leap_15.3 cloud-builder
-$ sudo zypper install python3-cloud_builder
+sudo zypper addrepo https://download.opensuse.org/repositories/Virtualization:/Appliances:/CloudBuilder/openSUSE_Leap_15.3 cloud-builder
+sudo zypper install python3-cloud_builder
 </pre></div>
 </div>
 <p>Login to each of the created Fedora runner instances and install
 Cloud Builder as follows:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ ssh -i PathToPkeyMatchingMySSHKeyPairName <span class="se">\</span>
-      <span class="si">${</span><span class="nv">user_fedora</span><span class="si">}</span>@InstanceIP
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ssh -i PathToPkeyMatchingMySSHKeyPairName <span class="se">\</span>
+    <span class="si">${</span><span class="nv">user_fedora</span><span class="si">}</span>@InstanceIP
 
-$ sudo dnf config-manager <span class="se">\</span>
-      --add-repo https://download.opensuse.org/repositories/Virtualization:/Appliances:/CloudBuilder/Fedora_34 <span class="se">\</span>
-      --enable --nogpgcheck
-$ sudo dnf install python3-cloud_builder
+sudo dnf config-manager <span class="se">\</span>
+    --add-repo https://download.opensuse.org/repositories/Virtualization:/Appliances:/CloudBuilder/Fedora_34 <span class="se">\</span>
+    --enable --nogpgcheck
+sudo dnf install python3-cloud_builder
 </pre></div>
 </div>
 <div class="admonition note">
@@ -259,26 +259,26 @@ fetching build information.</p>
 <p>See <a class="reference internal" href="control_plane_setup.html#control-plane-setup"><span class="std std-ref">Create and Install the Control Plane</span></a> for details</p>
 </li>
 <li><p>Fetch the <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-collect</span></code> public SSH key and logout from the control plane.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ cat ~/.ssh/id_cb_collect.pub
-$ <span class="nb">exit</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>cat ~/.ssh/id_cb_collect.pub
+<span class="nb">exit</span>
 </pre></div>
 </div>
 </li>
 <li><p>Create and authorize the <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-collect</span></code> user on this runner.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ sudo -i
-$ useradd -d /home/cb-collect -m cb-collect
-$ su -l cb-collect
-$ mkdir -m <span class="m">0700</span> .ssh
-$ touch .ssh/authorized_keys
-$ chmod <span class="m">600</span> .ssh/authorized_keys
-$ vi .ssh/authorized_keys
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo -i
+useradd -d /home/cb-collect -m cb-collect
+su -l cb-collect
+mkdir -m <span class="m">0700</span> .ssh
+touch .ssh/authorized_keys
+chmod <span class="m">600</span> .ssh/authorized_keys
+vi .ssh/authorized_keys
 
   Copy <span class="p">&amp;</span> Paste the SSH pubkey as it was printed on the
   console <span class="k">in</span> step <span class="m">2</span>. and safe the file
 
-$ <span class="nb">exit</span>
-$ <span class="nb">echo</span> <span class="s2">&quot;cb-collect ALL=NOPASSWD: ALL&quot;</span> &gt;&gt; /etc/sudoers
-$ <span class="nb">exit</span>
+<span class="nb">exit</span>
+<span class="nb">echo</span> <span class="s2">&quot;cb-collect ALL=NOPASSWD: ALL&quot;</span> &gt;&gt; /etc/sudoers
+<span class="nb">exit</span>
 </pre></div>
 </div>
 </li>
@@ -380,7 +380,7 @@ leads to the timeout based behavior as explained above</p>
 <li><p><strong>Start</strong> <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-fetch-once</span></code> <strong>service</strong></p>
 <p>Login to each of the created runner instances and fetch
 the package source git once as follows:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ sudo systemctl start cb-fetch-once
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo systemctl start cb-fetch-once
 </pre></div>
 </div>
 <p>This will clone the configured CB_PROJECT git repo once on the
@@ -390,8 +390,8 @@ system. The <code class="xref py py-obj docutils literal notranslate"><span clas
 <li><p><strong>Start</strong> <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-scheduler</span></code> <strong>and</strong> <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-info</span></code> <strong>services</strong></p>
 <p>Login to each of the created runner instances and start
 the scheduler and info services as follows:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ sudo systemctl start cb-scheduler
-$ sudo systemctl start cb-info
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo systemctl start cb-scheduler
+sudo systemctl start cb-info
 </pre></div>
 </div>
 </li>
