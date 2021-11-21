@@ -41,6 +41,9 @@ class CBCloudLogger:
         self.service = service
         self.id = CBIdentity.get_id(service, name)
 
+    def set_loglevel(self, level: int) -> None:
+        log.setLevel(level)
+
     def set_logfile(self) -> None:
         """
         Set log file from Defaults settings

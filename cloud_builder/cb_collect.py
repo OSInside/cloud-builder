@@ -45,6 +45,7 @@ options:
     --runners=<runner_count>
         Number of runners in the cluster
 """
+import logging
 import os
 import time
 import yaml
@@ -62,6 +63,7 @@ from cloud_builder.project_metadata.project_metadata import CBProjectMetaData
 from cloud_builder.info_request.info_request import CBInfoRequest
 from cloud_builder.broker import CBMessageBroker
 from kiwi.command import Command
+from kiwi.logger import Logger
 from kiwi.privileges import Privileges
 from kiwi.path import Path
 from typing import (
@@ -111,6 +113,9 @@ def main() -> None:
 
     log = CBCloudLogger('CBCollect', '(system)')
     log.set_logfile()
+
+    kiwi_log: Logger = logging.getLogger('kiwi')
+    kiwi_log.set_logfile(Defaults.get_cb_logfile())
 
     project_dir = Defaults.get_runner_project_dir()
     Path.wipe(project_dir)
@@ -302,8 +307,8 @@ def group_info_response(
 
     if stop_reading_at > 0 and response_count != stop_reading_at:
         log.warning(
-            'runner count set to {0} but got {1} responses'.format(
-                stop_reading_at, response_count
+            'expected {0}*{1} responses but got {2} responses'.format(
+                len(request_id_list), runner_count, response_count
             )
         )
 
@@ -519,77 +524,87 @@ def build_project_repo(
     project_id: str, runner_responses_for_project: Dict,
     ssh_pkey_file: str, user: str, thread_lock: Lock, log: CBCloudLogger
 ) -> None:
-    if not _set_lock(project_id, thread_lock):
-        log.info(f'Repo sync for {project_id} is locked')
-        return
-    target_path = os.path.normpath(
-        os.sep.join([Defaults.get_repo_root(), project_id])
-    )
-    project_path = os.path.dirname(target_path)
-    project_indicator = os.sep.join(
-        [project_path, '.project']
-    )
-
-    log.info(f'Creating project indicator: {project_indicator!r}')
-    Path.wipe(project_indicator)
-    Path.create(project_indicator)
-
-    if not os.path.exists(target_path):
-        Path.create(target_path)
-    sync_files: Dict[str, List[str]] = {}
-    for source_ip in runner_responses_for_project.keys():
-        for source_spec in runner_responses_for_project[source_ip]:
-            (source_file, project_package_name) = source_spec.split('|')
-            remote_source_file = f'{user}@{source_ip}:{source_file}'
-            repo_meta = _get_repo_path_for_binary(
-                source_file, target_path, log
+    try:
+        if _set_lock(project_id, thread_lock, log):
+            target_path = os.path.normpath(
+                os.sep.join([Defaults.get_repo_root(), project_id])
             )
-            if repo_meta:
-                _update_project_indicator(
-                    indicator_dir=project_indicator,
-                    target_name=os.path.basename(target_path),
-                    package_name=project_package_name,
-                    repo_file=repo_meta.repo_file
+            project_path = os.path.dirname(target_path)
+            project_indicator = os.sep.join(
+                [project_path, '.project']
+            )
+
+            log.info(f'Creating project indicator: {project_indicator!r}')
+            Path.wipe(project_indicator)
+            Path.create(project_indicator)
+
+            if not os.path.exists(target_path):
+                Path.create(target_path)
+            sync_files: Dict[str, List[str]] = {}
+            for source_ip in runner_responses_for_project.keys():
+                for source_spec in runner_responses_for_project[source_ip]:
+                    (source_file, project_package_name) = source_spec.split('|')
+                    remote_source_file = f'{user}@{source_ip}:{source_file}'
+                    repo_meta = _get_repo_path_for_binary(
+                        source_file, target_path, log
+                    )
+                    if repo_meta:
+                        _update_project_indicator(
+                            indicator_dir=project_indicator,
+                            target_name=os.path.basename(target_path),
+                            package_name=project_package_name,
+                            repo_file=repo_meta.repo_file
+                        )
+                        if repo_meta.repo_path in sync_files:
+                            sync_files[repo_meta.repo_path].append(
+                                remote_source_file
+                            )
+                        else:
+                            sync_files[repo_meta.repo_path] = \
+                                [remote_source_file]
+            for repo_path in sorted(sync_files.keys()):
+                if repo_path != 'unknown':
+                    sync_call = Command.run(
+                        [
+                            'rsync', '-av', '-e', 'ssh -i {0} -o {1}'.format(
+                                ssh_pkey_file,
+                                'StrictHostKeyChecking=accept-new'
+                            )
+                        ] + sync_files[repo_path] + [
+                            repo_path
+                        ], raise_on_error=False
+                    )
+                    if sync_call.output:
+                        log.info(sync_call.output)
+                    if sync_call.error:
+                        log.error(sync_call.error)
+
+            log.info(f'Running cleanup for: {project_path!r}')
+            # check if project got deleted from source
+            cleanup = cleanup_project_repo(project_path, log)
+
+            # check if packages in project got deleted from source
+            if not cleanup:
+                cleanup = cleanup_project_repo_packages(project_path, log)
+
+            # check if targets in packages in project got deleted from source
+            if not cleanup:
+                cleanup = cleanup_project_repo_packages_targets(
+                    project_path, log
                 )
-                if repo_meta.repo_path in sync_files:
-                    sync_files[repo_meta.repo_path].append(remote_source_file)
+
+            if os.path.exists(target_path):
+                if repo_meta.repo_type == 'rpm':
+                    _create_rpm_repo(target_path, log)
                 else:
-                    sync_files[repo_meta.repo_path] = [remote_source_file]
-    for repo_path in sorted(sync_files.keys()):
-        sync_call = Command.run(
-            [
-                'rsync', '-av', '-e', 'ssh -i {0} -o {1}'.format(
-                    ssh_pkey_file, 'StrictHostKeyChecking=accept-new'
-                )
-            ] + sync_files[repo_path] + [
-                repo_meta.repo_path
-            ], raise_on_error=False
-        )
-        if sync_call.output:
-            log.info(sync_call.output)
-        if sync_call.error:
-            log.error(sync_call.error)
-
-    log.info(f'Running cleanup for: {project_path!r}')
-    # check if project got deleted from source
-    cleanup = cleanup_project_repo(project_path, log)
-
-    # check if packages in project got deleted from source
-    if not cleanup:
-        cleanup = cleanup_project_repo_packages(project_path, log)
-
-    # check if targets in packages in project got deleted from source
-    if not cleanup:
-        cleanup = cleanup_project_repo_packages_targets(project_path, log)
-
-    if os.path.exists(target_path):
-        if repo_meta.repo_type == 'rpm':
-            _create_rpm_repo(target_path, log)
+                    log.error(
+                        f'No idea how to create repo for data in: {target_path}'
+                    )
+            _set_free(project_id, log)
         else:
-            log.error(
-                f'Ups, no idea how to create repo for data in: {target_path}'
-            )
-    _set_free(project_id)
+            log.info(f'Repo sync for {project_id} is locked')
+    except Exception:
+        _set_free(project_id, log)
 
 
 def _update_project_indicator(
@@ -681,7 +696,7 @@ def _create_rpm_repo(target_path: str, log: CBCloudLogger) -> None:
     # - signing of package files via rpmsign
 
 
-def _set_lock(project_id: str, thread_lock: Lock) -> bool:
+def _set_lock(project_id: str, thread_lock: Lock, log: CBCloudLogger) -> bool:
     """
     Create lock file for the given project path. Returns
     False if lock is already present. During the creation
@@ -706,6 +721,7 @@ def _set_lock(project_id: str, thread_lock: Lock) -> bool:
     if os.path.isfile(lock_file):
         lock_set_action = False
     else:
+        log.info(f'Set lock {lock_file}')
         with open(lock_file, 'w'):
             pass
         lock_set_action = True
@@ -713,11 +729,12 @@ def _set_lock(project_id: str, thread_lock: Lock) -> bool:
     return lock_set_action
 
 
-def _set_free(project_id: str) -> None:
+def _set_free(project_id: str, log: CBCloudLogger) -> None:
     lock_file = '/var/lock/{0}.lock'.format(
         project_id.replace(os.sep, '_')
     )
-    os.unlink(lock_file)
+    log.info(f'Release lock {lock_file}')
+    Path.wipe(lock_file)
 
 
 def _get_datetime_from_utc_timestamp(timestamp: str) -> datetime:
