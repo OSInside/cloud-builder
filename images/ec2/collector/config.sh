@@ -20,6 +20,9 @@ baseInsertService cloud-init
 baseInsertService cloud-config
 baseInsertService cloud-final
 
+# Delete welcome page
+rm -f /etc/httpd/conf.d/welcome.conf
+
 # Activate services CB
 baseInsertService cb-collect
 baseInsertService httpd
