@@ -44,11 +44,11 @@ Create and Setup the reposerver instance
 
    .. code:: bash
 
-      $ ssh -i PathToPkeyMatchingMySSHKeyPairName \
-            ${username}@RepoServerInstanceIP
+      ssh -i PathToPkeyMatchingMySSHKeyPairName \
+          ${username}@RepoServerInstanceIP
 
-      $ sudo zypper addrepo https://download.opensuse.org/repositories/Virtualization:/Appliances:/CloudBuilder/openSUSE_Leap_15.3 cloud-builder
-      $ sudo zypper install python3-cloud_builder
+      sudo zypper addrepo https://download.opensuse.org/repositories/Virtualization:/Appliances:/CloudBuilder/openSUSE_Leap_15.3 cloud-builder
+      sudo zypper install python3-cloud_builder
 
 3. **Setup cb-collect service configuration**
 
@@ -135,8 +135,8 @@ Create and Setup the reposerver instance
 
       .. code:: bash
 
-         $ cat ~/.ssh/id_cb_collect
-         $ exit
+         cat ~/.ssh/id_cb_collect
+         exit
 
    In the terminal session with the still active login session on
    the reposerver copy/paste the `cb-collect` SSH private key as
@@ -144,10 +144,10 @@ Create and Setup the reposerver instance
 
    .. code:: bash
 
-      $ mkdir -p -m 0700 /root/.ssh
-      $ sudo touch /root/.ssh/id_cb_collect
-      $ sudo chmod 600 /root/.ssh/id_cb_collect
-      $ sudo vi /root/.ssh/id_cb_collect
+      mkdir -p -m 0700 /root/.ssh
+      sudo touch /root/.ssh/id_cb_collect
+      sudo chmod 600 /root/.ssh/id_cb_collect
+      sudo vi /root/.ssh/id_cb_collect
 
         Copy & Paste the SSH private key as it was obtained
         in the former step and safe the file.
@@ -157,7 +157,7 @@ Create and Setup the reposerver instance
 
    .. code:: bash
 
-       $ sudo vi /etc/cloud_builder
+       sudo vi /etc/cloud_builder
 
        CB_SSH_PKEY="/root/.ssh/id_cb_collect"
 
@@ -184,7 +184,7 @@ Create and Setup the reposerver instance
 
    .. code:: bash
 
-       $ sudo vi /etc/cloud_builder
+       sudo vi /etc/cloud_builder
 
        CB_SSH_USER="cb-collect"
 
@@ -195,7 +195,7 @@ Create and Setup the reposerver instance
 
    .. code:: bash
 
-      $ sudo systemctl start cb-collect
+      sudo systemctl start cb-collect
 
    The service will immediately start to collect package results
    from the available runners. This is done by sending info requests
@@ -232,7 +232,7 @@ contents.
 
    .. code:: bash
 
-      $ sudo zypper in apache2
+      sudo zypper in apache2
 
 2. **Setup Apache DocumentRoot**
 
@@ -262,7 +262,7 @@ contents.
 
    .. code:: bash
 
-      $ sudo systemctl start apache2
+      sudo systemctl start apache2
 
 4. **Open HTTP port**
 
