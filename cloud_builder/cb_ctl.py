@@ -24,7 +24,7 @@ usage: cb-ctl -h | --help
        cb-ctl --build-image=<image> --project-path=<path> --arch=<name> --runner-group=<name> --selection=<name>
        cb-ctl --build-dependencies=<package│image> --project-path=<path> --arch=<name> (--dist=<name>|--selection=<name>)
            [--timeout=<time_sec>]
-       cb-ctl --build-dependencies-local (--dist=<name>|--selection=<name>)
+       cb-ctl --build-dependencies-local --arch=<name> (--dist=<name>|--selection=<name>)
        cb-ctl --build-log=<package│image> --project-path=<path> --arch=<name> (--dist=<name>|--selection=<name>)
            [--keep-open]
            [--timeout=<time_sec>]
@@ -225,7 +225,8 @@ def main() -> None:
     elif args['--build-dependencies-local']:
         get_build_dependencies_local(
             args['--dist'],
-            args['--selection']
+            args['--selection'],
+            args['--arch']
         )
     elif args['--build-log']:
         get_build_log(
@@ -404,14 +405,16 @@ def get_build_dependencies(
         CBDisplay.print_json(json.loads(solver_data))
 
 
-def get_build_dependencies_local(dist: str, selection_name: str) -> None:
+def get_build_dependencies_local(
+    dist: str, selection_name: str, arch: str
+) -> None:
     Privileges.check_for_root_permissions()
 
     target_source_path = os.getcwd()
 
     project_config = _check_project_config_from_working_directory()
     if dist:
-        profile_list = [f'{dist}.{platform.machine()}']
+        profile_list = [f'{dist}.{arch}']
     elif selection_name:
         profile_list = []
         for target in project_config.get('images') or []:
