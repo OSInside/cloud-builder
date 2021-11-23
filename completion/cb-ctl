@@ -39,7 +39,7 @@ function _cbctl {
                     return 0
                     ;;
                 "--build-dependencies-local")
-                    __comp_reply "--dist --selection"
+                    __comp_reply "--arch --dist --selection"
                     return 0
                     ;;
                 "--build-log")
