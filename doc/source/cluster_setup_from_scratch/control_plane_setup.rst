@@ -220,10 +220,10 @@ Now that the control plane runs the following configurations are required:
 
    .. code:: yaml
 
-      runner:
+      cluster:
         ssh_user: cb-collect
         ssh_pkey_file: HOME/.ssh/id_cb_collect
-        count: 2
+        runner_count: 2
 
    Replace *HOME* with the absolute path to the home directory
    of the user that is expected to call `cb-ctl`

@@ -180,17 +180,17 @@ Create Cluster
       )
       CBControlPlane=$(
           aws ec2 describe-instances --filters "Name=tag-value,Values=cb-control-plane" | \
-          grep -m 1 PrivateDnsName | cut -f4 -d\"
+          grep -m 1 PublicDnsName | cut -f4 -d\"
       )
       CBCollect=$(
           aws ec2 describe-instances --filters "Name=tag-value,Values=cb-collect" | \
-          grep -m 1 PrivateDnsName | cut -f4 -d\"
+          grep -m 1 PublicDnsName | cut -f4 -d\"
       )
       CBRunners=""
       for name in cb-runner-1 cb-runner-2;do
           runner=$(
               aws ec2 describe-instances --filters "Name=tag-value,Values=${name}" | \
-              grep -m 1 PrivateDnsName | cut -f4 -d\"
+              grep -m 1 PublicDnsName | cut -f4 -d\"
           )
           CBRunners="${CBRunners} ${runner}"
       done

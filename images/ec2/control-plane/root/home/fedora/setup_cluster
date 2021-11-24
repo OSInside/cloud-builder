@@ -59,7 +59,7 @@ sudo sed -ie "s@CB_PROJECT=.*@CB_PROJECT=${source_repo}@" \
     /etc/cloud_builder
 
 # setup runner count here for cb-ctl
-echo "  count: ${runner_count}" >> ~/.config/cb/cbctl.yml
+echo "  runner_count: ${runner_count}" >> ~/.config/cb/cbctl.yml
 
 # restart fetcher
 sudo systemctl restart cb-fetch
