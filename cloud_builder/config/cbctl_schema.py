@@ -16,7 +16,7 @@
 # along with Cloud Builder.  If not, see <http://www.gnu.org/licenses/>
 #
 cbctl_config_schema = {
-    'runner': {
+    'cluster': {
         'required': True,
         'type': 'dict',
         'schema': {
@@ -30,9 +30,25 @@ cbctl_config_schema = {
                 'type': 'string',
                 'nullable': False
             },
-            'count': {
+            'runner_count': {
                 'required': False,
                 'type': 'number',
+                'nullable': False
+            },
+            'controlplane': {
+                'required': False,
+                'type': 'string',
+                'nullable': False
+            }
+        }
+    },
+    'settings': {
+        'required': False,
+        'type': 'dict',
+        'schema': {
+            'use_control_plane_as_proxy': {
+                'required': False,
+                'type': 'boolean',
                 'nullable': False
             }
         }

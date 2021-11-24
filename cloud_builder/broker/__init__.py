@@ -16,6 +16,7 @@
 # along with Cloud Builder.  If not, see <http://www.gnu.org/licenses/>
 #
 import importlib
+from typing import Dict
 from abc import (
     ABCMeta,
     abstractmethod
@@ -35,7 +36,7 @@ class CBMessageBroker(metaclass=ABCMeta):
 
     @staticmethod
     @abstractmethod
-    def new(broker_name: str, config_file: str):
+    def new(broker_name: str, config_file: str, custom_args: Dict = {}):
         """
         Create new instance of given message broker
 
@@ -43,7 +44,8 @@ class CBMessageBroker(metaclass=ABCMeta):
         :param str config_file: a yaml config file
         """
         name_map = {
-            'kafka': 'CBMessageBrokerKafka'
+            'kafka': 'CBMessageBrokerKafka',
+            'kafka_proxy': 'CBMessageBrokerSSHProxyKafka'
         }
         try:
             broker = importlib.import_module(
@@ -51,9 +53,9 @@ class CBMessageBroker(metaclass=ABCMeta):
             )
             module_name = name_map[broker_name]
             return broker.__dict__[module_name](
-                config_file
+                config_file, custom_args
             )
         except Exception as issue:
             raise CBMessageBrokerSetupError(
-                f'No support for {broker_name} message broker: {issue}'
+                f'Failed creating new {broker_name!r} message broker: {issue}'
             )

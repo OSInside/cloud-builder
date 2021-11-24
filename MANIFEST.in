@@ -2,6 +2,7 @@
 
 graft completion
 graft cloud_builder/broker
+graft cloud_builder/broker/ssh_kafka
 graft cloud_builder/build_request
 graft cloud_builder/config
 graft cloud_builder/info_request

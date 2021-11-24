@@ -29,6 +29,7 @@ mypy
 types-PyYAML
 types-requests
 types-mock
+types-paramiko
 
 # for building documentation
 sphinx

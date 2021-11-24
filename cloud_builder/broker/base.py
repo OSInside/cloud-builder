@@ -43,18 +43,20 @@ class CBMessageBrokerBase(metaclass=ABCMeta):
     """
     Interface for message handling in the context of Cloud Builder
     """
-    def __init__(self, config_file: str) -> None:
+    def __init__(self, config_file: str, custom_args: Dict) -> None:
         """
         Create a new instance of CBMessageBrokerBase
 
         :param str config_file: a yaml config file
         """
-        try:
-            with open(config_file, 'r') as config:
-                self.config = yaml.safe_load(config)
-        except Exception as issue:
-            raise CBConfigFileNotFoundError(issue)
-
+        self.config = {}
+        if config_file:
+            try:
+                with open(config_file, 'r') as config:
+                    self.config = yaml.safe_load(config)
+            except Exception as issue:
+                raise CBConfigFileNotFoundError(issue)
+        self.custom_args = custom_args
         self.post_init()
 
     @abstractmethod

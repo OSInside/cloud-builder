@@ -25,3 +25,6 @@ requests
 
 # Process Management
 psutil
+
+# SSH
+paramiko

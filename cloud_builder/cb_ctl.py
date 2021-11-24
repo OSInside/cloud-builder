@@ -284,8 +284,16 @@ def main() -> None:
 
 
 def get_broker() -> Any:
+    broker_type = 'kafka'
+    config = get_config()
+    broker_config_file = Defaults.get_broker_config()
+    config_settings = config.get('settings')
+    if config_settings:
+        if config_settings.get('use_control_plane_as_proxy') is True:
+            broker_type = 'kafka_proxy'
+            broker_config_file = ''
     return CBMessageBroker.new(
-        'kafka', config_file=Defaults.get_broker_config()
+        broker_type, config_file=broker_config_file, custom_args=config
     )
 
 
@@ -472,8 +480,8 @@ def fetch_binaries(
     )
     if info_response:
         runner_ip = info_response['source_ip']
-        ssh_user = config['runner']['ssh_user']
-        ssh_pkey_file = config['runner']['ssh_pkey_file']
+        ssh_user = config['cluster']['ssh_user']
+        ssh_pkey_file = config['cluster']['ssh_pkey_file']
         Path.create(target_dir)
         for binary in info_response['binary_packages']:
             log.debug(f'Fetching {binary} -> {target_dir}')
@@ -573,8 +581,8 @@ def _get_info_response_file(
     )
     if info_response:
         runner_ip = info_response['source_ip']
-        ssh_user = config['runner']['ssh_user']
-        ssh_pkey_file = config['runner']['ssh_pkey_file']
+        ssh_user = config['cluster']['ssh_user']
+        ssh_pkey_file = config['cluster']['ssh_pkey_file']
         ssh_runner = [
             'ssh', '-i', ssh_pkey_file,
             '-o', 'StrictHostKeyChecking=accept-new',
@@ -707,7 +715,7 @@ def _info_reader(
     :param Callable func:
         Callback method for response record
     """
-    stop_reading_at = config['runner'].get('count') or 0
+    stop_reading_at = config['cluster'].get('runner_count') or 0
     response_count = 0
     info_records = []
     try:

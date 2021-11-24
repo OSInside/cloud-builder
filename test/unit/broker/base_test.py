@@ -26,13 +26,14 @@ class TestCBMessageBrokerBase:
     @patch.multiple(CBMessageBrokerBase, __abstractmethods__=set())
     def setup(self):
         self.broker = CBMessageBrokerBase(
-            config_file='../data/etc/cloud_builder_broker.yml'
+            config_file='../data/etc/cloud_builder_broker.yml',
+            custom_args={}
         )
 
     @patch.multiple(CBMessageBrokerBase, __abstractmethods__=set())
     def test_setup_raises_no_broker_config(self):
         with raises(CBConfigFileNotFoundError):
-            CBMessageBrokerBase(config_file='artificial')
+            CBMessageBrokerBase(config_file='artificial', custom_args={})
 
     def test_post_init(self):
         assert self.broker.post_init() is None

@@ -29,7 +29,8 @@ config = {
         'kafka-python',
         'cerberus',
         'requests',
-        'psutil'
+        'psutil',
+        'paramiko'
     ],
     'packages': ['cloud_builder'],
     'entry_points': {
@@ -41,7 +42,9 @@ config = {
             'cb-fetch=cloud_builder.cb_fetch:main',
             'cb-scheduler=cloud_builder.cb_scheduler:main',
             'cb-collect=cloud_builder.cb_collect:main',
-            'cb-image=cloud_builder.cb_image:main'
+            'cb-image=cloud_builder.cb_image:main',
+            'ssh_kafka_read=cloud_builder.broker.ssh_kafka.ssh_kafka_read:main',
+            'ssh_kafka_write=cloud_builder.broker.ssh_kafka.ssh_kafka_write:main'
         ]
     },
     'include_package_data': True,

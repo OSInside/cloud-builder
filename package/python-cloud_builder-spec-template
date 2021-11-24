@@ -88,6 +88,7 @@ Requires:       createrepo_c
 Requires:       python%{python3_pkgversion}-docopt
 Requires:       python%{python3_pkgversion}-kiwi >= 9.21.21
 Requires:       python%{python3_pkgversion}-requests
+Requires:       python%{python3_pkgversion}-paramiko
 %if 0%{?ubuntu} || 0%{?debian}
 Requires:       python%{python3_pkgversion}-yaml
 Requires:       python%{python3_pkgversion}-apscheduler
@@ -167,5 +168,7 @@ install -D -m 644 etc/cloud_builder \
 %{_bindir}/cb-ctl
 %{_bindir}/cb-collect
 %{_bindir}/cb-image
+%{_bindir}/ssh_kafka_read
+%{_bindir}/ssh_kafka_write
 
 %changelog

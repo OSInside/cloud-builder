@@ -14,5 +14,5 @@ class TestCBMessageBroker:
     def test_broker_kafka(self, mock_CBMessageBrokerKafka):
         CBMessageBroker.new('kafka', 'kafka_config_file')
         mock_CBMessageBrokerKafka.assert_called_once_with(
-            'kafka_config_file'
+            'kafka_config_file', {}
         )

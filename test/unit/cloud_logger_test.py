@@ -26,6 +26,11 @@ class TestCBCloudLogger:
             '/var/log/cloud_builder.log'
         )
 
+    @patch('kiwi.logger.Logger.setLevel')
+    def test_set_loglevel(self, mock_setLevel):
+        self.cloud_logger.set_loglevel(42)
+        mock_setLevel.assert_called_once_with(42)
+
     def test_get_id(self):
         assert self.cloud_logger.get_id() == self.cloud_logger.id
 
