@@ -135,6 +135,10 @@ options:
 
     --keep-open
         Use tail -f to open the log file on the runner
+
+    --debug
+        Set log level to DEBUG for cloud-builder and kiwi
+        namespaces
 """
 import time
 import os
