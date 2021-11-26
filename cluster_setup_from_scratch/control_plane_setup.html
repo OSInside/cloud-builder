@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Create and Install the Control Plane &mdash; Cloud Builder 0.2.49 documentation</title>
+  <title>Create and Install the Control Plane &mdash; Cloud Builder 0.2.50 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
@@ -349,10 +349,10 @@ control plane the used SSH keypair is created once as folows:</p>
 </pre></div>
 </div>
 <p>Place the following content:</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">runner</span><span class="p">:</span>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">cluster</span><span class="p">:</span>
   <span class="nt">ssh_user</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">cb-collect</span>
   <span class="nt">ssh_pkey_file</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">HOME/.ssh/id_cb_collect</span>
-  <span class="nt">count</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">2</span>
+  <span class="nt">runner_count</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">2</span>
 </pre></div>
 </div>
 <p>Replace <em>HOME</em> with the absolute path to the home directory

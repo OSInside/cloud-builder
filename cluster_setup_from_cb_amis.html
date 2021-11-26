@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Setup Cloud Builder From AMIs &mdash; Cloud Builder 0.2.49 documentation</title>
+  <title>Setup Cloud Builder From AMIs &mdash; Cloud Builder 0.2.50 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/custom.css" type="text/css" />
@@ -317,17 +317,17 @@ connection string printed:</p>
 <span class="k">)</span>
 <span class="nv">CBControlPlane</span><span class="o">=</span><span class="k">$(</span>
     aws ec2 describe-instances --filters <span class="s2">&quot;Name=tag-value,Values=cb-control-plane&quot;</span> <span class="p">|</span> <span class="se">\</span>
-    grep -m <span class="m">1</span> PrivateDnsName <span class="p">|</span> cut -f4 -d<span class="se">\&quot;</span>
+    grep -m <span class="m">1</span> PublicDnsName <span class="p">|</span> cut -f4 -d<span class="se">\&quot;</span>
 <span class="k">)</span>
 <span class="nv">CBCollect</span><span class="o">=</span><span class="k">$(</span>
     aws ec2 describe-instances --filters <span class="s2">&quot;Name=tag-value,Values=cb-collect&quot;</span> <span class="p">|</span> <span class="se">\</span>
-    grep -m <span class="m">1</span> PrivateDnsName <span class="p">|</span> cut -f4 -d<span class="se">\&quot;</span>
+    grep -m <span class="m">1</span> PublicDnsName <span class="p">|</span> cut -f4 -d<span class="se">\&quot;</span>
 <span class="k">)</span>
 <span class="nv">CBRunners</span><span class="o">=</span><span class="s2">&quot;&quot;</span>
 <span class="k">for</span> name <span class="k">in</span> cb-runner-1 cb-runner-2<span class="p">;</span><span class="k">do</span>
     <span class="nv">runner</span><span class="o">=</span><span class="k">$(</span>
         aws ec2 describe-instances --filters <span class="s2">&quot;Name=tag-value,Values=</span><span class="si">${</span><span class="nv">name</span><span class="si">}</span><span class="s2">&quot;</span> <span class="p">|</span> <span class="se">\</span>
-        grep -m <span class="m">1</span> PrivateDnsName <span class="p">|</span> cut -f4 -d<span class="se">\&quot;</span>
+        grep -m <span class="m">1</span> PublicDnsName <span class="p">|</span> cut -f4 -d<span class="se">\&quot;</span>
     <span class="k">)</span>
     <span class="nv">CBRunners</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">CBRunners</span><span class="si">}</span><span class="s2"> </span><span class="si">${</span><span class="nv">runner</span><span class="si">}</span><span class="s2">&quot;</span>
 <span class="k">done</span>
