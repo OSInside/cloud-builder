@@ -687,7 +687,6 @@ def _response_reader(
                     message.value
                 )
                 if response:
-                    broker.acknowledge()
                     func(response)
             if not message:
                 break
@@ -750,8 +749,8 @@ def _info_reader(
                     message.value
                 )
                 if response:
-                    broker.acknowledge()
                     if response['request_id'] == request_id:
+                        broker.acknowledge()
                         if response['utc_modification_time'] != 'none':
                             info_records.append(response)
                         response_count += 1

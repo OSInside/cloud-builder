@@ -62,7 +62,6 @@ def main() -> None:
             client=args['--client'] or 'cb-client',
             timeout_ms=int(args['--timeout'] or 1000)
         )
-        broker.acknowledge()
         for message in messages:
             result_messages.append(message.value.decode())
         print(yaml.dump(result_messages))

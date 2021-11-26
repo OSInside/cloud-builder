@@ -148,8 +148,7 @@ class CBMessageBrokerSSHProxyKafka(CBMessageBrokerBase):
         Acknowledge message so we don't get it again
 
         There is no way for us to acknowledge the message when
-        redirecting the kafka consumer to another host. Thus
-        the acknowledge happens in ssh_kafka_read
+        redirecting the kafka consumer to another host.
         """
         pass
 

@@ -271,8 +271,8 @@ def group_info_response(
                     message.value
                 )
                 if response:
-                    broker.acknowledge()
                     if response['request_id'] in request_id_list:
+                        broker.acknowledge()
                         if response['utc_modification_time'] != 'none':
                             # A utc_modification_time set to none, indicates
                             # that this info response was sent from an info
