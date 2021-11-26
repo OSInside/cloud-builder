@@ -39,7 +39,7 @@ from cloud_builder.exceptions import (
 
 fake_kafka_message = NamedTuple(
     'fake_kafka_message', [
-        ('value', str)
+        ('value', bytes)
     ]
 )
 
@@ -209,7 +209,7 @@ class CBMessageBrokerSSHProxyKafka(CBMessageBrokerBase):
         result = []
         for message in yaml.safe_load(stdout.read()):
             result.append(
-                fake_kafka_message(value=message)
+                fake_kafka_message(value=message.encode())
             )
         return result
 

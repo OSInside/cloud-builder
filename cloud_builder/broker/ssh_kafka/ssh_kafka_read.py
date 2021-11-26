@@ -64,7 +64,7 @@ def main() -> None:
         )
         broker.acknowledge()
         for message in messages:
-            result_messages.append(message.value)
+            result_messages.append(message.value.decode())
         print(yaml.dump(result_messages))
     except Exception as issue:
         raise CBParameterError(issue)
