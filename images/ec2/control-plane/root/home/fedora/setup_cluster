@@ -16,7 +16,7 @@ for topic in cb-response cb-info-request cb-info-response; do
         --create \
         --zookeeper ${ZookeeperConnectString} \
         --replication-factor 2 \
-        --partitions 1 \
+        --partitions 10 \
         --topic ${topic}
 done
 
@@ -42,7 +42,7 @@ for topic in cb-info-response cb-info-request; do
     ./bin/kafka-topics.sh \
         --alter \
         --zookeeper ${ZookeeperConnectString} \
-        --config retention.ms=120000 \
+        --config retention.ms=1800000 \
         --topic ${topic}
 done
 
