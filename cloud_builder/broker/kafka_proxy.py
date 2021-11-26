@@ -74,9 +74,11 @@ class CBMessageBrokerSSHProxyKafka(CBMessageBrokerBase):
         )
         try:
             self.ssh.connect(
+                key_filename=self.pkey_file,
                 hostname=self.host,
                 username=self.user,
-                pkey=paramiko.RSAKey.from_private_key_file(self.pkey_file)
+                look_for_keys=False,
+                allow_agent=False
             )
         except Exception as issue:
             raise CBSSHConnectionError(issue)
