@@ -19,23 +19,33 @@
 usage: cb-ctl -h | --help
        cb-ctl --build-package-local --dist=<name>
            [--clean]
+           [--debug]
        cb-ctl --build-package=<package> --project-path=<path> --arch=<name> --dist=<name> --runner-group=<name>
+           [--debug]
        cb-ctl --build-image-local --selection=<name>
+           [--debug]
        cb-ctl --build-image=<image> --project-path=<path> --arch=<name> --runner-group=<name> --selection=<name>
+           [--debug]
        cb-ctl --build-dependencies=<package│image> --project-path=<path> --arch=<name> (--dist=<name>|--selection=<name>)
            [--timeout=<time_sec>]
+           [--debug]
        cb-ctl --build-dependencies-local --arch=<name> (--dist=<name>|--selection=<name>)
+           [--debug]
        cb-ctl --build-log=<package│image> --project-path=<path> --arch=<name> (--dist=<name>|--selection=<name>)
            [--keep-open]
            [--timeout=<time_sec>]
+           [--debug]
        cb-ctl --build-info=<package│image> --project-path=<path> --arch=<name> (--dist=<name>|--selection=<name>)
            [--timeout=<time_sec>]
+           [--debug]
        cb-ctl --get-binaries=<package│image> --project-path=<path> --arch=<name> --target-dir=<dir> (--dist=<name>|--selection=<name>)
            [--timeout=<time_sec>]
+           [--debug]
        cb-ctl --watch
            [--filter-request-id=<uuid>]
            [--filter-service-name=<name>]
            [--timeout=<time_sec>]
+           [--debug]
 
 options:
     --build-package=<package>
@@ -169,10 +179,7 @@ from kiwi.privileges import Privileges
 from kiwi.path import Path
 
 kiwi_log = logging.getLogger('kiwi')
-kiwi_log.setLevel(logging.INFO)
-
 log = logging.getLogger('cloud_builder')
-log.setLevel(logging.INFO)
 
 
 @exception_handler
@@ -186,6 +193,11 @@ def main() -> None:
         options_first=True
     )
     default_timeout = 10
+
+    log_level = logging.DEBUG if args['--debug'] else logging.INFO
+    kiwi_log.setLevel(log_level)
+    log.setLevel(log_level)
+
     if args['--build-package']:
         build_package(
             get_broker(),
@@ -288,6 +300,7 @@ def get_broker() -> Any:
     config = get_config()
     broker_config_file = Defaults.get_broker_config()
     config_settings = config.get('settings')
+    log.debug(config_settings)
     if config_settings:
         if config_settings.get('use_control_plane_as_proxy') is True:
             broker_type = 'kafka_proxy'
