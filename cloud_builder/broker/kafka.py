@@ -239,9 +239,7 @@ class CBMessageBrokerKafka(CBMessageBrokerBase):
         if not self.consumer:
             try:
                 consumer_setup = {
-                    'auto_offset_reset': 'earliest',
                     'enable_auto_commit': False,
-                    'max_poll_records': 1,
                     'bootstrap_servers': self.kafka_host,
                     'client_id': client,
                     'group_id': group
