@@ -120,9 +120,10 @@ Create Cluster
 
    .. code:: bash
 
+      control_plane=ami-0777054b6e9b37863
       aws ec2 run-instances \
           --count 1 \
-          --image-id ami-0d85d2d5be9150bc4 \
+          --image-id ${control_plane} \
           --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=cb-control-plane}]' \
           --instance-type t2.micro \
           --key-name MySSHKeyPairName
@@ -133,9 +134,10 @@ Create Cluster
 
    .. code:: bash
 
+      collector=ami-05ec87868b59b859e
       aws ec2 run-instances \
           --count 1 \
-          --image-id ami-0cffb370fef100bd4 \
+          --image-id ${collector} \
           --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=cb-collect}]' \
           --instance-type t2.micro \
           --key-name MySSHKeyPairName
@@ -146,10 +148,11 @@ Create Cluster
 
    .. code:: bash
 
+      runner=ami-09cb9e1fc89c5dba6
       for name in cb-runner-1 cb-runner-2;do
           aws ec2 run-instances \
               --count 1 \
-              --image-id ami-0748b62a9dfea7846 \
+              --image-id ${runner} \
               --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=$name}]" \
               --block-device-mapping "DeviceName=/dev/sda1,Ebs={VolumeSize=100}" \
               --instance-type t2.micro \

@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Setup Cloud Builder From AMIs &mdash; Cloud Builder 0.2.51 documentation</title>
+  <title>Setup Cloud Builder From AMIs &mdash; Cloud Builder 0.2.52 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/custom.css" type="text/css" />
@@ -263,9 +263,10 @@ connection string printed:</p>
 </li>
 <li><p><strong>Launch the Control Plane:</strong></p>
 <p>Start the <code class="xref py py-obj docutils literal notranslate"><span class="pre">control</span> <span class="pre">plane</span></code> as follows:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>aws ec2 run-instances <span class="se">\</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">control_plane</span><span class="o">=</span>ami-0777054b6e9b37863
+aws ec2 run-instances <span class="se">\</span>
     --count <span class="m">1</span> <span class="se">\</span>
-    --image-id ami-0d85d2d5be9150bc4 <span class="se">\</span>
+    --image-id <span class="si">${</span><span class="nv">control_plane</span><span class="si">}</span> <span class="se">\</span>
     --tag-specifications <span class="s1">&#39;ResourceType=instance,Tags=[{Key=Name,Value=cb-control-plane}]&#39;</span> <span class="se">\</span>
     --instance-type t2.micro <span class="se">\</span>
     --key-name MySSHKeyPairName
@@ -274,9 +275,10 @@ connection string printed:</p>
 </li>
 <li><p><strong>Launch the Collector:</strong></p>
 <p>Start the <code class="xref py py-obj docutils literal notranslate"><span class="pre">collector</span></code> as follows:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>aws ec2 run-instances <span class="se">\</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">collector</span><span class="o">=</span>ami-05ec87868b59b859e
+aws ec2 run-instances <span class="se">\</span>
     --count <span class="m">1</span> <span class="se">\</span>
-    --image-id ami-0cffb370fef100bd4 <span class="se">\</span>
+    --image-id <span class="si">${</span><span class="nv">collector</span><span class="si">}</span> <span class="se">\</span>
     --tag-specifications <span class="s1">&#39;ResourceType=instance,Tags=[{Key=Name,Value=cb-collect}]&#39;</span> <span class="se">\</span>
     --instance-type t2.micro <span class="se">\</span>
     --key-name MySSHKeyPairName
@@ -285,10 +287,11 @@ connection string printed:</p>
 </li>
 <li><p><strong>Launch the Runners:</strong></p>
 <p>Start the <code class="xref py py-obj docutils literal notranslate"><span class="pre">runners</span></code> as follows:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> name <span class="k">in</span> cb-runner-1 cb-runner-2<span class="p">;</span><span class="k">do</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">runner</span><span class="o">=</span>ami-09cb9e1fc89c5dba6
+<span class="k">for</span> name <span class="k">in</span> cb-runner-1 cb-runner-2<span class="p">;</span><span class="k">do</span>
     aws ec2 run-instances <span class="se">\</span>
         --count <span class="m">1</span> <span class="se">\</span>
-        --image-id ami-0748b62a9dfea7846 <span class="se">\</span>
+        --image-id <span class="si">${</span><span class="nv">runner</span><span class="si">}</span> <span class="se">\</span>
         --tag-specifications <span class="s2">&quot;ResourceType=instance,Tags=[{Key=Name,Value=</span><span class="nv">$name</span><span class="s2">}]&quot;</span> <span class="se">\</span>
         --block-device-mapping <span class="s2">&quot;DeviceName=/dev/sda1,Ebs={VolumeSize=100}&quot;</span> <span class="se">\</span>
         --instance-type t2.micro <span class="se">\</span>
