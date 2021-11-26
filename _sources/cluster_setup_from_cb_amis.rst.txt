@@ -233,3 +233,37 @@ Create Cluster
 
       ssh -i PathToPkeyMatchingMySSHKeyPairName \
           fedora@ControlPlanePublicInstanceIP ~fedora/setup_cb
+
+6. **Setup cb-ctl:**
+
+   Create the script :file:`setup_cbctl.cfg.sh` and place the following content
+
+   .. code:: bash
+
+      #!/bin/bash
+
+      set -e
+
+      CBControlPlane=$(
+          aws ec2 describe-instances --filters "Name=tag-value,Values=cb-control-plane" | \
+          grep -m 1 PublicDnsName | cut -f4 -d\"
+      )
+
+      cat <<EOF
+      cluster:
+        ssh_user: fedora
+        ssh_pkey_file: $1
+        controlplane: ${CBControlPlane}
+        runner_count: 2
+
+      settings:
+        use_control_plane_as_proxy: true
+      EOF
+
+   Call `setup_cbctl.cfg.sh` as follows:
+
+   .. code:: bash
+
+      mkdir -p ~/.config/cb
+      chmod u+x setup_cbctl.cfg.sh
+      setup_cbctl.cfg.sh PathToPkeyMatchingMySSHKeyPairName > ~/.config/cb/cbctl.yml

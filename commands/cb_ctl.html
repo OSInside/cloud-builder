@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>cb-ctl &mdash; Cloud Builder 0.2.50 documentation</title>
+  <title>cb-ctl &mdash; Cloud Builder 0.2.51 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
@@ -167,22 +167,33 @@
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>cb-ctl -h <span class="p">|</span> --help
 cb-ctl --build-package-local --dist<span class="o">=</span>&lt;name&gt;
     <span class="o">[</span>--clean<span class="o">]</span>
+    <span class="o">[</span>--debug<span class="o">]</span>
 cb-ctl --build-package<span class="o">=</span>&lt;package&gt; --project-path<span class="o">=</span>&lt;path&gt; --arch<span class="o">=</span>&lt;name&gt; --dist<span class="o">=</span>&lt;name&gt; --runner-group<span class="o">=</span>&lt;name&gt;
+    <span class="o">[</span>--debug<span class="o">]</span>
 cb-ctl --build-image-local --selection<span class="o">=</span>&lt;name&gt;
+    <span class="o">[</span>--debug<span class="o">]</span>
 cb-ctl --build-image<span class="o">=</span>&lt;image&gt; --project-path<span class="o">=</span>&lt;path&gt; --arch<span class="o">=</span>&lt;name&gt; --runner-group<span class="o">=</span>&lt;name&gt; --selection<span class="o">=</span>&lt;name&gt;
+    <span class="o">[</span>--debug<span class="o">]</span>
 cb-ctl --build-dependencies<span class="o">=</span>&lt;package│image&gt; --project-path<span class="o">=</span>&lt;path&gt; --arch<span class="o">=</span>&lt;name&gt; <span class="o">(</span>--dist<span class="o">=</span>&lt;name&gt;<span class="p">|</span>--selection<span class="o">=</span>&lt;name&gt;<span class="o">)</span>
     <span class="o">[</span>--timeout<span class="o">=</span>&lt;time_sec&gt;<span class="o">]</span>
+    <span class="o">[</span>--debug<span class="o">]</span>
 cb-ctl --build-dependencies-local <span class="o">(</span>--dist<span class="o">=</span>&lt;name&gt;<span class="p">|</span>--selection<span class="o">=</span>&lt;name&gt;<span class="o">)</span>
+    <span class="o">[</span>--debug<span class="o">]</span>
 cb-ctl --build-log<span class="o">=</span>&lt;package│image&gt; --project-path<span class="o">=</span>&lt;path&gt; --arch<span class="o">=</span>&lt;name&gt; <span class="o">(</span>--dist<span class="o">=</span>&lt;name&gt;<span class="p">|</span>--selection<span class="o">=</span>&lt;name&gt;<span class="o">)</span>
+    <span class="o">[</span>--keep-open<span class="o">]</span>
     <span class="o">[</span>--timeout<span class="o">=</span>&lt;time_sec&gt;<span class="o">]</span>
+    <span class="o">[</span>--debug<span class="o">]</span>
 cb-ctl --build-info<span class="o">=</span>&lt;package│image&gt; --project-path<span class="o">=</span>&lt;path&gt; --arch<span class="o">=</span>&lt;name&gt; <span class="o">(</span>--dist<span class="o">=</span>&lt;name&gt;<span class="p">|</span>--selection<span class="o">=</span>&lt;name&gt;<span class="o">)</span>
     <span class="o">[</span>--timeout<span class="o">=</span>&lt;time_sec&gt;<span class="o">]</span>
+    <span class="o">[</span>--debug<span class="o">]</span>
 cb-ctl --get-binaries<span class="o">=</span>&lt;package│image&gt; --project-path<span class="o">=</span>&lt;path&gt; --arch<span class="o">=</span>&lt;name&gt; --target-dir<span class="o">=</span>&lt;dir&gt; <span class="o">(</span>--dist<span class="o">=</span>&lt;name&gt;<span class="p">|</span>--selection<span class="o">=</span>&lt;name&gt;<span class="o">)</span>
     <span class="o">[</span>--timeout<span class="o">=</span>&lt;time_sec&gt;<span class="o">]</span>
+    <span class="o">[</span>--debug<span class="o">]</span>
 cb-ctl --watch
     <span class="o">[</span>--filter-request-id<span class="o">=</span>&lt;uuid&gt;<span class="o">]</span>
     <span class="o">[</span>--filter-service-name<span class="o">=</span>&lt;name&gt;<span class="o">]</span>
     <span class="o">[</span>--timeout<span class="o">=</span>&lt;time_sec&gt;<span class="o">]</span>
+    <span class="o">[</span>--debug<span class="o">]</span>
 </pre></div>
 </div>
 </section>
@@ -276,6 +287,13 @@ broker before return. Default: 30sec</p>
 <dt><kbd><span class="option">--clean</span></kbd></dt>
 <dd><p>Delete package buildroot if present on the runner
 before building the package</p>
+</dd>
+<dt><kbd><span class="option">--keep-open</span></kbd></dt>
+<dd><p>Use tail -f to open the log file on the runner</p>
+</dd>
+<dt><kbd><span class="option">--debug</span></kbd></dt>
+<dd><p>Set log level to DEBUG for cloud-builder and kiwi
+namespaces</p>
 </dd>
 </dl>
 </section>

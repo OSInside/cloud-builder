@@ -9,22 +9,33 @@ SYNOPSIS
    cb-ctl -h | --help
    cb-ctl --build-package-local --dist=<name>
        [--clean]
+       [--debug]
    cb-ctl --build-package=<package> --project-path=<path> --arch=<name> --dist=<name> --runner-group=<name>
+       [--debug]
    cb-ctl --build-image-local --selection=<name>
+       [--debug]
    cb-ctl --build-image=<image> --project-path=<path> --arch=<name> --runner-group=<name> --selection=<name>
+       [--debug]
    cb-ctl --build-dependencies=<package│image> --project-path=<path> --arch=<name> (--dist=<name>|--selection=<name>)
        [--timeout=<time_sec>]
+       [--debug]
    cb-ctl --build-dependencies-local (--dist=<name>|--selection=<name>)
+       [--debug]
    cb-ctl --build-log=<package│image> --project-path=<path> --arch=<name> (--dist=<name>|--selection=<name>)
+       [--keep-open]
        [--timeout=<time_sec>]
+       [--debug]
    cb-ctl --build-info=<package│image> --project-path=<path> --arch=<name> (--dist=<name>|--selection=<name>)
        [--timeout=<time_sec>]
+       [--debug]
    cb-ctl --get-binaries=<package│image> --project-path=<path> --arch=<name> --target-dir=<dir> (--dist=<name>|--selection=<name>)
        [--timeout=<time_sec>]
+       [--debug]
    cb-ctl --watch
        [--filter-request-id=<uuid>]
        [--filter-service-name=<name>]
        [--timeout=<time_sec>]
+       [--debug]
 
 
 DESCRIPTION
@@ -138,3 +149,12 @@ OPTIONS
 
   Delete package buildroot if present on the runner
   before building the package
+
+--keep-open
+
+  Use tail -f to open the log file on the runner
+
+--debug
+
+  Set log level to DEBUG for cloud-builder and kiwi
+  namespaces

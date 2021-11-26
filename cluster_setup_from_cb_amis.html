@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Setup Cloud Builder From AMIs &mdash; Cloud Builder 0.2.50 documentation</title>
+  <title>Setup Cloud Builder From AMIs &mdash; Cloud Builder 0.2.51 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/custom.css" type="text/css" />
@@ -366,6 +366,36 @@ cat <span class="s">&lt;&lt;EOF</span>
 
 ssh -i PathToPkeyMatchingMySSHKeyPairName <span class="se">\</span>
     fedora@ControlPlanePublicInstanceIP ~fedora/setup_cb
+</pre></div>
+</div>
+</li>
+<li><p><strong>Setup cb-ctl:</strong></p>
+<p>Create the script <code class="file docutils literal notranslate"><span class="pre">setup_cbctl.cfg.sh</span></code> and place the following content</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/bin/bash</span>
+
+<span class="nb">set</span> -e
+
+<span class="nv">CBControlPlane</span><span class="o">=</span><span class="k">$(</span>
+    aws ec2 describe-instances --filters <span class="s2">&quot;Name=tag-value,Values=cb-control-plane&quot;</span> <span class="p">|</span> <span class="se">\</span>
+    grep -m <span class="m">1</span> PublicDnsName <span class="p">|</span> cut -f4 -d<span class="se">\&quot;</span>
+<span class="k">)</span>
+
+cat <span class="s">&lt;&lt;EOF</span>
+<span class="s">cluster:</span>
+<span class="s">  ssh_user: fedora</span>
+<span class="s">  ssh_pkey_file: $1</span>
+<span class="s">  controlplane: ${CBControlPlane}</span>
+<span class="s">  runner_count: 2</span>
+
+<span class="s">settings:</span>
+<span class="s">  use_control_plane_as_proxy: true</span>
+<span class="s">EOF</span>
+</pre></div>
+</div>
+<p>Call <code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_cbctl.cfg.sh</span></code> as follows:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>mkdir -p ~/.config/cb
+chmod u+x setup_cbctl.cfg.sh
+setup_cbctl.cfg.sh PathToPkeyMatchingMySSHKeyPairName &gt; ~/.config/cb/cbctl.yml
 </pre></div>
 </div>
 </li>
