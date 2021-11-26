@@ -19,7 +19,7 @@
 usage: ssh_kafka_read -h | --help
        ssh_kafka_read --topic=<name> --group=<name>
            [--client=<name>]
-           [--timeout=<seconds>]
+           [--timeout=<mseconds>]
 
 options:
     --topic=<name>
@@ -28,8 +28,8 @@ options:
     --client=<name>
         client name, defaults to: 'cb-client'
 
-    --timeout=<seconds>
-        read timeout in seconds, default: 30s
+    --timeout=<mseconds>
+        read timeout in mseconds, default: 1000ms
 """
 import yaml
 from docopt import docopt
@@ -60,7 +60,7 @@ def main() -> None:
             topic=args['--topic'],
             group=args['--group'],
             client=args['--client'] or 'cb-client',
-            timeout_ms=int(args['--timeout'] or 30) * 1000
+            timeout_ms=int(args['--timeout'] or 1000)
         )
         broker.acknowledge()
         for message in messages:

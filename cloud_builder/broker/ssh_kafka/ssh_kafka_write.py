@@ -55,7 +55,7 @@ def main() -> None:
     try:
         broker._create_producer()
         broker.producer.send(
-            args['--topic'], message
+            args['--topic'], yaml.dump(message).encode()
         ).add_callback(
             broker._on_send_success
         ).add_errback(

@@ -196,7 +196,7 @@ class CBMessageBrokerSSHProxyKafka(CBMessageBrokerBase):
         :rtype: List
         """
         (stdin, stdout, stderr) = self.ssh.exec_command(
-            'ssh_kafka_read {0} {1} {2} {3} &'.format(
+            'ssh_kafka_read {0} {1} {2} {3}'.format(
                 f'--topic {topic}',
                 f'--group {group}',
                 f'--client {client}',
@@ -213,11 +213,10 @@ class CBMessageBrokerSSHProxyKafka(CBMessageBrokerBase):
             )
         return result
 
-    def _run_ssh_kafka_write(self, topic: str, yaml_raw: str) -> None:
+    def _run_ssh_kafka_write(self, topic: str, yaml_raw: bytes) -> None:
         (stdin, stdout, stderr) = self.ssh.exec_command(
-            f'ssh_kafka_write --topic {topic} &'
+            f'echo "{yaml_raw.decode()}" | ssh_kafka_write --topic {topic}'
         )
-        stdin.write(yaml_raw)
         issue = stderr.read()
         if issue:
             raise CBSSHKafkaWriteError(issue)
