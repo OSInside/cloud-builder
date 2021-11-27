@@ -11,6 +11,7 @@ SYNOPSIS
        [--update-interval=<time_sec>]
        [--poll-timeout=<time_msec>]
        [--build-limit=<number>]
+       [(--repo-server=<name> --ssh-user=<user> --ssh-pkey=<ssh_pkey_file>)]
 
 DESCRIPTION
 -----------
@@ -142,3 +143,15 @@ OPTIONS
 
   Max number of build processes this scheduler handles
   at the same time. Default: 10
+
+--repo-server=<name>
+
+  Name or IP of collector repo server
+
+--ssh-pkey=<ssh_pkey_file>
+
+  Path to ssh private key file to access repo server
+
+--ssh-user=<user>
+
+  User name to access repo server

@@ -7,9 +7,10 @@ Building the packages on the runner(s) is the foundation of
 the {CB} project. However, first the possibility to create
 and publish package repositories creates real value to it.
 The `cb-collect` service implements the creation of package
-repositories by collecting the latest build results from
-the runner(s) plus creation of the metadata information
-such that package managers can consume them.
+repositories by allowing the runners to sync their build results
+to the collector. `cb-collect` periodically runs over this
+data and creates package metadata such that package managers
+can consume them.
 
 This chapter describes how to setup `cb-collect` in combination
 with an `apache` web-server to serve the `cb-collect` created
@@ -66,102 +67,42 @@ Create and Setup the reposerver instance
 
         CB_PROJECT="https://github.com/OSInside/cloud-builder-packages.git"
 
-   **runner count:**
-     The {CB} runner count specifies the number of runners that exists
-     in the cluster. This information will be used in cb-collect which
-     asks for information from the cb-info service. Each runner provides
-     an info service. On request multiple info services could respond
-     with information about a package/image. As the requester doesn't
-     know how many answers completes the record, the default behavior
-     is to wait for a configurable time of silence on the response
-     queue before handing control back to the collector and working
-     on the results.
+4. **Allow SSH access from runners**
 
-     This can lead to an unneeded amount of waiting time in the
-     collector. There is also always the risk that the wait time
-     was not long enough to retrieve all answers from the
-     cb-info services in the system.
+   To allow the runners to push their build results to the
+   collector it's required to allow the runners SSH pub key
+   in the :file:`authorized_keys` file of the reposerver.
 
-     If the information about the number of runners in the
-     cluster is provided, this value will be used to count the
-     number of answers and if that number equals the number
-     of runners it is clear that there can't be more answers
-     which leads the reading code to get back to the collector
-     instead of staying blocked waiting for the timeout.
-
-     .. code:: bash
-
-        CB_RUNNERS=2
-
-     The default value of 0 runners indicates there is no
-     knowledge about the amount of runners in the system and that
-     leads to the timeout based behavior as explained above
-
-4. **Setup broker connection on the reposerver**
-
-   Still logged in on the reposerver create the file
-   :file:`/etc/cloud_builder_broker.yml` as follows:
-
-   .. code:: bash
-
-      sudo vi /etc/cloud_builder_broker.yml
-
-   Place the following content:
-
-   .. code:: yaml
-
-      broker:
-        host: BootstrapServersString
-      this_host: external_IP_or_Hostname_of_this_instance
-
-   See the '**Configure** `cb-ctl`' list item in the :ref:`control-plane-setup`
-   for details how to obtain the broker credentials.
-
-5. **Setup SSH access for collecting packages from runners**
-
-   To allow the reposerver accessing data from the runners,
-   it's required to SSH authorize the reposerver. In the
-   setup of the control plane a SSH keypair has already
-   been created to allow the control plane access to the
-   runners. The same private key as present on the control
-   plane can now also be used on the reposerver. This
-   can be done as follows:
+   During the setup of the control plane a SSH keypair has already
+   been created and rolled out to the runners. The same keypair
+   as present on the control plane can now also be used on the
+   reposerver as follows:
 
    1. Login to the control plane from a new terminal session.
 
       See :ref:`control-plane-setup` for details
 
-   2. Fetch the `cb-collect` private SSH key and logout from the control plane.
+   2. Fetch the `cb-collect` public SSH key.
 
       .. code:: bash
 
-         cat ~/.ssh/id_cb_collect
+         cat ~/.ssh/id_cb_collect.pub
+
+         ==> Copy the SSH public key into the Copy/Paste buffer
+
          exit
 
-   In the terminal session with the still active login session on
-   the reposerver copy/paste the `cb-collect` SSH private key as
-   follows:
+      Add the SSH public key to the :file:`authorized_keys` file
+      on the **reposerver** as follows:
 
-   .. code:: bash
+      .. code:: bash
 
-      mkdir -p -m 0700 /root/.ssh
-      sudo touch /root/.ssh/id_cb_collect
-      sudo chmod 600 /root/.ssh/id_cb_collect
-      sudo vi /root/.ssh/id_cb_collect
+         vi ~/.ssh/authorized_keys
 
-        Copy & Paste the SSH private key as it was obtained
-        in the former step and safe the file.
+         ==> Paste the SSH public key from the Copy/Paste buffer
 
-   Once done reference the path to the private key in the
-   :file:`/etc/cloud_builder` setup file as follows:
 
-   .. code:: bash
-
-       sudo vi /etc/cloud_builder
-
-       CB_SSH_PKEY="/root/.ssh/id_cb_collect"
-
-6. **Attach an EBS volume to the reposerver**
+5. **Attach an EBS volume to the reposerver**
 
    To store and backup the repository data an extra block storage
    volume should be attached to the server.
@@ -174,21 +115,36 @@ Create and Setup the reposerver instance
      to understand how to make the volume available:
      https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-using-volumes.html
 
-7. **Setup user to be used for accessing the runners**
+6. **Setup runners to sync their results to the collector**
 
-   In the setup of the runner a generic user to access the runner
-   for build results and information was created. This user, by
-   default, is called `cb-collect`. In the setup of the collector
-   it's required to specify the user name which is allowed to
-   access the runners as follows:
+   In the setup of the runners the settings to connect to the
+   collector were not configured. This must be done now as follows:
 
-   .. code:: bash
+   1. Login to a runner instance
 
-       sudo vi /etc/cloud_builder
+   2. On the runner instance edit the file :file:`/etc/cloud_builder`
+      and set/update the following parameters:
 
-       CB_SSH_USER="cb-collect"
+      .. code:: bash
 
-8. **Start** `cb-collect` **service**
+         CB_COLLECT_REPO_SERVER="RepoServerInstanceIP"
+         CB_SSH_USER="ec2-user"
+
+      .. note::
+
+         Make sure the user(ec2-user in this example) also has
+         permissions to write data in :file:`/srv/www/`. This is
+         the place the runners will upload its data.
+
+   3. Restart the scheduler
+
+      .. code:: bash
+
+         systemctl restart cb-scheduler
+
+   4. Repeat this steps for all runners of interest
+
+7. **Start** `cb-collect` **service**
 
    Still logged in on the reposerver, start the `cb-collect` service
    as follows:
@@ -197,20 +153,9 @@ Create and Setup the reposerver instance
 
       sudo systemctl start cb-collect
 
-   The service will immediately start to collect package results
-   from the available runners. This is done by sending info requests
-   which are read and worked on by the `cb-info` service. Therefore
-   it's required that `cb-info` runs on all runners which are expected
-   to provide data to be present in repositories.
-
-   If there is response information for packages, `cb-collect`
-   creates repositories in the same structure than the git repo
-   is organized. For the example git tree this could look like
-   the following example:
-
-   .. code:: bash
-
-      /srv/www/projects/projects/MS/...
+   The service will immediately start to build repositories from
+   the available package data. Package and images arrives through
+   build requests.
 
 Setup Apache to Serve the Repos
 -------------------------------

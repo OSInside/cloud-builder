@@ -18,6 +18,7 @@
 """
 usage: cb-run -h | --help
        cb-run --root=<root_path> --request-id=<UUID>
+           [(--repo-server=<name> --repo-path=<path> --ssh-user=<user> --ssh-pkey=<ssh_pkey_file>)]
            [--local]
            [--clean]
 
@@ -29,6 +30,18 @@ options:
 
     --request-id=<UUID>
         UUID for this build process
+
+    --repo-path=<path>
+        Path to place build results on the repo server
+
+    --repo-server=<name>
+        Name or IP of collector repo server
+
+    --ssh-pkey=<ssh_pkey_file>
+        Path to ssh private key file to access repo server
+
+    --ssh-user=<user>
+        User name to access repo server
 
     --clean
         Delete chroot system after build and keep
@@ -52,6 +65,7 @@ from kiwi.command import Command
 from kiwi.path import Path
 from cloud_builder.cloud_logger import CBCloudLogger
 from cloud_builder.response.response import CBResponse
+from cloud_builder.utils.repository import CBRepository
 
 
 @exception_handler
@@ -112,15 +126,25 @@ def main() -> None:
     status_flags = Defaults.get_status_flags()
     packages = []
 
-    # create binaries directory to hold build results
-    package_build_target_dir = f'{args["--root"]}.binaries'
-    Path.wipe(package_build_target_dir)
-    Path.create(package_build_target_dir)
-
     if exit_code != 0:
         status = status_flags.package_build_failed
     else:
         status = status_flags.package_build_succeeded
+
+        # create binaries directory to hold build results
+        package_build_binary_dir = f'{args["--root"]}.binaries'
+        package_build_target_dir = package_build_binary_dir
+
+        if args['--repo-path']:
+            # if the repo path is provided create this dir structure
+            # to simplify the later sync process to the repo server
+            package_build_target_dir = os.sep.join(
+                [package_build_target_dir, args['--repo-path']]
+            )
+
+        Path.wipe(package_build_target_dir)
+        Path.create(package_build_target_dir)
+
         package_result_paths = [
             os.path.join(
                 args['--root'], path
@@ -138,38 +162,60 @@ def main() -> None:
         )
         if find_call.output:
             for package in find_call.output.strip().split(os.linesep):
-                os.rename(
-                    package, os.sep.join(
-                        [package_build_target_dir, os.path.basename(package)]
-                    )
+                repo_meta = CBRepository(package).get_repo_meta(
+                    base_repo_path=package_build_target_dir
                 )
-                packages.append(
-                    os.sep.join([args['--root'], os.path.basename(package)])
-                )
-            log.info(format(packages))
+                os.rename(package, repo_meta.repo_file)
         else:
             exit_code = 1
             status = status_flags.package_build_failed_no_binaries
             log.error(status)
 
-    if args['--clean']:
-        # delete build root and rename .binaries directory
-        # to become the new build root
-        Path.wipe(args['--root'])
-        os.rename(
-            package_build_target_dir, args['--root']
+        if args['--clean']:
+            # delete build root and re-create empty
+            Path.wipe(args['--root'])
+            Path.create(args['--root'])
+
+        # Move binary contents to root tree
+        target_binary_dir = os.sep.join(
+            [args['--root'], os.path.basename(package_build_binary_dir)]
         )
-    elif packages:
-        # keep build root and move .binaries into it,
-        # then delete .binaries
-        for package in packages:
-            Path.wipe(package)
-            os.rename(
-                os.sep.join(
-                    [package_build_target_dir, os.path.basename(package)]
-                ), package
+        os.rename(
+            package_build_binary_dir, target_binary_dir
+        )
+        # Create packages list
+        for root, dirs, files in os.walk(target_binary_dir):
+            for entry in files:
+                packages.append(os.path.join(root, entry))
+        log.info(format(packages))
+
+        # Sync target_binary_dir to repo server
+        if args['--repo-server']:
+            update_repo_indicator = os.path.join(
+                target_binary_dir, args['--repo-path'], '.updaterepo'
             )
-        Path.wipe(package_build_target_dir)
+            # Write an update repo indicator to tell the collector
+            # to rebuild the repo metadata
+            Command.run(
+                ['touch', update_repo_indicator]
+            )
+            sync_call = Command.run(
+                [
+                    'rsync', '-av', '-e', 'ssh -i {0} -o {1}'.format(
+                        args['--ssh-pkey'],
+                        'StrictHostKeyChecking=accept-new'
+                    ), f'{target_binary_dir}/', '{0}@{1}:{2}'.format(
+                        args['--ssh-user'], args['--repo-server'],
+                        Defaults.get_repo_root()
+                    )
+                ], raise_on_error=False
+            )
+            if sync_call.output:
+                log.info(sync_call.output)
+            if sync_call.error:
+                exit_code = 1
+                status = status_flags.package_binaries_sync_failed
+                log.error(sync_call.error)
 
     if not args['--local']:
         response = CBResponse(args['--request-id'], log.get_id())

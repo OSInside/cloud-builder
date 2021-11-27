@@ -12,6 +12,7 @@ class TestCBRun:
             sys.argv[0]
         ]
 
+    @patch('cloud_builder.cb_run.CBRepository')
     @patch('cloud_builder.cb_run.Path')
     @patch('cloud_builder.cb_run.Privileges.check_for_root_permissions')
     @patch('cloud_builder.cb_run.Command.run')
@@ -20,18 +21,31 @@ class TestCBRun:
     @patch('cloud_builder.cb_run.CBMessageBroker')
     @patch('os.system')
     @patch('os.rename')
+    @patch('os.walk')
     @patch('sys.exit')
     def test_main_clean_root_runtime(
-        self, mock_sys_exit, mock_os_rename, mock_os_system,
+        self, mock_sys_exit, mock_os_walk, mock_os_rename, mock_os_system,
         mock_CBMessageBroker, mock_CBCloudLogger, mock_CBResponse,
         mock_Command_run, mock_Privileges_check_for_root_permissions,
-        mock_Path
+        mock_Path, mock_CBRepository
     ):
         sys.argv = [
             sys.argv[0],
             '--root', '/var/tmp/CB/projects/package@dist.arch',
             '--request-id', 'uuid',
+            '--repo-path', 'projects/MS/xclock/TW',
+            '--repo-server', '192.168.100.1',
+            '--ssh-user', 'cb-collect',
+            '--ssh-pkey', 'path/to/pkey',
             '--clean'
+        ]
+        mock_os_walk.return_value = [
+            (
+                '/var/tmp/CB/projects/package@dist.arch/'
+                'package@dist.arch.binaries',
+                [],
+                ['binaries']
+            )
         ]
         log = Mock()
         response = Mock()
@@ -39,65 +53,103 @@ class TestCBRun:
         mock_CBResponse.return_value = response
         mock_os_system.return_value = 0
         mock_Command_run.return_value.output = 'binaries'
+        mock_Command_run.return_value.error = 'sync failed'
         main()
         mock_Privileges_check_for_root_permissions.assert_called_once_with()
         mock_os_system.assert_called_once_with(
             'chroot /var/tmp/CB/projects/package@dist.arch bash /run.sh'
         )
-        mock_Command_run.assert_called_once_with(
-            [
-                'find',
-                '/var/tmp/CB/projects/package@dist.arch/home/abuild',
-                '/var/tmp/CB/projects/package@dist.arch/usr/src/packages/DEBS',
-                '-type', 'f',
-                '-name', '*.rpm', '-or', '-name', '*.deb'
-            ], raise_on_error=False
-        )
-        mock_Path.create.assert_called_once_with(
-            '/var/tmp/CB/projects/package@dist.arch.binaries'
-        )
+        assert mock_Command_run.call_args_list == [
+            call(
+                [
+                    'find',
+                    '/var/tmp/CB/projects/package@dist.arch/home/abuild',
+                    '/var/tmp/CB/projects/package@dist.arch/'
+                    'usr/src/packages/DEBS',
+                    '-type', 'f',
+                    '-name', '*.rpm', '-or', '-name', '*.deb'
+                ], raise_on_error=False
+            ),
+            call(
+                [
+                    'touch',
+                    '/var/tmp/CB/projects/package@dist.arch/'
+                    'package@dist.arch.binaries/projects/MS/xclock/TW/'
+                    '.updaterepo'
+                ]
+            ),
+            call(
+                [
+                    'rsync', '-av', '-e',
+                    'ssh -i path/to/pkey -o StrictHostKeyChecking=accept-new',
+                    '/var/tmp/CB/projects/package@dist.arch/'
+                    'package@dist.arch.binaries/',
+                    'cb-collect@192.168.100.1:/srv/www/projects'
+                ], raise_on_error=False
+            )
+        ]
+        assert mock_Path.create.call_args_list == [
+            call(
+                '/var/tmp/CB/projects/package@dist.arch.binaries/'
+                'projects/MS/xclock/TW'
+            ),
+            call(
+                '/var/tmp/CB/projects/package@dist.arch'
+            )
+        ]
         assert mock_Path.wipe.call_args_list == [
-            call('/var/tmp/CB/projects/package@dist.arch.binaries'),
+            call(
+                '/var/tmp/CB/projects/package@dist.arch.binaries/'
+                'projects/MS/xclock/TW'
+            ),
             call('/var/tmp/CB/projects/package@dist.arch')
         ]
+
         assert mock_os_rename.call_args_list == [
             call(
                 'binaries',
-                '/var/tmp/CB/projects/package@dist.arch.binaries/binaries'
+                mock_CBRepository.return_value.
+                get_repo_meta.return_value.repo_file
             ),
             call(
                 '/var/tmp/CB/projects/package@dist.arch.binaries',
-                '/var/tmp/CB/projects/package@dist.arch'
+                '/var/tmp/CB/projects/package@dist.arch/'
+                'package@dist.arch.binaries'
             )
         ]
         response.set_package_build_response.assert_called_once_with(
             message='Package build finished',
-            response_code='package build succeeded',
+            response_code='package binaries sync failed',
             package='projects/package',
             prepare_log_file='/var/tmp/CB/projects/'
             'package@dist.arch.prepare.log',
             log_file='/var/tmp/CB/projects/package@dist.arch.build.log',
             solver_file='/var/tmp/CB/projects/package@dist.arch.solver.json',
-            binary_packages=['/var/tmp/CB/projects/package@dist.arch/binaries'],
-            exit_code=0
+            binary_packages=[
+                '/var/tmp/CB/projects/package@dist.arch/'
+                'package@dist.arch.binaries/binaries'
+            ],
+            exit_code=1
         )
         log.response.assert_called_once_with(
             response, mock_CBMessageBroker.new.return_value,
             '/var/tmp/CB/projects/package@dist.arch.result.yml'
         )
 
+    @patch('cloud_builder.cb_run.CBRepository')
     @patch('cloud_builder.cb_run.Path')
     @patch('cloud_builder.cb_run.Privileges.check_for_root_permissions')
     @patch('cloud_builder.cb_run.Command.run')
     @patch('cloud_builder.cb_run.CBCloudLogger')
     @patch('os.system')
     @patch('os.rename')
+    @patch('os.walk')
     @patch('sys.exit')
     def test_main_local_keep_root_runtime(
-        self, mock_sys_exit, mock_os_rename, mock_os_system,
+        self, mock_sys_exit, mock_os_walk, mock_os_rename, mock_os_system,
         mock_CBCloudLogger, mock_Command_run,
         mock_Privileges_check_for_root_permissions,
-        mock_Path
+        mock_Path, mock_CBRepository
     ):
         sys.argv = [
             sys.argv[0],
@@ -110,35 +162,23 @@ class TestCBRun:
         mock_os_system.return_value = 0
         mock_Command_run.return_value.output = 'binaries'
         main()
-        mock_Privileges_check_for_root_permissions.assert_called_once_with()
-        mock_os_system.assert_called_once_with(
-            'chroot /var/tmp/CB/projects/package@dist.arch bash /run.sh'
-        )
-        mock_Command_run.assert_called_once_with(
-            [
-                'find',
-                '/var/tmp/CB/projects/package@dist.arch/home/abuild',
-                '/var/tmp/CB/projects/package@dist.arch/usr/src/packages/DEBS',
-                '-type', 'f',
-                '-name', '*.rpm', '-or', '-name', '*.deb'
-            ], raise_on_error=False
-        )
+
         mock_Path.create.assert_called_once_with(
             '/var/tmp/CB/projects/package@dist.arch.binaries'
         )
-        assert mock_Path.wipe.call_args_list == [
-            call('/var/tmp/CB/projects/package@dist.arch.binaries'),
-            call('/var/tmp/CB/projects/package@dist.arch/binaries'),
-            call('/var/tmp/CB/projects/package@dist.arch.binaries')
-        ]
+        mock_Path.wipe.assert_called_once_with(
+            '/var/tmp/CB/projects/package@dist.arch.binaries'
+        )
         assert mock_os_rename.call_args_list == [
             call(
                 'binaries',
-                '/var/tmp/CB/projects/package@dist.arch.binaries/binaries'
+                mock_CBRepository.return_value.
+                get_repo_meta.return_value.repo_file
             ),
             call(
-                '/var/tmp/CB/projects/package@dist.arch.binaries/binaries',
-                '/var/tmp/CB/projects/package@dist.arch/binaries'
+                '/var/tmp/CB/projects/package@dist.arch.binaries',
+                '/var/tmp/CB/projects/package@dist.arch/'
+                'package@dist.arch.binaries'
             )
         ]
 
@@ -182,17 +222,20 @@ class TestCBRun:
     @patch('cloud_builder.cb_run.CBCloudLogger')
     @patch('cloud_builder.cb_run.CBMessageBroker')
     @patch('os.system')
+    @patch('os.rename')
+    @patch('os.walk')
     @patch('sys.exit')
     def test_main_run_package_build_succeeded_but_no_binaries_found(
-        self, mock_sys_exit, mock_os_system, mock_CBMessageBroker,
-        mock_CBCloudLogger, mock_CBResponse, mock_Command_run,
-        mock_Privileges_check_for_root_permissions
+        self, mock_sys_exit, mock_os_walk, mock_os_rename, mock_os_system,
+        mock_CBMessageBroker, mock_CBCloudLogger, mock_CBResponse,
+        mock_Command_run, mock_Privileges_check_for_root_permissions
     ):
         sys.argv = [
             sys.argv[0],
             '--root', '/var/tmp/CB/projects/package@dist.arch',
             '--request-id', 'uuid'
         ]
+        mock_os_walk.return_value = []
         response = Mock()
         mock_CBResponse.return_value = response
         mock_os_system.return_value = 0

@@ -106,11 +106,17 @@ created and configured as follows:
 
       See :ref:`control-plane-setup` for details
 
-   2. Fetch the `cb-collect` public SSH key and logout from the control plane.
+   2. Fetch the `cb-collect` public and private SSH keys and
+      logout from the control plane.
 
       .. code:: bash
 
+         # public key
          cat ~/.ssh/id_cb_collect.pub
+
+         # private key
+         cat ~/.ssh/id_cb_collect
+
          exit
 
    3. Create and authorize the `cb-collect` user on this runner.
@@ -123,9 +129,17 @@ created and configured as follows:
          mkdir -m 0700 .ssh
          touch .ssh/authorized_keys
          chmod 600 .ssh/authorized_keys
+         touch .ssh/id_cb_collect
+         chmod 600 .ssh/id_cb_collect
+
          vi .ssh/authorized_keys
 
            Copy & Paste the SSH pubkey as it was printed on the
+           console in step 2. and safe the file
+
+         vi .ssh/id_cb_collect
+
+           Copy & Paste the SSH private key as it was printed on the
            console in step 2. and safe the file
 
          exit

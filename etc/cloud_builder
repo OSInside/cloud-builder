@@ -43,6 +43,16 @@ CB_COLLECT_TIMEOUT=5
 CB_COLLECT_UPDATE_INTERVAL=30
 
 ## Type:        string
+## Default:     "none"
+#
+# IP or name of collector (aka repo server). By default
+# set to 'none' which indicates there is no collector.
+# If configured the runner instances will upload its
+# build results to the specified machine
+#
+CB_COLLECT_REPO_SERVER="none"
+
+## Type:        string
 ## Default:     ""
 #
 # Configure the response behavior of cb-info. By default
@@ -66,7 +76,7 @@ CB_INFO_RESPONSE_TYPE=""
 # is possible. Sensitive information, please protect from
 # third party access
 #
-CB_SSH_PKEY=""
+CB_SSH_PKEY="/root/.ssh/id_cb_collect"
 
 ## Type:        string
 ## Default:     ""

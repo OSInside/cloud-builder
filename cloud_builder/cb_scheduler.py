@@ -21,6 +21,7 @@ usage: cb-scheduler -h | --help
            [--update-interval=<time_sec>]
            [--poll-timeout=<time_msec>]
            [--build-limit=<number>]
+           [(--repo-server=<name> --ssh-user=<user> --ssh-pkey=<ssh_pkey_file>)]
 
 options:
     --update-interval=<time_sec>
@@ -34,6 +35,15 @@ options:
     --build-limit=<number>
         Max number of build processes this scheduler handles
         at the same time. Default: 10
+
+    --repo-server=<name>
+        Name or IP of collector repo server
+
+    --ssh-pkey=<ssh_pkey_file>
+        Path to ssh private key file to access repo server
+
+    --ssh-user=<user>
+        User name to access repo server
 """
 import os
 import glob
@@ -66,6 +76,14 @@ request_validation_type = NamedTuple(
         ('project_config', Dict),
         ('response', Optional[CBResponse]),
         ('is_valid', bool)
+    ]
+)
+
+repo_server_type = NamedTuple(
+    'repo_server_type', [
+        ('host', str),
+        ('user', str),
+        ('pkey', str)
     ]
 )
 
@@ -197,6 +215,12 @@ def main() -> None:
     update_interval = int(args['--update-interval'] or 10)
     poll_timeout = int(args['--poll-timeout'] or 5000)
 
+    repo_server = repo_server_type(
+        host=args['--repo-server'] or 'none',
+        user=args['--ssh-user'] or 'none',
+        pkey=args['--ssh-pkey'] or 'none'
+    )
+
     if poll_timeout / 1000 > update_interval:
         # This should not be allowed, as the BlockingScheduler would
         # just create unnneded threads and new consumers which could
@@ -205,18 +229,20 @@ def main() -> None:
             'Poll timeout on the message broker greater than update interval'
         )
 
-    handle_build_requests(poll_timeout, running_limit, log)
+    handle_build_requests(poll_timeout, running_limit, repo_server, log)
 
     project_scheduler = BlockingScheduler()
     project_scheduler.add_job(
-        lambda: handle_build_requests(poll_timeout, running_limit, log),
-        'interval', seconds=update_interval
+        lambda: handle_build_requests(
+            poll_timeout, running_limit, repo_server, log
+        ), 'interval', seconds=update_interval
     )
     project_scheduler.start()
 
 
 def handle_build_requests(
-    poll_timeout: int, running_limit: int, log: CBCloudLogger
+    poll_timeout: int, running_limit: int,
+    repo_server: repo_server_type, log: CBCloudLogger
 ) -> None:
     """
     Check on the runner state and if ok listen to the
@@ -271,9 +297,13 @@ def handle_build_requests(
                     build_config = validated_request.project_config
 
                     if build_config and 'distributions' in build_config:
-                        build_package(request, broker, log)
+                        build_package(
+                            request, broker, repo_server, log
+                        )
                     elif build_config and 'images' in build_config:
-                        build_image(request, build_config, broker, log)
+                        build_image(
+                            request, build_config, broker, repo_server, log
+                        )
     finally:
         log.info('Closing message broker connection')
         broker.close()
@@ -293,7 +323,7 @@ def update_source_repo(request: Dict, log: CBCloudLogger) -> None:
 
 def build_image(
     request: Dict, build_config: Dict, broker: CBMessageBroker,
-    log: CBCloudLogger
+    repo_server: repo_server_type, log: CBCloudLogger
 ) -> None:
     """
     Update the image sources and run the script which
@@ -310,12 +340,17 @@ def build_image(
     )
     log.info('Starting image build process')
     Command.run(
-        ['bash', create_image_run_script(request, build_config)]
+        [
+            'bash', create_image_run_script(
+                request, build_config, repo_server=repo_server
+            )
+        ]
     )
 
 
 def build_package(
-    request: Dict, broker: CBMessageBroker, log: CBCloudLogger
+    request: Dict, broker: CBMessageBroker,
+    repo_server: repo_server_type, log: CBCloudLogger
 ) -> None:
     """
     Update the package sources and run the script which
@@ -331,7 +366,11 @@ def build_package(
     )
     log.info('Starting package build process')
     Command.run(
-        ['bash', create_package_run_script(request)]
+        [
+            'bash', create_package_run_script(
+                request, repo_server=repo_server
+            )
+        ]
     )
 
 
@@ -567,7 +606,10 @@ def is_request_valid(
 
 def create_image_run_script(
     request: Dict, build_config: Dict,
-    bundle_id: str = '0', local_build: bool = False
+    bundle_id: str = '0', local_build: bool = False,
+    repo_server: repo_server_type = repo_server_type(
+        host='none', user='none', pkey='none'
+    )
 ) -> str:
     """
     Create script to call cb-image
@@ -627,6 +669,9 @@ def create_image_run_script(
             bundle_id=bundle_id
         )
     else:
+        repo_path = os.sep.join(
+            [request['project'], selection]
+        )
         image_source_path = os.path.join(
             Defaults.get_runner_project_dir(), request['project']
         )
@@ -656,6 +701,10 @@ def create_image_run_script(
                     --bundle-id {bundle_id} \\
                     --description {image_source_path} \\
                     --target-dir {image_target_path} \\
+                    --repo-path {repo_path} \\
+                    --repo-server {repo_server} \\
+                    --ssh-user {ssh_user} \\
+                    --ssh-pkey {ssh_pkey} \\
                     {profile_opts} {custom_args}
             }} &>>{image_target_path}.run.log &
 
@@ -667,6 +716,10 @@ def create_image_run_script(
             profile_opts=' '.join(profile_opts) if profile_opts else '',
             custom_args=' '.join(custom_args) if build_options else '',
             request_id=request['request_id'],
+            repo_path=repo_path,
+            repo_server=repo_server.host,
+            ssh_user=repo_server.user,
+            ssh_pkey=repo_server.pkey,
             bundle_id=bundle_id,
             build_pid_file=build_pid_file
         )
@@ -678,7 +731,10 @@ def create_image_run_script(
 
 
 def create_package_run_script(
-    request: Dict, buildroot_rebuild: bool = True, local_build: bool = False
+    request: Dict, buildroot_rebuild: bool = True, local_build: bool = False,
+    repo_server: repo_server_type = repo_server_type(
+        host='none', user='none', pkey='none'
+    )
 ) -> str:
     """
     Create script to call cb-prepare followed by cb-run
@@ -725,6 +781,9 @@ def create_package_run_script(
             request_id=request['request_id']
         )
     else:
+        repo_path = os.sep.join(
+            [request['project'], request['package']['dist']]
+        )
         package_source_path = os.path.join(
             Defaults.get_runner_project_dir(), request['project']
         )
@@ -757,6 +816,10 @@ def create_package_run_script(
                     --request-id {request_id}
                 cb-run --root {build_root} &> {build_root}.build.log \\
                     --request-id {request_id} \\
+                    --repo-path {repo_path} \\
+                    --repo-server {repo_server} \\
+                    --ssh-user {ssh_user} \\
+                    --ssh-pkey {ssh_pkey} \\
                     --clean
             }} &>>{build_root}.run.log &
 
@@ -767,6 +830,10 @@ def create_package_run_script(
             dist_profile=dist_profile,
             build_root=build_root,
             request_id=request['request_id'],
+            repo_path=repo_path,
+            repo_server=repo_server.host,
+            ssh_user=repo_server.user,
+            ssh_pkey=repo_server.pkey,
             build_pid_file=build_pid_file
         )
     package_run_script = f'{build_root}.sh'

@@ -24,19 +24,16 @@ baseInsertService cloud-final
 rm -f /etc/httpd/conf.d/welcome.conf
 
 # Activate services CB
-baseInsertService cb-collect
+
+# TODO: re-activate after rewrite of the service code
+# baseInsertService cb-collect
+
 baseInsertService httpd
-
-# Set collect pkey reference
-sed -ie "s@CB_SSH_PKEY=.*@CB_SSH_PKEY=\"/root/.ssh/id_cb_collect\"@" \
-    /etc/cloud_builder
-
-# Set collect user reference
-sed -ie "s@CB_SSH_USER=.*@CB_SSH_USER=\"cb-collect\"@" \
-    /etc/cloud_builder
 
 # Create reposerver root
 mkdir -p /srv/www/projects
+chown -R cb-collect /srv/www/projects
+chgrp -R cb-collect /srv/www/projects
 
 # Add cb-collect to sudoers
 echo "cb-collect ALL=NOPASSWD: ALL" >> /etc/sudoers

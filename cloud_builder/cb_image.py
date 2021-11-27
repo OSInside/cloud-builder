@@ -18,6 +18,7 @@
 """
 usage: cb-image -h | --help
        cb-image --description=<image_description_path> --target-dir=<target_path> --bundle-id=<ID> --request-id=<UUID>
+           [(--repo-server=<name> --repo-path=<path> --ssh-user=<user> --ssh-pkey=<ssh_pkey_file>)]
            [--local]
            [--profile=<name>...]
            [-- <kiwi_custom_build_command_args>...]
@@ -38,6 +39,18 @@ options:
     --request-id=<UUID>
         UUID for this image build process
 
+    --repo-path=<path>
+        Path to place build results on the repo server
+
+    --repo-server=<name>
+        Name or IP of collector repo server
+
+    --ssh-pkey=<ssh_pkey_file>
+        Path to ssh private key file to access repo server
+
+    --ssh-user=<user>
+        User name to access repo server
+
     --local
         Operate locally:
         * do not send results to the message broker
@@ -54,6 +67,8 @@ import json
 import glob
 from docopt import docopt
 from tempfile import TemporaryDirectory
+from kiwi.command import Command
+from kiwi.path import Path
 
 from cloud_builder.version import __version__
 from cloud_builder.cloud_logger import CBCloudLogger
@@ -61,6 +76,7 @@ from cloud_builder.broker import CBMessageBroker
 from cloud_builder.response.response import CBResponse
 from cloud_builder.exceptions import exception_handler
 from cloud_builder.cb_prepare import resolve_build_dependencies
+from cloud_builder.utils.repository import CBRepository
 from cloud_builder.defaults import Defaults
 
 from kiwi.privileges import Privileges
@@ -186,6 +202,8 @@ def main() -> None:
             os.system(' '.join(kiwi_bundle))
         )
 
+    packages = []
+
     if exit_code != 0:
         status = status_flags.image_build_failed
         message = 'Failed, see logfile for details'
@@ -193,11 +211,66 @@ def main() -> None:
         status = status_flags.image_build_succeeded
         message = 'Image build bundled as RPM package'
 
+        # create binaries directory to hold build results
+        package_build_binary_dir = f'{target_dir}.binaries'
+        package_build_target_dir = package_build_binary_dir
+
+        if args['--repo-path']:
+            # if the repo path is provided create this dir structure
+            # to simplify the later sync process to the repo server
+            package_build_target_dir = os.sep.join(
+                [package_build_target_dir, args['--repo-path']]
+            )
+
+        Path.wipe(package_build_target_dir)
+        Path.create(package_build_target_dir)
+
+        for package in glob.iglob(f'{target_dir}/*'):
+            repo_meta = CBRepository(package).get_repo_meta(
+                base_repo_path=package_build_target_dir
+            )
+            os.rename(package, repo_meta.repo_file)
+
+        Path.wipe(target_dir)
+        os.rename(
+            package_build_binary_dir, target_dir
+        )
+        # Create packages list
+        for root, dirs, files in os.walk(target_dir):
+            for entry in files:
+                packages.append(os.path.join(root, entry))
+        log.info(format(packages))
+
+        # Sync target_binary_dir to repo server
+        if args['--repo-server']:
+            update_repo_indicator = os.path.join(
+                target_dir, args['--repo-path'], '.updaterepo'
+            )
+            # Write an update repo indicator to tell the collector
+            # to rebuild the repo metadata
+            Command.run(
+                ['touch', update_repo_indicator]
+            )
+            sync_call = Command.run(
+                [
+                    'rsync', '-av', '-e', 'ssh -i {0} -o {1}'.format(
+                        args['--ssh-pkey'],
+                        'StrictHostKeyChecking=accept-new'
+                    ), f'{target_dir}/', '{0}@{1}:{2}'.format(
+                        args['--ssh-user'], args['--repo-server'],
+                        Defaults.get_repo_root()
+                    )
+                ], raise_on_error=False
+            )
+            if sync_call.output:
+                log.info(sync_call.output)
+            if sync_call.error:
+                exit_code = 1
+                status = status_flags.package_binaries_sync_failed
+                log.error(sync_call.error)
+
     # Send result response to the message broker
     if not args['--local']:
-        binary_packages = []
-        if exit_code == 0:
-            binary_packages = list(glob.iglob(f'{target_dir}/*'))
         response = CBResponse(args['--request-id'], log.get_id())
         response.set_image_build_response(
             message=message,
@@ -205,7 +278,7 @@ def main() -> None:
             image=image_name,
             log_file=build_log_file,
             solver_file=solver_json_file,
-            binary_packages=binary_packages,
+            binary_packages=packages,
             exit_code=exit_code
         )
         broker = CBMessageBroker.new(

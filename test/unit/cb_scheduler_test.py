@@ -19,6 +19,7 @@ from cloud_builder.cb_scheduler import (
     create_image_run_script,
     get_running_builds,
     request_validation_type,
+    repo_server_type,
     is_active
 )
 
@@ -26,6 +27,9 @@ from cloud_builder.cb_scheduler import (
 class TestCBScheduler:
     def setup(self):
         self.status_flags = Defaults.get_status_flags()
+        self.repo_server = repo_server_type(
+            host='none', user='none', pkey='none'
+        )
         sys.argv = [
             sys.argv[0]
         ]
@@ -56,7 +60,7 @@ class TestCBScheduler:
             )
         ]
         mock_handle_build_requests.assert_called_once_with(
-            5000, 10, mock_CBCloudLogger.return_value
+            5000, 10, self.repo_server, mock_CBCloudLogger.return_value
         )
         mock_BlockingScheduler.assert_called_once_with()
         project_scheduler.start.assert_called_once_with()
@@ -84,7 +88,7 @@ class TestCBScheduler:
         log = Mock()
         mock_CBCloudLogger.return_value = log
         mock_get_running_builds.return_value = 20
-        handle_build_requests(5000, 10, log)
+        handle_build_requests(5000, 10, 'repo-server', log)
         log.info.assert_called_once_with(
             'Max running builds limit reached'
         )
@@ -142,7 +146,7 @@ class TestCBScheduler:
 
         mock_get_running_builds.side_effect = running_limit
 
-        handle_build_requests(5000, 10, log)
+        handle_build_requests(5000, 10, self.repo_server, log)
 
         log.response.assert_called_once_with(
             mock_is_request_valid.return_value.response, broker
@@ -151,7 +155,7 @@ class TestCBScheduler:
         broker.acknowledge.assert_called_once_with()
 
         mock_build_image.assert_called_once_with(
-            request, project_config, broker, log
+            request, project_config, broker, self.repo_server, log
         )
         mock_Command_run.assert_called_once_with(
             [
@@ -207,10 +211,10 @@ class TestCBScheduler:
 
         mock_get_running_builds.side_effect = running_limit
 
-        handle_build_requests(5000, 10, log)
+        handle_build_requests(5000, 10, 'repo-server', log)
 
         mock_build_package.assert_called_once_with(
-            request, broker, log
+            request, broker, 'repo-server', log
         )
         mock_update_source_repo.called_once_with(
             request, log
@@ -249,12 +253,12 @@ class TestCBScheduler:
                 }
             ]
         }
-        build_image(request, project_config, broker, log)
+        build_image(request, project_config, broker, 'repo-server', log)
         mock_reset_build_if_running.assert_called_once_with(
             request, log, broker
         )
         mock_create_image_run_script.assert_called_once_with(
-            request, project_config
+            request, project_config, repo_server='repo-server'
         )
         mock_Command_run.assert_called_once_with(
             ['bash', mock_create_image_run_script.return_value]
@@ -285,11 +289,13 @@ class TestCBScheduler:
             'request_id': 'c8becd30-a5f6-43a6-a4f4-598ec1115b17',
             'schema_version': 0.2
         }
-        build_package(request, broker, log)
+        build_package(request, broker, 'repo-server', log)
         mock_reset_build_if_running.assert_called_once_with(
             request, log, broker
         )
-        mock_create_package_run_script.assert_called_once_with(request)
+        mock_create_package_run_script.assert_called_once_with(
+            request, repo_server='repo-server'
+        )
         mock_Command_run.assert_called_once_with(
             ['bash', mock_create_package_run_script.return_value]
         )
@@ -727,6 +733,10 @@ class TestCBScheduler:
                     --bundle-id 0 \\
                     --description cloud_builder_sources/projects/MS/myimage \\
                     --target-dir /var/tmp/CB/projects/MS/myimage@standard.x86_64 \\
+                    --repo-path projects/MS/myimage/standard \\
+                    --repo-server none \\
+                    --ssh-user none \\
+                    --ssh-pkey none \\
                     {0} {1}
             }} &>>/var/tmp/CB/projects/MS/myimage@standard.x86_64.run.log &
 
@@ -823,6 +833,10 @@ class TestCBScheduler:
                     --request-id c8becd30-a5f6-43a6-a4f4-598ec1115b17
                 cb-run --root /var/tmp/CB/projects/MS/vim@TW.x86_64 &> /var/tmp/CB/projects/MS/vim@TW.x86_64.build.log \\
                     --request-id c8becd30-a5f6-43a6-a4f4-598ec1115b17 \\
+                    --repo-path projects/MS/vim/TW \\
+                    --repo-server none \\
+                    --ssh-user none \\
+                    --ssh-pkey none \\
                     --clean
             } &>>/var/tmp/CB/projects/MS/vim@TW.x86_64.run.log &
 
