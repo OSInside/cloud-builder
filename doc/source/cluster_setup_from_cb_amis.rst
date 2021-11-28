@@ -179,7 +179,7 @@ Create Cluster
       )
       ZookeeperConnectString=$(
           aws kafka describe-cluster --cluster-arn ${ClusterArn} | \
-          grep ZookeeperConnectString | cut -f4 -d\"
+          grep \"ZookeeperConnectString\" | cut -f4 -d\"
       )
       CBControlPlane=$(
           aws ec2 describe-instances --filters "Name=tag-value,Values=cb-control-plane" | \
@@ -205,7 +205,7 @@ Create Cluster
       # BootstrapBrokerString
       BootstrapServersString="${BootstrapBrokerString}"
 
-      # internal host name of the control plane
+      # host name of the control plane
       control_plane="${CBControlPlane}"
 
       # git source repo for packages/images
@@ -214,10 +214,10 @@ Create Cluster
       # runner group names in the form "name_a name_b ..." 
       runner_topics="fedora"
 
-      # internal host name of the collector
+      # host name of the collector
       collector="${CBCollect}"
 
-      # internal host names of the runners in the form "host_a host_b ..."
+      # host names of the runners in the form "host_a host_b ..."
       runners="$(echo ${CBRunners})"
       EOF
 

@@ -131,6 +131,7 @@ class TestCBMessageBrokerKafka:
         assert self.kafka.read('topic') == [ConsumerRecord]
         mock_KafkaConsumer.assert_called_once_with(
             'topic',
+            auto_offset_reset='earliest',
             enable_auto_commit=False,
             bootstrap_servers='URI:9092',
             client_id='cb-client',

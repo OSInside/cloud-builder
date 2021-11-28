@@ -212,7 +212,7 @@ def main() -> None:
             )
             if sync_call.output:
                 log.info(sync_call.output)
-            if sync_call.error:
+            if sync_call.returncode != 0:
                 exit_code = 1
                 status = status_flags.package_binaries_sync_failed
                 log.error(sync_call.error)

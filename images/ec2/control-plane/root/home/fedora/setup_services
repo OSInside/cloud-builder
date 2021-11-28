@@ -8,8 +8,8 @@ for runner in ${runners};do
     runner_count=$((runner_count + 1))
 done
 
-# update BootstrapServersString/this_host on runners and collector
-for machine in ${runners} ${collector};do
+# update BootstrapServersString/this_host on runners
+for machine in ${runners};do
     ssh -i ~/.ssh/id_cb_collect cb-collect@${machine} \
         -o StrictHostKeyChecking=accept-new \
         sudo sed -ie \"s@  host:.*@  host: ${BootstrapServersString}@\" \
@@ -39,12 +39,8 @@ for runner in ${runners};do
         sudo systemctl restart cb-fetch-once cb-scheduler cb-info
 done
 
-# update CB_RUNNERS/CB_PROJECT on collector and restart services
+# update CB_PROJECT on collector and restart services
 if [ -n "${collector}" ];then
-    ssh -i ~/.ssh/id_cb_collect cb-collect@${collector} \
-        -o StrictHostKeyChecking=accept-new \
-        sudo sed -ie \"s@CB_RUNNERS=.*@CB_RUNNERS=${runner_count}@\" \
-        /etc/cloud_builder
     ssh -i ~/.ssh/id_cb_collect cb-collect@${collector} \
         -o StrictHostKeyChecking=accept-new \
         sudo sed -ie \"s@CB_PROJECT=.*@CB_PROJECT=${source_repo}@\" \
