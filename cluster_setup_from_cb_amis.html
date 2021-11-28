@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Setup Cloud Builder From AMIs &mdash; Cloud Builder 0.2.54 documentation</title>
+  <title>Setup Cloud Builder From AMIs &mdash; Cloud Builder 0.2.55 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/custom.css" type="text/css" />
@@ -316,7 +316,7 @@ aws ec2 run-instances <span class="se">\</span>
 <span class="k">)</span>
 <span class="nv">ZookeeperConnectString</span><span class="o">=</span><span class="k">$(</span>
     aws kafka describe-cluster --cluster-arn <span class="si">${</span><span class="nv">ClusterArn</span><span class="si">}</span> <span class="p">|</span> <span class="se">\</span>
-    grep ZookeeperConnectString <span class="p">|</span> cut -f4 -d<span class="se">\&quot;</span>
+    grep <span class="se">\&quot;</span>ZookeeperConnectString<span class="se">\&quot;</span> <span class="p">|</span> cut -f4 -d<span class="se">\&quot;</span>
 <span class="k">)</span>
 <span class="nv">CBControlPlane</span><span class="o">=</span><span class="k">$(</span>
     aws ec2 describe-instances --filters <span class="s2">&quot;Name=tag-value,Values=cb-control-plane&quot;</span> <span class="p">|</span> <span class="se">\</span>
@@ -342,7 +342,7 @@ cat <span class="s">&lt;&lt;EOF</span>
 <span class="s"># BootstrapBrokerString</span>
 <span class="s">BootstrapServersString=&quot;${BootstrapBrokerString}&quot;</span>
 
-<span class="s"># internal host name of the control plane</span>
+<span class="s"># host name of the control plane</span>
 <span class="s">control_plane=&quot;${CBControlPlane}&quot;</span>
 
 <span class="s"># git source repo for packages/images</span>
@@ -351,10 +351,10 @@ cat <span class="s">&lt;&lt;EOF</span>
 <span class="s"># runner group names in the form &quot;name_a name_b ...&quot;</span>
 <span class="s">runner_topics=&quot;fedora&quot;</span>
 
-<span class="s"># internal host name of the collector</span>
+<span class="s"># host name of the collector</span>
 <span class="s">collector=&quot;${CBCollect}&quot;</span>
 
-<span class="s"># internal host names of the runners in the form &quot;host_a host_b ...&quot;</span>
+<span class="s"># host names of the runners in the form &quot;host_a host_b ...&quot;</span>
 <span class="s">runners=&quot;$(echo ${CBRunners})&quot;</span>
 <span class="s">EOF</span>
 </pre></div>
