@@ -37,11 +37,11 @@ on your system:
 
 .. code:: bash
 
-   $ wget https://download.opensuse.org/repositories/Virtualization:/Appliances:/CloudBuilder:/EC2:/fedora/images/CB-RunnerFedora.x86_64.raw.xz
+   wget https://download.opensuse.org/repositories/Virtualization:/Appliances:/CloudBuilder:/EC2:/fedora/images/CB-RunnerFedora.x86_64.raw.xz
 
-   $ xz -d CB-RunnerFedora.x86_64.raw.xz
+   xz -d CB-RunnerFedora.x86_64.raw.xz
 
-   $ qemu-kvm \
+   qemu-kvm \
        -m 4096 \
        -netdev user,id=user0 \
        -device virtio-net-pci,netdev=user0 \
@@ -60,6 +60,8 @@ to build a package. As example the `xsnow` package for `Debian unstable`
 is used:
 
 .. code:: bash
+
+   systemctl stop cb-scheduler cb-info
 
    cd cloud_builder_sources/projects/Debian/xsnow
 

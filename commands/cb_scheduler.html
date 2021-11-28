@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>cb-scheduler &mdash; Cloud Builder 0.2.53 documentation</title>
+  <title>cb-scheduler &mdash; Cloud Builder 0.2.54 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
@@ -170,6 +170,7 @@ cb-scheduler
     <span class="o">[</span>--update-interval<span class="o">=</span>&lt;time_sec&gt;<span class="o">]</span>
     <span class="o">[</span>--poll-timeout<span class="o">=</span>&lt;time_msec&gt;<span class="o">]</span>
     <span class="o">[</span>--build-limit<span class="o">=</span>&lt;number&gt;<span class="o">]</span>
+    <span class="o">[(</span>--repo-server<span class="o">=</span>&lt;name&gt; --ssh-user<span class="o">=</span>&lt;user&gt; --ssh-pkey<span class="o">=</span>&lt;ssh_pkey_file&gt;<span class="o">)]</span>
 </pre></div>
 </div>
 </section>
@@ -287,6 +288,15 @@ requests are available. Default: 5000msec</p>
 <dt><kbd><span class="option">--build-limit=<var>&lt;number&gt;</var></span></kbd></dt>
 <dd><p>Max number of build processes this scheduler handles
 at the same time. Default: 10</p>
+</dd>
+<dt><kbd><span class="option">--repo-server=<var>&lt;name&gt;</var></span></kbd></dt>
+<dd><p>Name or IP of collector repo server</p>
+</dd>
+<dt><kbd><span class="option">--ssh-pkey=<var>&lt;ssh_pkey_file&gt;</var></span></kbd></dt>
+<dd><p>Path to ssh private key file to access repo server</p>
+</dd>
+<dt><kbd><span class="option">--ssh-user=<var>&lt;user&gt;</var></span></kbd></dt>
+<dd><p>User name to access repo server</p>
 </dd>
 </dl>
 </section>

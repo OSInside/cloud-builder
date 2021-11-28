@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Runner Setup &mdash; Cloud Builder 0.2.53 documentation</title>
+  <title>Runner Setup &mdash; Cloud Builder 0.2.54 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
@@ -258,8 +258,14 @@ fetching build information.</p>
 <li><p>Login to the control plane.</p>
 <p>See <a class="reference internal" href="control_plane_setup.html#control-plane-setup"><span class="std std-ref">Create and Install the Control Plane</span></a> for details</p>
 </li>
-<li><p>Fetch the <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-collect</span></code> public SSH key and logout from the control plane.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>cat ~/.ssh/id_cb_collect.pub
+<li><p>Fetch the <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-collect</span></code> public and private SSH keys and
+logout from the control plane.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># public key</span>
+cat ~/.ssh/id_cb_collect.pub
+
+<span class="c1"># private key</span>
+cat ~/.ssh/id_cb_collect
+
 <span class="nb">exit</span>
 </pre></div>
 </div>
@@ -271,9 +277,17 @@ su -l cb-collect
 mkdir -m <span class="m">0700</span> .ssh
 touch .ssh/authorized_keys
 chmod <span class="m">600</span> .ssh/authorized_keys
+touch .ssh/id_cb_collect
+chmod <span class="m">600</span> .ssh/id_cb_collect
+
 vi .ssh/authorized_keys
 
   Copy <span class="p">&amp;</span> Paste the SSH pubkey as it was printed on the
+  console <span class="k">in</span> step <span class="m">2</span>. and safe the file
+
+vi .ssh/id_cb_collect
+
+  Copy <span class="p">&amp;</span> Paste the SSH private key as it was printed on the
   console <span class="k">in</span> step <span class="m">2</span>. and safe the file
 
 <span class="nb">exit</span>

@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>cb-image &mdash; Cloud Builder 0.2.53 documentation</title>
+  <title>cb-image &mdash; Cloud Builder 0.2.54 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
@@ -167,6 +167,8 @@
 <h2>SYNOPSIS<a class="headerlink" href="#synopsis" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>cb-image -h <span class="p">|</span> --help
 cb-image --description<span class="o">=</span>&lt;image_description_path&gt; --target-dir<span class="o">=</span>&lt;target_path&gt; --bundle-id<span class="o">=</span>&lt;ID&gt; --request-id<span class="o">=</span>&lt;UUID&gt;
+    <span class="o">[(</span>--repo-server<span class="o">=</span>&lt;name&gt; --repo-path<span class="o">=</span>&lt;path&gt; --ssh-user<span class="o">=</span>&lt;user&gt; --ssh-pkey<span class="o">=</span>&lt;ssh_pkey_file&gt;<span class="o">)]</span>
+    <span class="o">[</span>--local<span class="o">]</span>
     <span class="o">[</span>--profile<span class="o">=</span>&lt;name&gt;...<span class="o">]</span>
     <span class="o">[</span>-- &lt;kiwi_custom_build_command_args&gt;...<span class="o">]</span>
 </pre></div>
@@ -204,17 +206,35 @@ used package repositories</p>
 <dd><p>List of optional profile names to use for building.
 This option can be specified multiple times</p>
 </dd>
+<dt><kbd><span class="option">--request-id=<var>&lt;UUID&gt;</var></span></kbd></dt>
+<dd><p>UUID for this prepare process</p>
+</dd>
+<dt><kbd><span class="option">--repo-path=<var>&lt;path&gt;</var></span></kbd></dt>
+<dd><p>Path to place build results on the repo server</p>
+</dd>
+<dt><kbd><span class="option">--repo-server=<var>&lt;name&gt;</var></span></kbd></dt>
+<dd><p>Name or IP of collector repo server</p>
+</dd>
+<dt><kbd><span class="option">--ssh-pkey=<var>&lt;ssh_pkey_file&gt;</var></span></kbd></dt>
+<dd><p>Path to ssh private key file to access repo server</p>
+</dd>
+<dt><kbd><span class="option">--ssh-user=<var>&lt;user&gt;</var></span></kbd></dt>
+<dd><p>User name to access repo server</p>
+</dd>
+<dt><kbd><span class="option">--local</span></kbd></dt>
+<dd><p>Operate locally:</p>
+<ul class="simple">
+<li><p>do not send results to the message broker</p></li>
+<li><p>do not create dependency graph</p></li>
+<li><p>run operations in debug mode</p></li>
+</ul>
+</dd>
 </dl>
 <p>– &lt;kiwi_custom_build_command_args&gt;</p>
 <blockquote>
 <div><p>List of additional kiwi build command arguments
 See ‘kiwi-ng system build –help’ for details</p>
 </div></blockquote>
-<dl class="option-list">
-<dt><kbd><span class="option">--request-id=<var>&lt;UUID&gt;</var></span></kbd></dt>
-<dd><p>UUID for this prepare process</p>
-</dd>
-</dl>
 </section>
 </section>
 

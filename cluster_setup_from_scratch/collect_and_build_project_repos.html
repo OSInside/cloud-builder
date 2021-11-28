@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Collect and Build Project Repos &mdash; Cloud Builder 0.2.53 documentation</title>
+  <title>Collect and Build Project Repos &mdash; Cloud Builder 0.2.54 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
@@ -167,9 +167,10 @@
 the Cloud Builder project. However, first the possibility to create
 and publish package repositories creates real value to it.
 The <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-collect</span></code> service implements the creation of package
-repositories by collecting the latest build results from
-the runner(s) plus creation of the metadata information
-such that package managers can consume them.</p>
+repositories by allowing the runners to sync their build results
+to the collector. <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-collect</span></code> periodically runs over this
+data and creates package metadata such that package managers
+can consume them.</p>
 <p>This chapter describes how to setup <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-collect</span></code> in combination
 with an <code class="xref py py-obj docutils literal notranslate"><span class="pre">apache</span></code> web-server to serve the <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-collect</span></code> created
 repositories. Let’s call this instance the <code class="xref py py-obj docutils literal notranslate"><span class="pre">reposerver</span></code>.</p>
@@ -217,87 +218,37 @@ change this value to your git project</p>
 </pre></div>
 </div>
 </dd>
-<dt><strong>runner count:</strong></dt><dd><p>The Cloud Builder runner count specifies the number of runners that exists
-in the cluster. This information will be used in cb-collect which
-asks for information from the cb-info service. Each runner provides
-an info service. On request multiple info services could respond
-with information about a package/image. As the requester doesn’t
-know how many answers completes the record, the default behavior
-is to wait for a configurable time of silence on the response
-queue before handing control back to the collector and working
-on the results.</p>
-<p>This can lead to an unneeded amount of waiting time in the
-collector. There is also always the risk that the wait time
-was not long enough to retrieve all answers from the
-cb-info services in the system.</p>
-<p>If the information about the number of runners in the
-cluster is provided, this value will be used to count the
-number of answers and if that number equals the number
-of runners it is clear that there can’t be more answers
-which leads the reading code to get back to the collector
-instead of staying blocked waiting for the timeout.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">CB_RUNNERS</span><span class="o">=</span><span class="m">2</span>
-</pre></div>
-</div>
-<p>The default value of 0 runners indicates there is no
-knowledge about the amount of runners in the system and that
-leads to the timeout based behavior as explained above</p>
-</dd>
 </dl>
 </li>
-<li><p><strong>Setup broker connection on the reposerver</strong></p>
-<p>Still logged in on the reposerver create the file
-<code class="file docutils literal notranslate"><span class="pre">/etc/cloud_builder_broker.yml</span></code> as follows:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo vi /etc/cloud_builder_broker.yml
-</pre></div>
-</div>
-<p>Place the following content:</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">broker</span><span class="p">:</span>
-  <span class="nt">host</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">BootstrapServersString</span>
-<span class="nt">this_host</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">external_IP_or_Hostname_of_this_instance</span>
-</pre></div>
-</div>
-<p>See the ‘<strong>Configure</strong> <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-ctl</span></code>’ list item in the <a class="reference internal" href="control_plane_setup.html#control-plane-setup"><span class="std std-ref">Create and Install the Control Plane</span></a>
-for details how to obtain the broker credentials.</p>
-</li>
-<li><p><strong>Setup SSH access for collecting packages from runners</strong></p>
-<p>To allow the reposerver accessing data from the runners,
-it’s required to SSH authorize the reposerver. In the
-setup of the control plane a SSH keypair has already
-been created to allow the control plane access to the
-runners. The same private key as present on the control
-plane can now also be used on the reposerver. This
-can be done as follows:</p>
+<li><p><strong>Allow SSH access from runners</strong></p>
+<p>To allow the runners to push their build results to the
+collector it’s required to allow the runners SSH pub key
+in the <code class="file docutils literal notranslate"><span class="pre">authorized_keys</span></code> file of the reposerver.</p>
+<p>During the setup of the control plane a SSH keypair has already
+been created and rolled out to the runners. The same keypair
+as present on the control plane can now also be used on the
+reposerver as follows:</p>
 <ol class="arabic">
 <li><p>Login to the control plane from a new terminal session.</p>
 <p>See <a class="reference internal" href="control_plane_setup.html#control-plane-setup"><span class="std std-ref">Create and Install the Control Plane</span></a> for details</p>
 </li>
-<li><p>Fetch the <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-collect</span></code> private SSH key and logout from the control plane.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>cat ~/.ssh/id_cb_collect
+<li><p>Fetch the <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-collect</span></code> public SSH key.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>cat ~/.ssh/id_cb_collect.pub
+
+<span class="o">==</span>&gt; Copy the SSH public key into the Copy/Paste buffer
+
 <span class="nb">exit</span>
+</pre></div>
+</div>
+<p>Add the SSH public key to the <code class="file docutils literal notranslate"><span class="pre">authorized_keys</span></code> file
+on the <strong>reposerver</strong> as follows:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>vi ~/.ssh/authorized_keys
+
+<span class="o">==</span>&gt; Paste the SSH public key from the Copy/Paste buffer
 </pre></div>
 </div>
 </li>
 </ol>
-<p>In the terminal session with the still active login session on
-the reposerver copy/paste the <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-collect</span></code> SSH private key as
-follows:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>mkdir -p -m <span class="m">0700</span> /root/.ssh
-sudo touch /root/.ssh/id_cb_collect
-sudo chmod <span class="m">600</span> /root/.ssh/id_cb_collect
-sudo vi /root/.ssh/id_cb_collect
-
-  Copy <span class="p">&amp;</span> Paste the SSH private key as it was obtained
-  <span class="k">in</span> the former step and safe the file.
-</pre></div>
-</div>
-<p>Once done reference the path to the private key in the
-<code class="file docutils literal notranslate"><span class="pre">/etc/cloud_builder</span></code> setup file as follows:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo vi /etc/cloud_builder
-
-<span class="nv">CB_SSH_PKEY</span><span class="o">=</span><span class="s2">&quot;/root/.ssh/id_cb_collect&quot;</span>
-</pre></div>
-</div>
 </li>
 <li><p><strong>Attach an EBS volume to the reposerver</strong></p>
 <p>To store and backup the repository data an extra block storage
@@ -311,17 +262,31 @@ to understand how to make the volume available:
 <a class="reference external" href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-using-volumes.html">https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-using-volumes.html</a></p></li>
 </ul>
 </li>
-<li><p><strong>Setup user to be used for accessing the runners</strong></p>
-<p>In the setup of the runner a generic user to access the runner
-for build results and information was created. This user, by
-default, is called <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-collect</span></code>. In the setup of the collector
-it’s required to specify the user name which is allowed to
-access the runners as follows:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo vi /etc/cloud_builder
-
-<span class="nv">CB_SSH_USER</span><span class="o">=</span><span class="s2">&quot;cb-collect&quot;</span>
+<li><p><strong>Setup runners to sync their results to the collector</strong></p>
+<p>In the setup of the runners the settings to connect to the
+collector were not configured. This must be done now as follows:</p>
+<ol class="arabic">
+<li><p>Login to a runner instance</p></li>
+<li><p>On the runner instance edit the file <code class="file docutils literal notranslate"><span class="pre">/etc/cloud_builder</span></code>
+and set/update the following parameters:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">CB_COLLECT_REPO_SERVER</span><span class="o">=</span><span class="s2">&quot;RepoServerInstanceIP&quot;</span>
+<span class="nv">CB_SSH_USER</span><span class="o">=</span><span class="s2">&quot;ec2-user&quot;</span>
 </pre></div>
 </div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Make sure the user(ec2-user in this example) also has
+permissions to write data in <code class="file docutils literal notranslate"><span class="pre">/srv/www/</span></code>. This is
+the place the runners will upload its data.</p>
+</div>
+</li>
+<li><p>Restart the scheduler</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>systemctl restart cb-scheduler
+</pre></div>
+</div>
+</li>
+<li><p>Repeat this steps for all runners of interest</p></li>
+</ol>
 </li>
 <li><p><strong>Start</strong> <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-collect</span></code> <strong>service</strong></p>
 <p>Still logged in on the reposerver, start the <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-collect</span></code> service
@@ -329,18 +294,9 @@ as follows:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo systemctl start cb-collect
 </pre></div>
 </div>
-<p>The service will immediately start to collect package results
-from the available runners. This is done by sending info requests
-which are read and worked on by the <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-info</span></code> service. Therefore
-it’s required that <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-info</span></code> runs on all runners which are expected
-to provide data to be present in repositories.</p>
-<p>If there is response information for packages, <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-collect</span></code>
-creates repositories in the same structure than the git repo
-is organized. For the example git tree this could look like
-the following example:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>/srv/www/projects/projects/MS/...
-</pre></div>
-</div>
+<p>The service will immediately start to build repositories from
+the available package data. Package and images arrives through
+build requests.</p>
 </li>
 </ol>
 </section>

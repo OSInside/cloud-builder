@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Quick Start &mdash; Cloud Builder 0.2.53 documentation</title>
+  <title>Quick Start &mdash; Cloud Builder 0.2.54 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/custom.css" type="text/css" />
@@ -192,11 +192,11 @@ steps are set to:</p>
 </div>
 <p>The following steps needs to be done to start a Cloud Builder runner locally
 on your system:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ wget https://download.opensuse.org/repositories/Virtualization:/Appliances:/CloudBuilder:/EC2:/fedora/images/CB-RunnerFedora.x86_64.raw.xz
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>wget https://download.opensuse.org/repositories/Virtualization:/Appliances:/CloudBuilder:/EC2:/fedora/images/CB-RunnerFedora.x86_64.raw.xz
 
-$ xz -d CB-RunnerFedora.x86_64.raw.xz
+xz -d CB-RunnerFedora.x86_64.raw.xz
 
-$ qemu-kvm <span class="se">\</span>
+qemu-kvm <span class="se">\</span>
     -m <span class="m">4096</span> <span class="se">\</span>
     -netdev user,id<span class="o">=</span>user0 <span class="se">\</span>
     -device virtio-net-pci,netdev<span class="o">=</span>user0 <span class="se">\</span>
@@ -214,7 +214,9 @@ be disabled through <code class="xref py py-obj docutils literal notranslate"><s
 <p>Once logged in to the <code class="xref py py-obj docutils literal notranslate"><span class="pre">runner</span></code> system, perform the following steps
 to build a package. As example the <code class="xref py py-obj docutils literal notranslate"><span class="pre">xsnow</span></code> package for <code class="xref py py-obj docutils literal notranslate"><span class="pre">Debian</span> <span class="pre">unstable</span></code>
 is used:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> cloud_builder_sources/projects/Debian/xsnow
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>systemctl stop cb-scheduler cb-info
+
+<span class="nb">cd</span> cloud_builder_sources/projects/Debian/xsnow
 
 cb-ctl --build-package-local --dist unstable --arch x86_64
 </pre></div>

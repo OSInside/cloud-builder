@@ -8,6 +8,7 @@ SYNOPSIS
 
    cb-run -h | --help
    cb-run --root=<root_path> --request-id=<UUID>
+       [(--repo-server=<name> --repo-path=<path> --ssh-user=<user> --ssh-pkey=<ssh_pkey_file>)]
        [--local]
        [--clean]
 
@@ -38,6 +39,22 @@ OPTIONS
 --request-id=<UUID>
 
   UUID for this build process
+
+--repo-path=<path>
+
+  Path to place build results on the repo server
+
+--repo-server=<name>
+
+  Name or IP of collector repo server
+
+--ssh-pkey=<ssh_pkey_file>
+
+  Path to ssh private key file to access repo server
+
+--ssh-user=<user>
+
+  User name to access repo server
 
 --clean
 
