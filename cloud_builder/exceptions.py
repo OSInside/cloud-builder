@@ -154,15 +154,3 @@ class CBSSHConnectionError(CBError):
     """
     Exception raised if paramiko connect failed
     """
-
-
-class CBSSHKafkaWriteError(CBError):
-    """
-    Exception raised if ssh_kafka_write has data on stderr
-    """
-
-
-class CBSSHKafkaReadError(CBError):
-    """
-    Exception raised if ssh_kafka_read has data on stderr
-    """

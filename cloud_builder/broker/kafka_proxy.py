@@ -32,9 +32,7 @@ from cloud_builder.broker.base import CBMessageBrokerBase
 
 from cloud_builder.exceptions import (
     CBParameterError,
-    CBSSHConnectionError,
-    CBSSHKafkaWriteError,
-    CBSSHKafkaReadError
+    CBSSHConnectionError
 )
 
 fake_kafka_message = NamedTuple(
@@ -202,9 +200,6 @@ class CBMessageBrokerSSHProxyKafka(CBMessageBrokerBase):
                 f'--timeout {timeout_ms}'
             )
         )
-        issue = stderr.read()
-        if issue:
-            raise CBSSHKafkaReadError(issue)
         result = []
         for message in yaml.safe_load(stdout.read()):
             result.append(
@@ -218,7 +213,25 @@ class CBMessageBrokerSSHProxyKafka(CBMessageBrokerBase):
         )
         issue = stderr.read()
         if issue:
-            raise CBSSHKafkaWriteError(issue)
+            self._on_send_error(issue)
+        else:
+            self._on_send_success(topic)
+
+    def _on_send_success(self, topic):
+        """
+        Callback for successful sending of a message
+        """
+        log.debug(
+            f'Message successfully sent to: {topic}'
+        )
+
+    def _on_send_error(self, message):
+        """
+        Callback for error sending of a message
+        """
+        log.debug(
+            f'Message failed with: {message}'
+        )
 
     def __del__(self):
         self.ssh.close()

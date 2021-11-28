@@ -32,6 +32,7 @@ options:
         read timeout in mseconds, default: 1000ms
 """
 import yaml
+import time
 from docopt import docopt
 
 from cloud_builder.version import __version__
@@ -54,18 +55,22 @@ def main() -> None:
     broker = CBMessageBroker.new(
         'kafka', config_file=Defaults.get_broker_config()
     )
+    timeout_sec = int(args['--timeout'] or 1000) / 1000
     try:
+        timeout_loop_start = time.time()
         result_messages = []
-        messages = broker.read(
-            topic=args['--topic'],
-            group=args['--group'],
-            client=args['--client'] or 'cb-client',
-            timeout_ms=int(args['--timeout'] or 1000)
-        )
-        for message in messages:
-            result_messages.append(message.value.decode())
+        while time.time() < timeout_loop_start + timeout_sec + 1:
+            messages = broker.read(
+                topic=args['--topic'],
+                group=args['--group'],
+                client=args['--client'] or 'cb-client',
+                timeout_ms=timeout_sec * 1000
+            )
+            for message in messages:
+                result_messages.append(message.value.decode())
         print(yaml.dump(result_messages))
     except Exception as issue:
         raise CBParameterError(issue)
     finally:
+        broker.acknowledge()
         broker.close()
