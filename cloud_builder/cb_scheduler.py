@@ -670,7 +670,7 @@ def create_image_run_script(
         )
     else:
         repo_path = os.sep.join(
-            [request['project'], selection]
+            [os.path.dirname(request['project']), selection]
         )
         image_source_path = os.path.join(
             Defaults.get_runner_project_dir(), request['project']
@@ -782,7 +782,7 @@ def create_package_run_script(
         )
     else:
         repo_path = os.sep.join(
-            [request['project'], request['package']['dist']]
+            [os.path.dirname(request['project']), request['package']['dist']]
         )
         package_source_path = os.path.join(
             Defaults.get_runner_project_dir(), request['project']

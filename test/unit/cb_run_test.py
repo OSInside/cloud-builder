@@ -34,7 +34,7 @@ class TestCBRun:
             sys.argv[0],
             '--root', '/var/tmp/CB/projects/package@dist.arch',
             '--request-id', 'uuid',
-            '--repo-path', 'projects/MS/xclock/TW',
+            '--repo-path', 'projects/MS/TW',
             '--repo-server', '192.168.100.1',
             '--ssh-user', 'cb-collect',
             '--ssh-pkey', 'path/to/pkey',
@@ -65,7 +65,7 @@ class TestCBRun:
         )
         mock_open.assert_called_once_with(
             '/var/tmp/CB/projects/package@dist.arch/'
-            'package@dist.arch.binaries/projects/MS/xclock/TW/'
+            'package@dist.arch.binaries/projects/MS/TW/'
             '.updaterepo', 'w'
         )
         file_handle.write.assert_called_once_with(
@@ -95,7 +95,7 @@ class TestCBRun:
         assert mock_Path.create.call_args_list == [
             call(
                 '/var/tmp/CB/projects/package@dist.arch.binaries/'
-                'projects/MS/xclock/TW'
+                'projects/MS/TW'
             ),
             call(
                 '/var/tmp/CB/projects/package@dist.arch'
@@ -104,7 +104,7 @@ class TestCBRun:
         assert mock_Path.wipe.call_args_list == [
             call(
                 '/var/tmp/CB/projects/package@dist.arch.binaries/'
-                'projects/MS/xclock/TW'
+                'projects/MS/TW'
             ),
             call('/var/tmp/CB/projects/package@dist.arch')
         ]
