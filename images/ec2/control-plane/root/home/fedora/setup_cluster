@@ -32,18 +32,20 @@ done
 
 # retention times...
 for topic in ${runner_topics}; do
-    ./bin/kafka-topics.sh \
+    ./bin/kafka-configs.sh \
         --alter \
         --zookeeper ${ZookeeperConnectString} \
-        --config retention.ms=3600000 \
-        --topic ${topic}
+        --entity-type topics \
+        --entity-name ${topic} \
+        --add-config retention.ms=3600000
 done
 for topic in cb-info-response cb-info-request; do
-    ./bin/kafka-topics.sh \
+    ./bin/kafka-configs.sh \
         --alter \
         --zookeeper ${ZookeeperConnectString} \
-        --config retention.ms=1800000 \
-        --topic ${topic}
+        --entity-type topics \
+        --entity-name ${topic} \
+        --add-config retention.ms=1800000 \
 done
 
 # update BootstrapServersString here
