@@ -7,7 +7,7 @@ Requires=network-online.target
 EnvironmentFile=-/etc/cloud_builder
 Type=simple
 Restart=on-failure
-ExecStart=/usr/bin/cb-collect --project ${CB_PROJECT} --timeout ${CB_COLLECT_TIMEOUT} --ssh-pkey ${CB_SSH_PKEY} --ssh-user ${CB_SSH_USER} --update-interval ${CB_COLLECT_UPDATE_INTERVAL} --runners ${CB_RUNNERS}
+ExecStart=/usr/bin/cb-collect --project ${CB_PROJECT} --timeout ${CB_COLLECT_TIMEOUT} --update-interval ${CB_COLLECT_UPDATE_INTERVAL}
 ExecStartPre=/bin/bash -c 'rm -f /var/lock/_projects_*'
 
 [Install]

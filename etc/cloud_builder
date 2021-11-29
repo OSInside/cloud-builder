@@ -71,8 +71,8 @@ CB_INFO_RESPONSE_TYPE=""
 ## Type:        string
 ## Default:     ""
 #
-# Path to the SSH private key used for connecting the
-# runners such that non interactive access to the runners
+# Path to the SSH private key used for connecting to
+# instances in the cluster such that non interactive access
 # is possible. Sensitive information, please protect from
 # third party access
 #
@@ -81,44 +81,6 @@ CB_SSH_PKEY="/root/.ssh/id_cb_collect"
 ## Type:        string
 ## Default:     ""
 #
-# Name of SSH user to use for accessing runners
+# Name of SSH user to use for accessing instances
 #
 CB_SSH_USER="cb-collect"
-
-## Type:        integer
-## Default:     0
-#
-# Cloud Builder runner count. Specify the number of runners
-# that exists in the cluster. This information will be used
-# in services which asks for information from the cb-info
-# service. Each runner provides an info service. On request
-# multiple info services could respond with information about
-# a package/image. As the requester doesn't know how many
-# answers completes the record, the default behavior is to
-# wait for a configurable time of silence on the response
-# queue before handing control back to the user and working
-# on the results.
-#
-# This can lead to an unneeded amount of waiting time for
-# the user. There is also always the risk that the wait time
-# was not long enough to retrieve all answers from the
-# cb-info services in the system.
-#
-# If the information about the number of runners in the
-# cluster is provided, this value will be used to count the
-# number of answers and if that number equals the number
-# of runners it is clear that there can't be more answers
-# which leads the reading code to get back to the user
-# instead of staying blocked waiting for the timeout.
-#
-# If the number of runners in the cluster is specified here
-# it is also required that all cb-info services are configured
-# with:
-#
-# CB_INFO_RESPONSE_TYPE="--respond-always"
-#
-# The default value of 0 runners indicates there is no
-# knowledge about the amount of runners in the system and that
-# leads to the timeout based behavior as explained above
-#
-CB_RUNNERS=0
