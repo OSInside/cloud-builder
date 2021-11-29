@@ -216,42 +216,38 @@ created and configured as follows:
 
         CB_BUILD_LIMIT=10
 
-   **runner count:**
-     The {CB} runner count specifies the number of runners that exists
-     in the cluster. This information will be used in services which
-     asks for information from the cb-info service. Each runner provides
-     an info service. On request multiple info services could respond
-     with information about a package/image. As the requester doesn't
-     know how many answers completes the record, the default behavior
-     is to wait for a configurable time of silence on the response
-     queue before handing control back to the user and working
-     on the results.
+   **info response type:**
+     The way how the `cb-info` service responds can be used to
+     speedup those services which requests information from it.
+     By default the `cb-info` only responds if it has information
+     for the requested package or image and does nothing in any
+     other case.
 
-     This can lead to an unneeded amount of waiting time for
-     the user. There is also always the risk that the wait time
-     was not long enough to retrieve all answers from the
-     cb-info services in the system.
+     Each runner provides an info service. On request multiple info
+     services could respond with information about a package/image.
+     As the requester doesn't know how many answers completes the
+     record, the default behavior is to wait for a configurable
+     time of silence on the response queue before handing control
+     back to the user and working on the results.
 
-     If the information about the number of runners in the
-     cluster is provided, this value will be used to count the
-     number of answers and if that number equals the number
-     of runners it is clear that there can't be more answers
-     which leads the reading code to get back to the user
-     instead of staying blocked waiting for the timeout.
+     If the response type of the `cb-info` service is configured
+     to respond always, even if there is no information about the
+     requested package/image, this gives the requester a chance
+     to count the number of responses and compare it with the number
+     of available runners in the cluster. If it's clear there
+     won't be more answers, the requester can stop waiting and
+     this reduces the idle time on the requester side.
 
-     If the runner count is configured, it's also required that all
-     cb-info services are configured to respond to any request even
-     if there is no information available for the requested package
-     or image.
+     Without the requester's ability to count and compare the answers,
+     there is also the risk that the wait time was not long enough
+     to retrieve all answers from the `cb-info` services in the system.
+     Thus the recommendation is to configure the `CB_INFO_RESPONSE_TYPE`
+     to respond always and specify the `runner_count` value in the
+     `cb-ctl` setup file :file:`~/.config/cb/cbctl.yml` appropriately.
 
      .. code:: bash
 
-        CB_RUNNERS=2
         CB_INFO_RESPONSE_TYPE="--respond-always"
-
-     The default value of 0 runners indicates there is no
-     knowledge about the amount of runners in the system and that
-     leads to the timeout based behavior as explained above
 
 6. **Start** `cb-fetch-once` **service**
 
