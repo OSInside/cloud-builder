@@ -247,10 +247,10 @@ def main() -> None:
                 target_dir, args['--repo-path'], '.updaterepo'
             )
             # Write an update repo indicator to tell the collector
-            # to rebuild the repo metadata
-            Command.run(
-                ['touch', update_repo_indicator]
-            )
+            # to rebuild the repo metadata. The file also serves
+            # as indicator for the repo type
+            with open(update_repo_indicator, 'w') as flag:
+                flag.write(repo_meta.repo_type)
             sync_call = Command.run(
                 [
                     'rsync', '-av', '-e', 'ssh -i {0} -o {1}'.format(

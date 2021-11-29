@@ -1,6 +1,7 @@
 import sys
+import io
 from mock import (
-    patch, Mock, call
+    patch, Mock, call, MagicMock
 )
 
 from cloud_builder.cb_run import main
@@ -54,10 +55,21 @@ class TestCBRun:
         mock_os_system.return_value = 0
         mock_Command_run.return_value.output = 'binaries'
         mock_Command_run.return_value.error = 'sync failed'
-        main()
+        with patch('builtins.open', create=True) as mock_open:
+            mock_open.return_value = MagicMock(spec=io.IOBase)
+            file_handle = mock_open.return_value.__enter__.return_value
+            main()
         mock_Privileges_check_for_root_permissions.assert_called_once_with()
         mock_os_system.assert_called_once_with(
             'chroot /var/tmp/CB/projects/package@dist.arch bash /run.sh'
+        )
+        mock_open.assert_called_once_with(
+            '/var/tmp/CB/projects/package@dist.arch/'
+            'package@dist.arch.binaries/projects/MS/xclock/TW/'
+            '.updaterepo', 'w'
+        )
+        file_handle.write.assert_called_once_with(
+            mock_CBRepository.return_value.get_repo_meta.return_value.repo_type
         )
         assert mock_Command_run.call_args_list == [
             call(
@@ -69,14 +81,6 @@ class TestCBRun:
                     '-type', 'f',
                     '-name', '*.rpm', '-or', '-name', '*.deb'
                 ], raise_on_error=False
-            ),
-            call(
-                [
-                    'touch',
-                    '/var/tmp/CB/projects/package@dist.arch/'
-                    'package@dist.arch.binaries/projects/MS/xclock/TW/'
-                    '.updaterepo'
-                ]
             ),
             call(
                 [
