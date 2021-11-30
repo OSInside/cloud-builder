@@ -45,7 +45,7 @@ for topic in cb-info-response cb-info-request; do
         --zookeeper ${ZookeeperConnectString} \
         --entity-type topics \
         --entity-name ${topic} \
-        --add-config retention.ms=1800000 \
+        --add-config retention.ms=1800000
 done
 
 # update BootstrapServersString here

@@ -16,5 +16,5 @@ fi
 
 # initial setup of runners...
 for runner in ${runners};do
-    setup_runner "${runner}"
+    ~/setup_runner "${runner}"
 done
