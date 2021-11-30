@@ -139,6 +139,7 @@ Create Cluster
           --count 1 \
           --image-id ${collector} \
           --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=cb-collect}]' \
+          --block-device-mapping "DeviceName=/dev/sda1,Ebs={VolumeSize=100}" \
           --instance-type t2.micro \
           --key-name MySSHKeyPairName
 
@@ -169,31 +170,38 @@ Create Cluster
 
       set -e
 
+      # Use internal scope if access should only be possible from
+      # within the VPC or via VPN connections to this VPC.
+      # cluster_scope=PrivateDnsName
+
+      # Use external scope if access should be possible from the world.
+      cluster_scope=PublicDnsName
+
       ClusterArn=$(
           aws kafka list-clusters --cluster-name-filter cloud-builder | \
           grep ClusterArn | cut -f4 -d\"
       )
       BootstrapBrokerString=$(
-          aws kafka get-bootstrap-brokers --cluster-arn ${ClusterArn} | \
+          aws kafka get-bootstrap-brokers --cluster-arn "${ClusterArn}" | \
           grep BootstrapBrokerString | cut -f4 -d\"
       )
       ZookeeperConnectString=$(
-          aws kafka describe-cluster --cluster-arn ${ClusterArn} | \
+          aws kafka describe-cluster --cluster-arn "${ClusterArn}" | \
           grep \"ZookeeperConnectString\" | cut -f4 -d\"
       )
       CBControlPlane=$(
           aws ec2 describe-instances --filters "Name=tag-value,Values=cb-control-plane" | \
-          grep -m 1 PublicDnsName | cut -f4 -d\"
+          grep -m 1 "${cluster_scope}" | cut -f4 -d\"
       )
       CBCollect=$(
           aws ec2 describe-instances --filters "Name=tag-value,Values=cb-collect" | \
-          grep -m 1 PublicDnsName | cut -f4 -d\"
+          grep -m 1 PrivateDnsName | cut -f4 -d\"
       )
       CBRunners=""
       for name in cb-runner-1 cb-runner-2;do
           runner=$(
               aws ec2 describe-instances --filters "Name=tag-value,Values=${name}" | \
-              grep -m 1 PublicDnsName | cut -f4 -d\"
+              grep -m 1 "${cluster_scope}" | cut -f4 -d\"
           )
           CBRunners="${CBRunners} ${runner}"
       done

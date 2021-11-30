@@ -3,33 +3,6 @@ set -e
 
 source setup_cb.cfg
 
-# update BootstrapServersString/this_host on runners
-for machine in ${runners};do
-    ssh -i ~/.ssh/id_cb_collect cb-collect@${machine} \
-        -o StrictHostKeyChecking=accept-new \
-        sudo sed -ie \"s@  host:.*@  host: ${BootstrapServersString}@\" \
-        /etc/cloud_builder_broker.yml
-    ssh -i ~/.ssh/id_cb_collect cb-collect@${machine} \
-        -o StrictHostKeyChecking=accept-new \
-        sudo sed -ie \"s@this_host:.*@this_host: ${machine}@\" \
-        /etc/cloud_builder_broker.yml
-done
-
-# update CB_PROJECT/CB_COLLECT_REPO_SERVER on runners and restart services
-for runner in ${runners};do
-    ssh -i ~/.ssh/id_cb_collect cb-collect@${runner} \
-        -o StrictHostKeyChecking=accept-new \
-        sudo sed -ie \"s@CB_PROJECT=.*@CB_PROJECT=${source_repo}@\" \
-        /etc/cloud_builder
-    ssh -i ~/.ssh/id_cb_collect cb-collect@${runner} \
-        -o StrictHostKeyChecking=accept-new \
-        sudo sed -ie \"s@CB_COLLECT_REPO_SERVER=.*@CB_COLLECT_REPO_SERVER=${collector}@\" \
-        /etc/cloud_builder
-    ssh -i ~/.ssh/id_cb_collect cb-collect@${runner} \
-        -o StrictHostKeyChecking=accept-new \
-        sudo systemctl restart cb-fetch-once cb-scheduler cb-info
-done
-
 # update CB_PROJECT on collector and restart services
 if [ -n "${collector}" ];then
     ssh -i ~/.ssh/id_cb_collect cb-collect@${collector} \
@@ -40,3 +13,8 @@ if [ -n "${collector}" ];then
         -o StrictHostKeyChecking=accept-new \
         sudo systemctl restart cb-collect
 fi
+
+# initial setup of runners...
+for runner in ${runners};do
+    setup_runner "${runner}"
+done
