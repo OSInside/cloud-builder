@@ -101,21 +101,7 @@ Create and Setup the reposerver instance
 
          ==> Paste the SSH public key from the Copy/Paste buffer
 
-
-5. **Attach an EBS volume to the reposerver**
-
-   To store and backup the repository data an extra block storage
-   volume should be attached to the server.
-
-   * Follow the documentation from here to attach a new volume:
-     https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-attaching-volume.html
-       
-   * Create the `XFS` filesystem on the new volume and mount it to
-     :file:`/srv/www` on the reposerver. Read the following documentation
-     to understand how to make the volume available:
-     https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-using-volumes.html
-
-6. **Setup runners to sync their results to the collector**
+5. **Setup runners to sync their results to the collector**
 
    In the setup of the runners the settings to connect to the
    collector were not configured. This must be done now as follows:
@@ -144,7 +130,7 @@ Create and Setup the reposerver instance
 
    4. Repeat this steps for all runners of interest
 
-7. **Start** `cb-collect` **service**
+6. **Start** `cb-collect` **service**
 
    Still logged in on the reposerver, start the `cb-collect` service
    as follows:

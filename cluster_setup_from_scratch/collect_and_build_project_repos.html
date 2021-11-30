@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Collect and Build Project Repos &mdash; Cloud Builder 0.2.56 documentation</title>
+  <title>Collect and Build Project Repos &mdash; Cloud Builder 0.2.58 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
@@ -249,18 +249,6 @@ on the <strong>reposerver</strong> as follows:</p>
 </div>
 </li>
 </ol>
-</li>
-<li><p><strong>Attach an EBS volume to the reposerver</strong></p>
-<p>To store and backup the repository data an extra block storage
-volume should be attached to the server.</p>
-<ul class="simple">
-<li><p>Follow the documentation from here to attach a new volume:
-<a class="reference external" href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-attaching-volume.html">https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-attaching-volume.html</a></p></li>
-<li><p>Create the <code class="xref py py-obj docutils literal notranslate"><span class="pre">XFS</span></code> filesystem on the new volume and mount it to
-<code class="file docutils literal notranslate"><span class="pre">/srv/www</span></code> on the reposerver. Read the following documentation
-to understand how to make the volume available:
-<a class="reference external" href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-using-volumes.html">https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-using-volumes.html</a></p></li>
-</ul>
 </li>
 <li><p><strong>Setup runners to sync their results to the collector</strong></p>
 <p>In the setup of the runners the settings to connect to the

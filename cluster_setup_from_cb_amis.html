@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Setup Cloud Builder From AMIs &mdash; Cloud Builder 0.2.56 documentation</title>
+  <title>Setup Cloud Builder From AMIs &mdash; Cloud Builder 0.2.58 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/custom.css" type="text/css" />
@@ -280,6 +280,7 @@ aws ec2 run-instances <span class="se">\</span>
     --count <span class="m">1</span> <span class="se">\</span>
     --image-id <span class="si">${</span><span class="nv">collector</span><span class="si">}</span> <span class="se">\</span>
     --tag-specifications <span class="s1">&#39;ResourceType=instance,Tags=[{Key=Name,Value=cb-collect}]&#39;</span> <span class="se">\</span>
+    --block-device-mapping <span class="s2">&quot;DeviceName=/dev/sda1,Ebs={VolumeSize=100}&quot;</span> <span class="se">\</span>
     --instance-type t2.micro <span class="se">\</span>
     --key-name MySSHKeyPairName
 </pre></div>
@@ -306,31 +307,38 @@ aws ec2 run-instances <span class="se">\</span>
 
 <span class="nb">set</span> -e
 
+<span class="c1"># Use internal scope if access should only be possible from</span>
+<span class="c1"># within the VPC or via VPN connections to this VPC.</span>
+<span class="c1"># cluster_scope=PrivateDnsName</span>
+
+<span class="c1"># Use external scope if access should be possible from the world.</span>
+<span class="nv">cluster_scope</span><span class="o">=</span>PublicDnsName
+
 <span class="nv">ClusterArn</span><span class="o">=</span><span class="k">$(</span>
     aws kafka list-clusters --cluster-name-filter cloud-builder <span class="p">|</span> <span class="se">\</span>
     grep ClusterArn <span class="p">|</span> cut -f4 -d<span class="se">\&quot;</span>
 <span class="k">)</span>
 <span class="nv">BootstrapBrokerString</span><span class="o">=</span><span class="k">$(</span>
-    aws kafka get-bootstrap-brokers --cluster-arn <span class="si">${</span><span class="nv">ClusterArn</span><span class="si">}</span> <span class="p">|</span> <span class="se">\</span>
+    aws kafka get-bootstrap-brokers --cluster-arn <span class="s2">&quot;</span><span class="si">${</span><span class="nv">ClusterArn</span><span class="si">}</span><span class="s2">&quot;</span> <span class="p">|</span> <span class="se">\</span>
     grep BootstrapBrokerString <span class="p">|</span> cut -f4 -d<span class="se">\&quot;</span>
 <span class="k">)</span>
 <span class="nv">ZookeeperConnectString</span><span class="o">=</span><span class="k">$(</span>
-    aws kafka describe-cluster --cluster-arn <span class="si">${</span><span class="nv">ClusterArn</span><span class="si">}</span> <span class="p">|</span> <span class="se">\</span>
+    aws kafka describe-cluster --cluster-arn <span class="s2">&quot;</span><span class="si">${</span><span class="nv">ClusterArn</span><span class="si">}</span><span class="s2">&quot;</span> <span class="p">|</span> <span class="se">\</span>
     grep <span class="se">\&quot;</span>ZookeeperConnectString<span class="se">\&quot;</span> <span class="p">|</span> cut -f4 -d<span class="se">\&quot;</span>
 <span class="k">)</span>
 <span class="nv">CBControlPlane</span><span class="o">=</span><span class="k">$(</span>
     aws ec2 describe-instances --filters <span class="s2">&quot;Name=tag-value,Values=cb-control-plane&quot;</span> <span class="p">|</span> <span class="se">\</span>
-    grep -m <span class="m">1</span> PublicDnsName <span class="p">|</span> cut -f4 -d<span class="se">\&quot;</span>
+    grep -m <span class="m">1</span> <span class="s2">&quot;</span><span class="si">${</span><span class="nv">cluster_scope</span><span class="si">}</span><span class="s2">&quot;</span> <span class="p">|</span> cut -f4 -d<span class="se">\&quot;</span>
 <span class="k">)</span>
 <span class="nv">CBCollect</span><span class="o">=</span><span class="k">$(</span>
     aws ec2 describe-instances --filters <span class="s2">&quot;Name=tag-value,Values=cb-collect&quot;</span> <span class="p">|</span> <span class="se">\</span>
-    grep -m <span class="m">1</span> PublicDnsName <span class="p">|</span> cut -f4 -d<span class="se">\&quot;</span>
+    grep -m <span class="m">1</span> PrivateDnsName <span class="p">|</span> cut -f4 -d<span class="se">\&quot;</span>
 <span class="k">)</span>
 <span class="nv">CBRunners</span><span class="o">=</span><span class="s2">&quot;&quot;</span>
 <span class="k">for</span> name <span class="k">in</span> cb-runner-1 cb-runner-2<span class="p">;</span><span class="k">do</span>
     <span class="nv">runner</span><span class="o">=</span><span class="k">$(</span>
         aws ec2 describe-instances --filters <span class="s2">&quot;Name=tag-value,Values=</span><span class="si">${</span><span class="nv">name</span><span class="si">}</span><span class="s2">&quot;</span> <span class="p">|</span> <span class="se">\</span>
-        grep -m <span class="m">1</span> PublicDnsName <span class="p">|</span> cut -f4 -d<span class="se">\&quot;</span>
+        grep -m <span class="m">1</span> <span class="s2">&quot;</span><span class="si">${</span><span class="nv">cluster_scope</span><span class="si">}</span><span class="s2">&quot;</span> <span class="p">|</span> cut -f4 -d<span class="se">\&quot;</span>
     <span class="k">)</span>
     <span class="nv">CBRunners</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">CBRunners</span><span class="si">}</span><span class="s2"> </span><span class="si">${</span><span class="nv">runner</span><span class="si">}</span><span class="s2">&quot;</span>
 <span class="k">done</span>
