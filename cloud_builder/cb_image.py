@@ -65,6 +65,7 @@ import os
 import sys
 import json
 import glob
+import yaml
 from docopt import docopt
 from tempfile import TemporaryDirectory
 from kiwi.command import Command
@@ -244,8 +245,19 @@ def main() -> None:
         # Sync target_binary_dir to repo server
         if args['--repo-server']:
             update_repo_indicator = os.path.join(
-                target_dir, args['--repo-path'], '.updaterepo'
+                target_dir,
+                args['--repo-path'], '.updaterepo'
             )
+            package_indicator = os.path.join(
+                target_dir,
+                args['--repo-path'], '.package.{image_name}'
+            )
+            # write a package indicator to tell the collector
+            # which binaries belongs to the package
+            with open(package_indicator, 'w') as package_binaries:
+                package_binaries.write(
+                    yaml.dump(packages, default_flow_style=False)
+                )
             # Write an update repo indicator to tell the collector
             # to rebuild the repo metadata. The file also serves
             # as indicator for the repo type

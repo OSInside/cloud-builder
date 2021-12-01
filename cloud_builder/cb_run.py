@@ -53,6 +53,7 @@ options:
 """
 import os
 import sys
+import yaml
 from docopt import docopt
 from typing import List
 
@@ -192,8 +193,19 @@ def main() -> None:
         # Sync target_binary_dir to repo server
         if args['--repo-server'] and exit_code == 0:
             update_repo_indicator = os.path.join(
-                target_binary_dir, args['--repo-path'], '.updaterepo'
+                target_binary_dir,
+                args['--repo-path'], '.updaterepo'
             )
+            package_indicator = os.path.join(
+                target_binary_dir,
+                args['--repo-path'], '.package.{package_name}'
+            )
+            # write a package indicator to tell the collector
+            # which binaries belongs to the package
+            with open(package_indicator, 'w') as package_binaries:
+                package_binaries.write(
+                    yaml.dump(packages, default_flow_style=False)
+                )
             # Write an update repo indicator to tell the collector
             # to rebuild the repo metadata. The file also serves
             # as indicator for the repo type

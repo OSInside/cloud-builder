@@ -63,14 +63,28 @@ class TestCBRun:
         mock_os_system.assert_called_once_with(
             'chroot /var/tmp/CB/projects/package@dist.arch bash /run.sh'
         )
-        mock_open.assert_called_once_with(
-            '/var/tmp/CB/projects/package@dist.arch/'
-            'package@dist.arch.binaries/projects/MS/TW/'
-            '.updaterepo', 'w'
-        )
-        file_handle.write.assert_called_once_with(
-            mock_CBRepository.return_value.get_repo_meta.return_value.repo_type
-        )
+        mock_open.call_args_list == [
+            call(
+                '/var/tmp/CB/projects/package@dist.arch/'
+                'package@dist.arch.binaries/projects/MS/TW/'
+                '.updaterepo', 'w'
+            ),
+            call(
+                '/var/tmp/CB/projects/package@dist.arch/'
+                'package@dist.arch.binaries/projects/MS/TW/'
+                '.package.package', 'w'
+            )
+        ]
+        file_handle.write.call_args_list == [
+            call(
+                mock_CBRepository.return_value.get_repo_meta.
+                return_value.repo_type
+            ),
+            call(
+                '- /var/tmp/CB/projects/package@dist.arch/'
+                'package@dist.arch.binaries/binaries\n'
+            )
+        ]
         assert mock_Command_run.call_args_list == [
             call(
                 [
