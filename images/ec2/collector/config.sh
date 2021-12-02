@@ -24,9 +24,7 @@ baseInsertService cloud-final
 rm -f /etc/httpd/conf.d/welcome.conf
 
 # Activate services CB
-
-# TODO: re-activate after rewrite of the service code
-# baseInsertService cb-collect
+baseInsertService cb-collect
 
 baseInsertService httpd
 

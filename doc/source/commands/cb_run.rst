@@ -8,7 +8,7 @@ SYNOPSIS
 
    cb-run -h | --help
    cb-run --root=<root_path> --request-id=<UUID>
-       [(--repo-server=<name> --repo-path=<path> --ssh-user=<user> --ssh-pkey=<ssh_pkey_file>)]
+       [(--repo-server=<name> --repo-path=<path> --repo-arch=<name> --ssh-user=<user> --ssh-pkey=<ssh_pkey_file>)]
        [--local]
        [--clean]
 
@@ -43,6 +43,11 @@ OPTIONS
 --repo-path=<path>
 
   Path to place build results on the repo server
+
+--repo-arch=<name>
+
+  Architecture name as used in the cloud_builder
+  metadata file to describe the package target
 
 --repo-server=<name>
 

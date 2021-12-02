@@ -672,6 +672,7 @@ def create_image_run_script(
         repo_path = os.sep.join(
             [os.path.dirname(request['project']), selection]
         )
+        repo_arch = request['image']['arch']
         image_source_path = os.path.join(
             Defaults.get_runner_project_dir(), request['project']
         )
@@ -702,6 +703,7 @@ def create_image_run_script(
                     --description {image_source_path} \\
                     --target-dir {image_target_path} \\
                     --repo-path {repo_path} \\
+                    --repo-arch {repo_arch} \\
                     --repo-server {repo_server} \\
                     --ssh-user {ssh_user} \\
                     --ssh-pkey {ssh_pkey} \\
@@ -717,6 +719,7 @@ def create_image_run_script(
             custom_args=' '.join(custom_args) if build_options else '',
             request_id=request['request_id'],
             repo_path=repo_path,
+            repo_arch=repo_arch,
             repo_server=repo_server.host,
             ssh_user=repo_server.user,
             ssh_pkey=repo_server.pkey,
@@ -784,6 +787,7 @@ def create_package_run_script(
         repo_path = os.sep.join(
             [os.path.dirname(request['project']), request['package']['dist']]
         )
+        repo_arch = request['package']['arch']
         package_source_path = os.path.join(
             Defaults.get_runner_project_dir(), request['project']
         )
@@ -817,6 +821,7 @@ def create_package_run_script(
                 cb-run --root {build_root} &> {build_root}.build.log \\
                     --request-id {request_id} \\
                     --repo-path {repo_path} \\
+                    --repo-arch {repo_arch} \\
                     --repo-server {repo_server} \\
                     --ssh-user {ssh_user} \\
                     --ssh-pkey {ssh_pkey} \\
@@ -831,6 +836,7 @@ def create_package_run_script(
             build_root=build_root,
             request_id=request['request_id'],
             repo_path=repo_path,
+            repo_arch=repo_arch,
             repo_server=repo_server.host,
             ssh_user=repo_server.user,
             ssh_pkey=repo_server.pkey,

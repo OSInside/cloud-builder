@@ -18,7 +18,7 @@
 """
 usage: cb-image -h | --help
        cb-image --description=<image_description_path> --target-dir=<target_path> --bundle-id=<ID> --request-id=<UUID>
-           [(--repo-server=<name> --repo-path=<path> --ssh-user=<user> --ssh-pkey=<ssh_pkey_file>)]
+           [(--repo-server=<name> --repo-path=<path> --repo-arch=<name> --ssh-user=<user> --ssh-pkey=<ssh_pkey_file>)]
            [--local]
            [--profile=<name>...]
            [-- <kiwi_custom_build_command_args>...]
@@ -41,6 +41,10 @@ options:
 
     --repo-path=<path>
         Path to place build results on the repo server
+
+    --repo-arch=<name>
+        Architecture name as used in the cloud_builder
+        metadata file to describe the image target
 
     --repo-server=<name>
         Name or IP of collector repo server
@@ -70,6 +74,9 @@ from docopt import docopt
 from tempfile import TemporaryDirectory
 from kiwi.command import Command
 from kiwi.path import Path
+from typing import (
+    List, Dict
+)
 
 from cloud_builder.version import __version__
 from cloud_builder.cloud_logger import CBCloudLogger
@@ -226,10 +233,18 @@ def main() -> None:
         Path.wipe(package_build_target_dir)
         Path.create(package_build_target_dir)
 
+        binary_map: Dict[str, List[str]] = {}
         for package in glob.iglob(f'{target_dir}/*'):
             repo_meta = CBRepository(package).get_repo_meta(
                 base_repo_path=package_build_target_dir
             )
+            repo_file_basename = os.path.basename(repo_meta.repo_file)
+            package_indicator_name = \
+                f'.package_{args["--repo-arch"]}.{image_name}'
+            if package_indicator_name not in binary_map:
+                binary_map[package_indicator_name] = []
+            binary_map[package_indicator_name].append(repo_file_basename)
+
             os.rename(package, repo_meta.repo_file)
 
         Path.wipe(target_dir)
@@ -248,10 +263,6 @@ def main() -> None:
                 target_dir,
                 args['--repo-path'], '.updaterepo'
             )
-            package_indicator = os.path.join(
-                target_dir,
-                args['--repo-path'], '.package.{image_name}'
-            )
             sync_command = [
                 'rsync', '-av', '-e', 'ssh -i {0} -o {1}'.format(
                     args['--ssh-pkey'],
@@ -266,12 +277,25 @@ def main() -> None:
             if sync_call.output:
                 log.info(sync_call.output)
             if sync_call.returncode == 0:
-                # write a package indicator to tell the collector
+                # write package indicator files to tell the collector
                 # which binaries belongs to the package
-                with open(package_indicator, 'w') as package_binaries:
-                    package_binaries.write(
-                        yaml.dump(packages, default_flow_style=False)
+                for package_indicator_name in binary_map.keys():
+                    package_indicator = os.path.join(
+                        target_dir, args['--repo-path'],
+                        package_indicator_name
                     )
+                    binaries_for_arch = []
+                    for package in packages:
+                        if os.path.basename(package) in binary_map[
+                            package_indicator_name
+                        ]:
+                            binaries_for_arch.append(package)
+                    with open(package_indicator, 'w') as package_binaries:
+                        package_binaries.write(
+                            yaml.dump(
+                                binaries_for_arch, default_flow_style=False
+                            )
+                        )
                 # Write an update repo indicator to tell the collector
                 # to rebuild the repo metadata. The file also serves
                 # as indicator for the repo type

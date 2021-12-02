@@ -734,6 +734,7 @@ class TestCBScheduler:
                     --description cloud_builder_sources/projects/MS/myimage \\
                     --target-dir /var/tmp/CB/projects/MS/myimage@standard.x86_64 \\
                     --repo-path projects/MS/standard \\
+                    --repo-arch x86_64 \\
                     --repo-server none \\
                     --ssh-user none \\
                     --ssh-pkey none \\
@@ -834,6 +835,7 @@ class TestCBScheduler:
                 cb-run --root /var/tmp/CB/projects/MS/vim@TW.x86_64 &> /var/tmp/CB/projects/MS/vim@TW.x86_64.build.log \\
                     --request-id c8becd30-a5f6-43a6-a4f4-598ec1115b17 \\
                     --repo-path projects/MS/TW \\
+                    --repo-arch x86_64 \\
                     --repo-server none \\
                     --ssh-user none \\
                     --ssh-pkey none \\

@@ -7,17 +7,16 @@ SYNOPSIS
 .. code:: bash
 
    cb-collect -h | --help
-   cb-collect --project=<github_project> --ssh-pkey=<ssh_pkey_file>
-       [--ssh-user=<user>]
-       [--timeout=<time_sec>]
+   cb-collect --project=<github_project>
+       [--update-interval=<time_sec>]
 
 DESCRIPTION
 -----------
 
 cb-collect - fetches/updates a git repository and
-collects build results of package sources as organized
-in the git tree. Each project in the git tree will
-be represented as a package repository.
+collects build results of packages and images as they
+are synced here from the runners. Each project in the git
+tree will be represented as a package repository.
 
 The tree structure of the repository tree follows the
 git project structure like in the following example:
@@ -45,15 +44,7 @@ OPTIONS
   git clone source URI to fetch project with
   packages managed to build in cloud builder
 
---ssh-pkey=<ssh_pkey_file>
+--update-interval=<time_sec>
 
-  Path to ssh private key file to access runner data
-
---ssh-user=<user>
-
-  User name to access runners via ssh, defaults to: ec2-user
-
---timeout=<time_sec>
-
-  Wait time_sec seconds of inactivity on the message
-  broker before return. Default: 30sec
+  Update interval to ask for new packages/images
+  Default: 30sec
