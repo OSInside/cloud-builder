@@ -30,6 +30,24 @@ class TestCBRun:
         mock_Command_run, mock_Privileges_check_for_root_permissions,
         mock_Path, mock_CBRepository
     ):
+        find_return = Mock()
+        find_return.returncode = 0
+        find_return.output = 'binaries'
+
+        sync_first_return = Mock()
+        sync_first_return.returncode = 0
+
+        sync_second_return = Mock()
+        sync_second_return.returncode = 1
+        sync_second_return.error = 'sync failed'
+
+        command_run_return = [
+            sync_second_return, sync_first_return, find_return
+        ]
+
+        def command_run(command, **flags):
+            return command_run_return.pop()
+
         sys.argv = [
             sys.argv[0],
             '--root', '/var/tmp/CB/projects/package@dist.arch',
@@ -53,8 +71,9 @@ class TestCBRun:
         mock_CBCloudLogger.return_value = log
         mock_CBResponse.return_value = response
         mock_os_system.return_value = 0
-        mock_Command_run.return_value.output = 'binaries'
-        mock_Command_run.return_value.error = 'sync failed'
+
+        mock_Command_run.side_effect = command_run
+
         with patch('builtins.open', create=True) as mock_open:
             mock_open.return_value = MagicMock(spec=io.IOBase)
             file_handle = mock_open.return_value.__enter__.return_value
@@ -96,6 +115,17 @@ class TestCBRun:
                     '-name', '*.rpm', '-or', '-name', '*.deb'
                 ], raise_on_error=False
             ),
+            # first sync, packages
+            call(
+                [
+                    'rsync', '-av', '-e',
+                    'ssh -i path/to/pkey -o StrictHostKeyChecking=accept-new',
+                    '/var/tmp/CB/projects/package@dist.arch/'
+                    'package@dist.arch.binaries/',
+                    'cb-collect@192.168.100.1:/srv/www/projects'
+                ], raise_on_error=False
+            ),
+            # second sync, status indicators
             call(
                 [
                     'rsync', '-av', '-e',

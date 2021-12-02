@@ -252,30 +252,36 @@ def main() -> None:
                 target_dir,
                 args['--repo-path'], '.package.{image_name}'
             )
-            # write a package indicator to tell the collector
-            # which binaries belongs to the package
-            with open(package_indicator, 'w') as package_binaries:
-                package_binaries.write(
-                    yaml.dump(packages, default_flow_style=False)
+            sync_command = [
+                'rsync', '-av', '-e', 'ssh -i {0} -o {1}'.format(
+                    args['--ssh-pkey'],
+                    'StrictHostKeyChecking=accept-new'
+                ), f'{target_dir}/', '{0}@{1}:{2}'.format(
+                    args['--ssh-user'], args['--repo-server'],
+                    Defaults.get_repo_root()
                 )
-            # Write an update repo indicator to tell the collector
-            # to rebuild the repo metadata. The file also serves
-            # as indicator for the repo type
-            with open(update_repo_indicator, 'w') as flag:
-                flag.write(repo_meta.repo_type)
-            sync_call = Command.run(
-                [
-                    'rsync', '-av', '-e', 'ssh -i {0} -o {1}'.format(
-                        args['--ssh-pkey'],
-                        'StrictHostKeyChecking=accept-new'
-                    ), f'{target_dir}/', '{0}@{1}:{2}'.format(
-                        args['--ssh-user'], args['--repo-server'],
-                        Defaults.get_repo_root()
-                    )
-                ], raise_on_error=False
-            )
+            ]
+            # Sync new packages first
+            sync_call = Command.run(sync_command, raise_on_error=False)
             if sync_call.output:
                 log.info(sync_call.output)
+            if sync_call.returncode == 0:
+                # write a package indicator to tell the collector
+                # which binaries belongs to the package
+                with open(package_indicator, 'w') as package_binaries:
+                    package_binaries.write(
+                        yaml.dump(packages, default_flow_style=False)
+                    )
+                # Write an update repo indicator to tell the collector
+                # to rebuild the repo metadata. The file also serves
+                # as indicator for the repo type
+                with open(update_repo_indicator, 'w') as flag:
+                    flag.write(repo_meta.repo_type)
+                # Sync status indicators next
+                sync_call = Command.run(sync_command, raise_on_error=False)
+                if sync_call.output:
+                    log.info(sync_call.output)
+
             if sync_call.returncode != 0:
                 exit_code = 1
                 status = status_flags.package_binaries_sync_failed
