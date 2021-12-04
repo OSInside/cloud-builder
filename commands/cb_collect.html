@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>cb-collect &mdash; Cloud Builder 0.2.59 documentation</title>
+  <title>cb-collect &mdash; Cloud Builder 0.2.60 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
@@ -166,18 +166,17 @@
 <section id="synopsis">
 <h2>SYNOPSIS<a class="headerlink" href="#synopsis" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>cb-collect -h <span class="p">|</span> --help
-cb-collect --project<span class="o">=</span>&lt;github_project&gt; --ssh-pkey<span class="o">=</span>&lt;ssh_pkey_file&gt;
-    <span class="o">[</span>--ssh-user<span class="o">=</span>&lt;user&gt;<span class="o">]</span>
-    <span class="o">[</span>--timeout<span class="o">=</span>&lt;time_sec&gt;<span class="o">]</span>
+cb-collect --project<span class="o">=</span>&lt;github_project&gt;
+    <span class="o">[</span>--update-interval<span class="o">=</span>&lt;time_sec&gt;<span class="o">]</span>
 </pre></div>
 </div>
 </section>
 <section id="description">
 <h2>DESCRIPTION<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
 <p>cb-collect - fetches/updates a git repository and
-collects build results of package sources as organized
-in the git tree. Each project in the git tree will
-be represented as a package repository.</p>
+collects build results of packages and images as they
+are synced here from the runners. Each project in the git
+tree will be represented as a package repository.</p>
 <p>The tree structure of the repository tree follows the
 git project structure like in the following example:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>REPO_ROOT
@@ -201,15 +200,9 @@ managers</p>
 <dd><p>git clone source URI to fetch project with
 packages managed to build in cloud builder</p>
 </dd>
-<dt><kbd><span class="option">--ssh-pkey=<var>&lt;ssh_pkey_file&gt;</var></span></kbd></dt>
-<dd><p>Path to ssh private key file to access runner data</p>
-</dd>
-<dt><kbd><span class="option">--ssh-user=<var>&lt;user&gt;</var></span></kbd></dt>
-<dd><p>User name to access runners via ssh, defaults to: ec2-user</p>
-</dd>
-<dt><kbd><span class="option">--timeout=<var>&lt;time_sec&gt;</var></span></kbd></dt>
-<dd><p>Wait time_sec seconds of inactivity on the message
-broker before return. Default: 30sec</p>
+<dt><kbd><span class="option">--update-interval=<var>&lt;time_sec&gt;</var></span></kbd></dt>
+<dd><p>Update interval to ask for new packages/images
+Default: 30sec</p>
 </dd>
 </dl>
 </section>

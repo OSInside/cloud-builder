@@ -8,7 +8,7 @@ SYNOPSIS
 
    cb-image -h | --help
    cb-image --description=<image_description_path> --target-dir=<target_path> --bundle-id=<ID> --request-id=<UUID>
-       [(--repo-server=<name> --repo-path=<path> --ssh-user=<user> --ssh-pkey=<ssh_pkey_file>)]
+       [(--repo-server=<name> --repo-path=<path> --repo-arch=<name> --ssh-user=<user> --ssh-pkey=<ssh_pkey_file>)]
        [--local]
        [--profile=<name>...]
        [-- <kiwi_custom_build_command_args>...]
@@ -57,6 +57,11 @@ OPTIONS
 --repo-path=<path>
 
   Path to place build results on the repo server
+
+--repo-arch=<name>
+
+  Architecture name as used in the cloud_builder
+  metadata file to describe the package target
 
 --repo-server=<name>
 

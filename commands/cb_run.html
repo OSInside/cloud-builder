@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>cb-run &mdash; Cloud Builder 0.2.59 documentation</title>
+  <title>cb-run &mdash; Cloud Builder 0.2.60 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
@@ -167,7 +167,7 @@
 <h2>SYNOPSIS<a class="headerlink" href="#synopsis" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>cb-run -h <span class="p">|</span> --help
 cb-run --root<span class="o">=</span>&lt;root_path&gt; --request-id<span class="o">=</span>&lt;UUID&gt;
-    <span class="o">[(</span>--repo-server<span class="o">=</span>&lt;name&gt; --repo-path<span class="o">=</span>&lt;path&gt; --ssh-user<span class="o">=</span>&lt;user&gt; --ssh-pkey<span class="o">=</span>&lt;ssh_pkey_file&gt;<span class="o">)]</span>
+    <span class="o">[(</span>--repo-server<span class="o">=</span>&lt;name&gt; --repo-path<span class="o">=</span>&lt;path&gt; --repo-arch<span class="o">=</span>&lt;name&gt; --ssh-user<span class="o">=</span>&lt;user&gt; --ssh-pkey<span class="o">=</span>&lt;ssh_pkey_file&gt;<span class="o">)]</span>
     <span class="o">[</span>--local<span class="o">]</span>
     <span class="o">[</span>--clean<span class="o">]</span>
 </pre></div>
@@ -198,6 +198,10 @@ to work</p>
 </dd>
 <dt><kbd><span class="option">--repo-path=<var>&lt;path&gt;</var></span></kbd></dt>
 <dd><p>Path to place build results on the repo server</p>
+</dd>
+<dt><kbd><span class="option">--repo-arch=<var>&lt;name&gt;</var></span></kbd></dt>
+<dd><p>Architecture name as used in the cloud_builder
+metadata file to describe the package target</p>
 </dd>
 <dt><kbd><span class="option">--repo-server=<var>&lt;name&gt;</var></span></kbd></dt>
 <dd><p>Name or IP of collector repo server</p>
