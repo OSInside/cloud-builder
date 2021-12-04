@@ -1,0 +1,88 @@
+#!/bin/bash
+
+set -e
+
+# Use internal scope if access should only be possible from
+# within the VPC or via VPN connections to this VPC.
+# cluster_scope=PrivateDnsName
+
+# USER SETTINGS:
+# Use external scope if access should be possible from the world.
+cluster_scope=PublicDnsName
+
+# Path to private key which allows access to your EC2 instances
+ssh_pkey_path=${HOME}/.ssh/id_ec2
+
+# Path to source repo with your packages/images
+source_repo="https://github.com/OSInside/cloud-builder-packages.git"
+
+
+ClusterArn=$(
+    aws kafka list-clusters --cluster-name-filter cloud-builder | \
+    grep ClusterArn | cut -f4 -d\"
+)
+BootstrapBrokerString=$(
+    aws kafka get-bootstrap-brokers --cluster-arn "${ClusterArn}" | \
+    grep BootstrapBrokerString | cut -f4 -d\"
+)
+ZookeeperConnectString=$(
+    aws kafka describe-cluster --cluster-arn "${ClusterArn}" | \
+    grep \"ZookeeperConnectString\" | cut -f4 -d\"
+)
+CBControlPlane=$(
+    aws ec2 describe-instances --filters "Name=tag-value,Values=cb-control-plane" | \
+    grep -m 1 "${cluster_scope}" | cut -f4 -d\"
+)
+CBCollect=$(
+    aws ec2 describe-instances --filters "Name=tag-value,Values=cb-collect" | \
+    grep -m 1 PrivateDnsName | cut -f4 -d\"
+)
+CBRunners=""
+for name in cb-runner-1 cb-runner-2;do
+    runner=$(
+        aws ec2 describe-instances --filters "Name=tag-value,Values=${name}" | \
+        grep -m 1 "${cluster_scope}" | cut -f4 -d\"
+    )
+    CBRunners="${CBRunners} ${runner}"
+done
+
+if \
+    [ -z "${ZookeeperConnectString}" ] || \
+    [ -z "${BootstrapBrokerString}" ] || \
+    [ -z "${CBControlPlane}" ] || \
+    [ -z "${CBCollect}" ] || \
+    [ -z "${CBRunners}" ]
+then
+    echo "Required settings not available"
+    exit 1
+fi
+
+# shellcheck disable=SC2116
+cat <<EOF >"${HOME}/setup_cb.cfg"
+# ZookeeperConnectString
+ZookeeperConnectString="${ZookeeperConnectString}"
+
+# BootstrapBrokerString
+BootstrapServersString="${BootstrapBrokerString}"
+
+# host name of the control plane
+control_plane="${CBControlPlane}"
+
+# git source repo for packages/images
+source_repo="${source_repo}"
+
+# runner group names in the form "name_a name_b ..."
+runner_topics="fedora"
+
+# host name of the collector
+collector="${CBCollect}"
+
+# host names of the runners in the form "host_a host_b ..."
+runners="$(echo "${CBRunners}")" # shellcheck disable=SC2116
+EOF
+
+scp -i "${ssh_pkey_path}" \
+    "${HOME}"/setup_cb.cfg fedora@"${CBControlPlane}":~
+
+ssh -i "${ssh_pkey_path}" \
+    fedora@"${CBControlPlane}" ~fedora/setup_cb

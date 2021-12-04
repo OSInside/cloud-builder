@@ -1,0 +1,25 @@
+#!/bin/bash
+
+set -e
+
+# USER SETTINGS:
+# Path to private key which allows access to your EC2 instances
+ssh_pkey_path=${HOME}/.ssh/id_ec2
+
+CBControlPlane=$(
+    aws ec2 describe-instances --filters "Name=tag-value,Values=cb-control-plane" | \
+    grep -m 1 PublicDnsName | cut -f4 -d\"
+)
+
+mkdir -p "${HOME}/.config/cb"
+
+cat <<EOF >"${HOME}/.config/cb/cbctl.yml"
+cluster:
+  ssh_user: fedora
+  ssh_pkey_file: "${ssh_pkey_path}"
+  controlplane: "${CBControlPlane}"
+  runner_count: 2
+
+settings:
+  use_control_plane_as_proxy: true
+EOF

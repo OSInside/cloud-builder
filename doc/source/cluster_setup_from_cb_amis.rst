@@ -113,168 +113,125 @@ Create Cluster
    .. warning::
 
       Do not continue until there is a ZookeeperConnectString
+
+2. **Checkout the CB git repository:**
+
+   For provisioning of the cluster some helper scripts are provided
+   in the git sources of {CB}
+
+   .. code:: bash
+
+      git clone https://github.com/OSInside/cloud-builder.git
  
-2. **Launch the Control Plane:**
+3. **Launch the Control Plane, Collector(RepoServer) and Runners(2):**
 
-   Start the `control plane` as follows:
-
-   .. code:: bash
-
-      control_plane=ami-0777054b6e9b37863
-      aws ec2 run-instances \
-          --count 1 \
-          --image-id ${control_plane} \
-          --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=cb-control-plane}]' \
-          --instance-type t2.micro \
-          --key-name MySSHKeyPairName
-
-3. **Launch the Collector:**
-
-   Start the `collector` as follows:
+   The simple cluster as described here consists out of a
+   control plane, two runners and one collector which serves
+   as the repo server. To start these instances edit the file
+   :file:`provision_helper/cb_run_cluster_instances` from the
+   git checkout and update the following setting to
+   match your AWS EC2 cloud service:
 
    .. code:: bash
 
-      collector=ami-05ec87868b59b859e
-      aws ec2 run-instances \
-          --count 1 \
-          --image-id ${collector} \
-          --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=cb-collect}]' \
-          --block-device-mapping "DeviceName=/dev/sda1,Ebs={VolumeSize=100}" \
-          --instance-type t2.micro \
-          --key-name MySSHKeyPairName
+      # USER SETTINGS
+      # Name of ssh key pair which you have registered in EC2
+      key_name=ms
 
-4. **Launch the Runners:**
-
-   Start the `runners` as follows:
+   Once done create the instances as follows:
 
    .. code:: bash
 
-      runner=ami-09cb9e1fc89c5dba6
-      for name in cb-runner-1 cb-runner-2;do
-          aws ec2 run-instances \
-              --count 1 \
-              --image-id ${runner} \
-              --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=$name}]" \
-              --block-device-mapping "DeviceName=/dev/sda1,Ebs={VolumeSize=100}" \
-              --instance-type t2.micro \
-              --key-name MySSHKeyPairName
-      done
+      provision_helper/cb_run_cluster_instances
 
-5. **Provision {CB} Services:**
+   .. warning::
 
-   Create the script :file:`setup_cb.cfg.sh` and place the following content
+      Do not continue after all instances are in `Running` state
+
+4. **Provision {CB} Services:**
+
+   To provision the cluster edit the file
+   :file:`provision_helper/cb_provision_cluster` and update the
+   following settings to match your AWS EC2 cloud service:
 
    .. code:: bash
 
-      #!/bin/bash
+      # USER SETTINGS:
+      # Path to private key which allows access to your EC2 instances
+      ssh_pkey_path=${HOME}/.ssh/id_ec2
 
-      set -e
-
-      # Use internal scope if access should only be possible from
-      # within the VPC or via VPN connections to this VPC.
-      # cluster_scope=PrivateDnsName
-
-      # Use external scope if access should be possible from the world.
-      cluster_scope=PublicDnsName
-
-      ClusterArn=$(
-          aws kafka list-clusters --cluster-name-filter cloud-builder | \
-          grep ClusterArn | cut -f4 -d\"
-      )
-      BootstrapBrokerString=$(
-          aws kafka get-bootstrap-brokers --cluster-arn "${ClusterArn}" | \
-          grep BootstrapBrokerString | cut -f4 -d\"
-      )
-      ZookeeperConnectString=$(
-          aws kafka describe-cluster --cluster-arn "${ClusterArn}" | \
-          grep \"ZookeeperConnectString\" | cut -f4 -d\"
-      )
-      CBControlPlane=$(
-          aws ec2 describe-instances --filters "Name=tag-value,Values=cb-control-plane" | \
-          grep -m 1 "${cluster_scope}" | cut -f4 -d\"
-      )
-      CBCollect=$(
-          aws ec2 describe-instances --filters "Name=tag-value,Values=cb-collect" | \
-          grep -m 1 PrivateDnsName | cut -f4 -d\"
-      )
-      CBRunners=""
-      for name in cb-runner-1 cb-runner-2;do
-          runner=$(
-              aws ec2 describe-instances --filters "Name=tag-value,Values=${name}" | \
-              grep -m 1 "${cluster_scope}" | cut -f4 -d\"
-          )
-          CBRunners="${CBRunners} ${runner}"
-      done
-
-      cat <<EOF
-      # ZookeeperConnectString
-      ZookeeperConnectString="${ZookeeperConnectString}"
-
-      # BootstrapBrokerString
-      BootstrapServersString="${BootstrapBrokerString}"
-
-      # host name of the control plane
-      control_plane="${CBControlPlane}"
-
-      # git source repo for packages/images
+      # Path to source repo with your packages/images
       source_repo="https://github.com/OSInside/cloud-builder-packages.git"
 
-      # runner group names in the form "name_a name_b ..." 
-      runner_topics="fedora"
-
-      # host name of the collector
-      collector="${CBCollect}"
-
-      # host names of the runners in the form "host_a host_b ..."
-      runners="$(echo ${CBRunners})"
-      EOF
-
-   Create the file :file:`setup_cb.cfg` as follows:
+   Once done provision the cluster as follows:
 
    .. code:: bash
 
-      bash setup_cb.cfg.sh > setup_cb.cfg
+      provision_helper/cb_provision_cluster
 
-   Copy the setup file to the `control-plane` and provision the cluster
+5. **Setup cb-ctl:**
 
-   .. code:: bash
-
-      scp -i PathToPkeyMatchingMySSHKeyPairName \
-          setup_cb.cfg fedora@ControlPlanePublicInstanceIP:~
-
-      ssh -i PathToPkeyMatchingMySSHKeyPairName \
-          fedora@ControlPlanePublicInstanceIP ~fedora/setup_cb
-
-6. **Setup cb-ctl:**
-
-   Create the script :file:`setup_cbctl.cfg.sh` and place the following content
+   To work with the cluster the `cb-ctl` utility needs to be
+   configured. Edit the file :file:`provision_helper/cb_setup_cb_ctl`
+   and update the following settings to match your AWS EC2
+   cloud service:
 
    .. code:: bash
 
-      #!/bin/bash
+      # USER SETTINGS:
+      # Path to private key which allows access to your EC2 instances
+      ssh_pkey_path=${HOME}/.ssh/id_ec2
 
-      set -e
+   Once done call:
 
-      CBControlPlane=$(
-          aws ec2 describe-instances --filters "Name=tag-value,Values=cb-control-plane" | \
+   .. code:: bash
+
+      provision_helper/cb_setup_cb_ctl
+
+   .. note::
+
+      The setup of `cb-ctl` uses the `use_control_plane_as_proxy`
+      configuration setting. This is the easiest way to connect to the
+      cluster and uses the control plane as a proxy through SSH. However,
+      this method is also the least performant one. For a production use
+      either work with `cb-ctl` directly from the control plane or create
+      a VPN connection to the VPC running in the cloud.
+
+6. **Build A thing:**
+
+   Finally use your {CB} cluster to build something. In this setup method
+   the example git repo `https://github.com/OSInside/cloud-builder-packages`
+   was used. You don't have to check it out to send build requests to the
+   cluster but it makes the work easier because you can read the git and
+   see how the packages are setup and which parameters needs to be passed
+   to `cb-ctl`. To build the lovely `xclock` package for SUSE Tumbleweed
+   call the following:
+
+   .. code:: bash
+
+      cb-ctl --build-package xclock --project-path MS \
+          --arch x86_64 --dist TW --runner-group fedora
+
+      cb-ctl --build-log xclock --project-path MS --keep-open \
+          --arch x86_64 --dist TW
+
+   Once done the repository with the package will appear on the collector.
+   Point your preferred web browser to the collector instance as
+   follows:
+
+   .. code:: bash
+
+      RepoServer=$(
+          aws ec2 describe-instances --filters "Name=tag-value,Values=cb-collect" | \
           grep -m 1 PublicDnsName | cut -f4 -d\"
       )
 
-      cat <<EOF
-      cluster:
-        ssh_user: fedora
-        ssh_pkey_file: $1
-        controlplane: ${CBControlPlane}
-        runner_count: 2
+      firefox http://${RepoServer}
 
-      settings:
-        use_control_plane_as_proxy: true
-      EOF
+   The URL on the collector (aka RepoServer) can also be used in package
+   managers to fetch and install the package(s).
 
-   Call `setup_cbctl.cfg.sh` as follows:
+   .. warning::
 
-   .. code:: bash
-
-      mkdir -p ~/.config/cb
-      chmod u+x setup_cbctl.cfg.sh
-      setup_cbctl.cfg.sh PathToPkeyMatchingMySSHKeyPairName > ~/.config/cb/cbctl.yml
+      As of today the packages and repositories created by {CB} are
+      not signed.

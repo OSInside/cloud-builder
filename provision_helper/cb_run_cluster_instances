@@ -1,0 +1,43 @@
+#!/bin/bash
+# Simple Cluster Layout consisting out of
+# the control plane, a collector and two runners
+# Very small instances (t2.micro) and max 10G of
+# EBS storage. Low cost profile
+#
+
+# USER SETTINGS
+# Name of ssh key pair which you have registered in EC2
+key_name=ms
+
+# AMI's
+control_plane=ami-0777054b6e9b37863
+collector=ami-05ec87868b59b859e
+runner=ami-09cb9e1fc89c5dba6
+
+# Start Control Plane
+aws ec2 run-instances \
+    --count 1 \
+    --image-id ${control_plane} \
+    --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=cb-control-plane}]' \
+    --instance-type t2.micro \
+    --key-name ${key_name}
+
+# Start Collector (RepoServer)
+aws ec2 run-instances \
+    --count 1 \
+    --image-id ${collector} \
+    --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=cb-collect}]' \
+    --block-device-mapping "DeviceName=/dev/sda1,Ebs={VolumeSize=10}" \
+    --instance-type t2.micro \
+    --key-name ${key_name}
+
+# Start 2 Runners
+for name in cb-runner-1 cb-runner-2;do
+    aws ec2 run-instances \
+        --count 1 \
+        --image-id ${runner} \
+        --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=$name}]" \
+        --block-device-mapping "DeviceName=/dev/sda1,Ebs={VolumeSize=10}" \
+        --instance-type t2.micro \
+        --key-name ${key_name}
+done
