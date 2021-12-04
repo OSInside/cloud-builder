@@ -18,7 +18,7 @@ the `MS` project as follows:
 
    .. code:: bash
 
-      cb-ctl --build-package xclock --project MS \
+      cb-ctl --build-package xclock --project-path MS \
           --arch x86_64 --dist TW --runner-group suse
 
    This will return with an information like the following:

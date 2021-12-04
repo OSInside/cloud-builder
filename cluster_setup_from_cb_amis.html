@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Setup Cloud Builder From AMIs &mdash; Cloud Builder 0.2.60 documentation</title>
+  <title>Setup Cloud Builder From AMIs &mdash; Cloud Builder 0.2.61 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/custom.css" type="text/css" />
@@ -261,153 +261,107 @@ connection string printed:</p>
 <p>Do not continue until there is a ZookeeperConnectString</p>
 </div>
 </li>
-<li><p><strong>Launch the Control Plane:</strong></p>
-<p>Start the <code class="xref py py-obj docutils literal notranslate"><span class="pre">control</span> <span class="pre">plane</span></code> as follows:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">control_plane</span><span class="o">=</span>ami-0777054b6e9b37863
-aws ec2 run-instances <span class="se">\</span>
-    --count <span class="m">1</span> <span class="se">\</span>
-    --image-id <span class="si">${</span><span class="nv">control_plane</span><span class="si">}</span> <span class="se">\</span>
-    --tag-specifications <span class="s1">&#39;ResourceType=instance,Tags=[{Key=Name,Value=cb-control-plane}]&#39;</span> <span class="se">\</span>
-    --instance-type t2.micro <span class="se">\</span>
-    --key-name MySSHKeyPairName
+<li><p><strong>Checkout the CB git repository:</strong></p>
+<p>For provisioning of the cluster some helper scripts are provided
+in the git sources of Cloud Builder</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git clone https://github.com/OSInside/cloud-builder.git
 </pre></div>
 </div>
 </li>
-<li><p><strong>Launch the Collector:</strong></p>
-<p>Start the <code class="xref py py-obj docutils literal notranslate"><span class="pre">collector</span></code> as follows:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">collector</span><span class="o">=</span>ami-05ec87868b59b859e
-aws ec2 run-instances <span class="se">\</span>
-    --count <span class="m">1</span> <span class="se">\</span>
-    --image-id <span class="si">${</span><span class="nv">collector</span><span class="si">}</span> <span class="se">\</span>
-    --tag-specifications <span class="s1">&#39;ResourceType=instance,Tags=[{Key=Name,Value=cb-collect}]&#39;</span> <span class="se">\</span>
-    --block-device-mapping <span class="s2">&quot;DeviceName=/dev/sda1,Ebs={VolumeSize=100}&quot;</span> <span class="se">\</span>
-    --instance-type t2.micro <span class="se">\</span>
-    --key-name MySSHKeyPairName
+<li><p><strong>Launch the Control Plane, Collector(RepoServer) and Runners(2):</strong></p>
+<p>The simple cluster as described here consists out of a
+control plane, two runners and one collector which serves
+as the repo server. To start these instances edit the file
+<code class="file docutils literal notranslate"><span class="pre">provision_helper/cb_run_cluster_instances</span></code> from the
+git checkout and update the following setting to
+match your AWS EC2 cloud service:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># USER SETTINGS</span>
+<span class="c1"># Name of ssh key pair which you have registered in EC2</span>
+<span class="nv">key_name</span><span class="o">=</span>ms
 </pre></div>
 </div>
-</li>
-<li><p><strong>Launch the Runners:</strong></p>
-<p>Start the <code class="xref py py-obj docutils literal notranslate"><span class="pre">runners</span></code> as follows:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">runner</span><span class="o">=</span>ami-09cb9e1fc89c5dba6
-<span class="k">for</span> name <span class="k">in</span> cb-runner-1 cb-runner-2<span class="p">;</span><span class="k">do</span>
-    aws ec2 run-instances <span class="se">\</span>
-        --count <span class="m">1</span> <span class="se">\</span>
-        --image-id <span class="si">${</span><span class="nv">runner</span><span class="si">}</span> <span class="se">\</span>
-        --tag-specifications <span class="s2">&quot;ResourceType=instance,Tags=[{Key=Name,Value=</span><span class="nv">$name</span><span class="s2">}]&quot;</span> <span class="se">\</span>
-        --block-device-mapping <span class="s2">&quot;DeviceName=/dev/sda1,Ebs={VolumeSize=100}&quot;</span> <span class="se">\</span>
-        --instance-type t2.micro <span class="se">\</span>
-        --key-name MySSHKeyPairName
-<span class="k">done</span>
+<p>Once done create the instances as follows:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>provision_helper/cb_run_cluster_instances
 </pre></div>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Do not continue after all instances are in <code class="xref py py-obj docutils literal notranslate"><span class="pre">Running</span></code> state</p>
 </div>
 </li>
 <li><p><strong>Provision Cloud Builder Services:</strong></p>
-<p>Create the script <code class="file docutils literal notranslate"><span class="pre">setup_cb.cfg.sh</span></code> and place the following content</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/bin/bash</span>
+<p>To provision the cluster edit the file
+<code class="file docutils literal notranslate"><span class="pre">provision_helper/cb_provision_cluster</span></code> and update the
+following settings to match your AWS EC2 cloud service:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># USER SETTINGS:</span>
+<span class="c1"># Path to private key which allows access to your EC2 instances</span>
+<span class="nv">ssh_pkey_path</span><span class="o">=</span><span class="si">${</span><span class="nv">HOME</span><span class="si">}</span>/.ssh/id_ec2
 
-<span class="nb">set</span> -e
-
-<span class="c1"># Use internal scope if access should only be possible from</span>
-<span class="c1"># within the VPC or via VPN connections to this VPC.</span>
-<span class="c1"># cluster_scope=PrivateDnsName</span>
-
-<span class="c1"># Use external scope if access should be possible from the world.</span>
-<span class="nv">cluster_scope</span><span class="o">=</span>PublicDnsName
-
-<span class="nv">ClusterArn</span><span class="o">=</span><span class="k">$(</span>
-    aws kafka list-clusters --cluster-name-filter cloud-builder <span class="p">|</span> <span class="se">\</span>
-    grep ClusterArn <span class="p">|</span> cut -f4 -d<span class="se">\&quot;</span>
-<span class="k">)</span>
-<span class="nv">BootstrapBrokerString</span><span class="o">=</span><span class="k">$(</span>
-    aws kafka get-bootstrap-brokers --cluster-arn <span class="s2">&quot;</span><span class="si">${</span><span class="nv">ClusterArn</span><span class="si">}</span><span class="s2">&quot;</span> <span class="p">|</span> <span class="se">\</span>
-    grep BootstrapBrokerString <span class="p">|</span> cut -f4 -d<span class="se">\&quot;</span>
-<span class="k">)</span>
-<span class="nv">ZookeeperConnectString</span><span class="o">=</span><span class="k">$(</span>
-    aws kafka describe-cluster --cluster-arn <span class="s2">&quot;</span><span class="si">${</span><span class="nv">ClusterArn</span><span class="si">}</span><span class="s2">&quot;</span> <span class="p">|</span> <span class="se">\</span>
-    grep <span class="se">\&quot;</span>ZookeeperConnectString<span class="se">\&quot;</span> <span class="p">|</span> cut -f4 -d<span class="se">\&quot;</span>
-<span class="k">)</span>
-<span class="nv">CBControlPlane</span><span class="o">=</span><span class="k">$(</span>
-    aws ec2 describe-instances --filters <span class="s2">&quot;Name=tag-value,Values=cb-control-plane&quot;</span> <span class="p">|</span> <span class="se">\</span>
-    grep -m <span class="m">1</span> <span class="s2">&quot;</span><span class="si">${</span><span class="nv">cluster_scope</span><span class="si">}</span><span class="s2">&quot;</span> <span class="p">|</span> cut -f4 -d<span class="se">\&quot;</span>
-<span class="k">)</span>
-<span class="nv">CBCollect</span><span class="o">=</span><span class="k">$(</span>
-    aws ec2 describe-instances --filters <span class="s2">&quot;Name=tag-value,Values=cb-collect&quot;</span> <span class="p">|</span> <span class="se">\</span>
-    grep -m <span class="m">1</span> PrivateDnsName <span class="p">|</span> cut -f4 -d<span class="se">\&quot;</span>
-<span class="k">)</span>
-<span class="nv">CBRunners</span><span class="o">=</span><span class="s2">&quot;&quot;</span>
-<span class="k">for</span> name <span class="k">in</span> cb-runner-1 cb-runner-2<span class="p">;</span><span class="k">do</span>
-    <span class="nv">runner</span><span class="o">=</span><span class="k">$(</span>
-        aws ec2 describe-instances --filters <span class="s2">&quot;Name=tag-value,Values=</span><span class="si">${</span><span class="nv">name</span><span class="si">}</span><span class="s2">&quot;</span> <span class="p">|</span> <span class="se">\</span>
-        grep -m <span class="m">1</span> <span class="s2">&quot;</span><span class="si">${</span><span class="nv">cluster_scope</span><span class="si">}</span><span class="s2">&quot;</span> <span class="p">|</span> cut -f4 -d<span class="se">\&quot;</span>
-    <span class="k">)</span>
-    <span class="nv">CBRunners</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">CBRunners</span><span class="si">}</span><span class="s2"> </span><span class="si">${</span><span class="nv">runner</span><span class="si">}</span><span class="s2">&quot;</span>
-<span class="k">done</span>
-
-cat <span class="s">&lt;&lt;EOF</span>
-<span class="s"># ZookeeperConnectString</span>
-<span class="s">ZookeeperConnectString=&quot;${ZookeeperConnectString}&quot;</span>
-
-<span class="s"># BootstrapBrokerString</span>
-<span class="s">BootstrapServersString=&quot;${BootstrapBrokerString}&quot;</span>
-
-<span class="s"># host name of the control plane</span>
-<span class="s">control_plane=&quot;${CBControlPlane}&quot;</span>
-
-<span class="s"># git source repo for packages/images</span>
-<span class="s">source_repo=&quot;https://github.com/OSInside/cloud-builder-packages.git&quot;</span>
-
-<span class="s"># runner group names in the form &quot;name_a name_b ...&quot;</span>
-<span class="s">runner_topics=&quot;fedora&quot;</span>
-
-<span class="s"># host name of the collector</span>
-<span class="s">collector=&quot;${CBCollect}&quot;</span>
-
-<span class="s"># host names of the runners in the form &quot;host_a host_b ...&quot;</span>
-<span class="s">runners=&quot;$(echo ${CBRunners})&quot;</span>
-<span class="s">EOF</span>
+<span class="c1"># Path to source repo with your packages/images</span>
+<span class="nv">source_repo</span><span class="o">=</span><span class="s2">&quot;https://github.com/OSInside/cloud-builder-packages.git&quot;</span>
 </pre></div>
 </div>
-<p>Create the file <code class="file docutils literal notranslate"><span class="pre">setup_cb.cfg</span></code> as follows:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>bash setup_cb.cfg.sh &gt; setup_cb.cfg
-</pre></div>
-</div>
-<p>Copy the setup file to the <code class="xref py py-obj docutils literal notranslate"><span class="pre">control-plane</span></code> and provision the cluster</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>scp -i PathToPkeyMatchingMySSHKeyPairName <span class="se">\</span>
-    setup_cb.cfg fedora@ControlPlanePublicInstanceIP:~
-
-ssh -i PathToPkeyMatchingMySSHKeyPairName <span class="se">\</span>
-    fedora@ControlPlanePublicInstanceIP ~fedora/setup_cb
+<p>Once done provision the cluster as follows:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>provision_helper/cb_provision_cluster
 </pre></div>
 </div>
 </li>
 <li><p><strong>Setup cb-ctl:</strong></p>
-<p>Create the script <code class="file docutils literal notranslate"><span class="pre">setup_cbctl.cfg.sh</span></code> and place the following content</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/bin/bash</span>
+<p>To work with the cluster the <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-ctl</span></code> utility needs to be
+configured. Edit the file <code class="file docutils literal notranslate"><span class="pre">provision_helper/cb_setup_cb_ctl</span></code>
+and update the following settings to match your AWS EC2
+cloud service:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># USER SETTINGS:</span>
+<span class="c1"># Path to private key which allows access to your EC2 instances</span>
+<span class="nv">ssh_pkey_path</span><span class="o">=</span><span class="si">${</span><span class="nv">HOME</span><span class="si">}</span>/.ssh/id_ec2
+</pre></div>
+</div>
+<p>Once done call:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>provision_helper/cb_setup_cb_ctl
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The setup of <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-ctl</span></code> uses the <code class="xref py py-obj docutils literal notranslate"><span class="pre">use_control_plane_as_proxy</span></code>
+configuration setting. This is the easiest way to connect to the
+cluster and uses the control plane as a proxy through SSH. However,
+this method is also the least performant one. For a production use
+either work with <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-ctl</span></code> directly from the control plane or create
+a VPN connection to the VPC running in the cloud.</p>
+</div>
+</li>
+<li><p><strong>Build A thing:</strong></p>
+<p>Finally use your Cloud Builder cluster to build something. In this setup method
+the example git repo <code class="xref py py-obj docutils literal notranslate"><span class="pre">https://github.com/OSInside/cloud-builder-packages</span></code>
+was used. You don’t have to check it out to send build requests to the
+cluster but it makes the work easier because you can read the git and
+see how the packages are setup and which parameters needs to be passed
+to <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-ctl</span></code>. To build the lovely <code class="xref py py-obj docutils literal notranslate"><span class="pre">xclock</span></code> package for SUSE Tumbleweed
+call the following:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>cb-ctl --build-package xclock --project-path MS <span class="se">\</span>
+    --arch x86_64 --dist TW --runner-group fedora
 
-<span class="nb">set</span> -e
-
-<span class="nv">CBControlPlane</span><span class="o">=</span><span class="k">$(</span>
-    aws ec2 describe-instances --filters <span class="s2">&quot;Name=tag-value,Values=cb-control-plane&quot;</span> <span class="p">|</span> <span class="se">\</span>
+cb-ctl --build-log xclock --project-path MS --keep-open <span class="se">\</span>
+    --arch x86_64 --dist TW
+</pre></div>
+</div>
+<p>Once done the repository with the package will appear on the collector.
+Point your preferred web browser to the collector instance as
+follows:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">RepoServer</span><span class="o">=</span><span class="k">$(</span>
+    aws ec2 describe-instances --filters <span class="s2">&quot;Name=tag-value,Values=cb-collect&quot;</span> <span class="p">|</span> <span class="se">\</span>
     grep -m <span class="m">1</span> PublicDnsName <span class="p">|</span> cut -f4 -d<span class="se">\&quot;</span>
 <span class="k">)</span>
 
-cat <span class="s">&lt;&lt;EOF</span>
-<span class="s">cluster:</span>
-<span class="s">  ssh_user: fedora</span>
-<span class="s">  ssh_pkey_file: $1</span>
-<span class="s">  controlplane: ${CBControlPlane}</span>
-<span class="s">  runner_count: 2</span>
-
-<span class="s">settings:</span>
-<span class="s">  use_control_plane_as_proxy: true</span>
-<span class="s">EOF</span>
+firefox http://<span class="si">${</span><span class="nv">RepoServer</span><span class="si">}</span>
 </pre></div>
 </div>
-<p>Call <code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_cbctl.cfg.sh</span></code> as follows:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>mkdir -p ~/.config/cb
-chmod u+x setup_cbctl.cfg.sh
-setup_cbctl.cfg.sh PathToPkeyMatchingMySSHKeyPairName &gt; ~/.config/cb/cbctl.yml
-</pre></div>
+<p>The URL on the collector (aka RepoServer) can also be used in package
+managers to fetch and install the package(s).</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>As of today the packages and repositories created by Cloud Builder are
+not signed.</p>
 </div>
 </li>
 </ol>
