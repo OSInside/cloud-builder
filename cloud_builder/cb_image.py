@@ -239,8 +239,9 @@ def main() -> None:
                 base_repo_path=package_build_target_dir
             )
             repo_file_basename = os.path.basename(repo_meta.repo_file)
-            package_indicator_name = \
-                f'.package_{args["--repo-arch"]}.{image_name}'
+            package_indicator_name = '.package_{0}.{1}'.format(
+                args["--repo-arch"], os.path.basename(image_name)
+            )
             if package_indicator_name not in binary_map:
                 binary_map[package_indicator_name] = []
             binary_map[package_indicator_name].append(repo_file_basename)
