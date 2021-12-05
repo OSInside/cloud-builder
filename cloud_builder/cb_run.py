@@ -175,7 +175,7 @@ def main() -> None:
                 )
                 repo_file_basename = os.path.basename(repo_meta.repo_file)
                 package_indicator_name = '.package_{0}.{1}'.format(
-                    args["--repo-arch"], os.path.basename(package_name)
+                    args['--repo-arch'], os.path.basename(package_name)
                 )
                 if package_indicator_name not in binary_map:
                     binary_map[package_indicator_name] = []

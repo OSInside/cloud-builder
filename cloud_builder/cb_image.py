@@ -240,7 +240,7 @@ def main() -> None:
             )
             repo_file_basename = os.path.basename(repo_meta.repo_file)
             package_indicator_name = '.package_{0}.{1}'.format(
-                args["--repo-arch"], os.path.basename(image_name)
+                args['--repo-arch'], os.path.basename(image_name)
             )
             if package_indicator_name not in binary_map:
                 binary_map[package_indicator_name] = []
@@ -249,11 +249,9 @@ def main() -> None:
             os.rename(package, repo_meta.repo_file)
 
         Path.wipe(target_dir)
-        os.rename(
-            package_build_binary_dir, target_dir
-        )
+
         # Create packages list
-        for root, dirs, files in os.walk(target_dir):
+        for root, dirs, files in os.walk(package_build_binary_dir):
             for entry in files:
                 packages.append(os.path.join(root, entry))
         log.info(format(packages))
@@ -261,14 +259,14 @@ def main() -> None:
         # Sync target_binary_dir to repo server
         if args['--repo-server']:
             update_repo_indicator = os.path.join(
-                target_dir,
+                package_build_binary_dir,
                 args['--repo-path'], '.updaterepo'
             )
             sync_command = [
                 'rsync', '-av', '-e', 'ssh -i {0} -o {1}'.format(
                     args['--ssh-pkey'],
                     'StrictHostKeyChecking=accept-new'
-                ), f'{target_dir}/', '{0}@{1}:{2}'.format(
+                ), f'{package_build_binary_dir}/', '{0}@{1}:{2}'.format(
                     args['--ssh-user'], args['--repo-server'],
                     Defaults.get_repo_root()
                 )
@@ -282,7 +280,7 @@ def main() -> None:
                 # which binaries belongs to the package
                 for package_indicator_name in binary_map.keys():
                     package_indicator = os.path.join(
-                        target_dir, args['--repo-path'],
+                        package_build_binary_dir, args['--repo-path'],
                         package_indicator_name
                     )
                     binaries_for_arch = []
