@@ -228,6 +228,11 @@ Create Cluster
 
       firefox http://${RepoServer}
 
+   .. note::
+
+      This requires the HTTP/HTTPS port to be opened in the security
+      group assigned to the collector instance !
+
    The URL on the collector (aka RepoServer) can also be used in package
    managers to fetch and install the package(s).
 
