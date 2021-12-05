@@ -29,7 +29,7 @@ baseInsertService cb-collect
 baseInsertService httpd
 
 # Create reposerver root
-mkdir -p /srv/www/projects
+mkdir -p /srv/www/projects/projects
 chown -R cb-collect /srv/www/projects
 chgrp -R cb-collect /srv/www/projects
 
