@@ -7,7 +7,7 @@ Requires=network-online.target
 EnvironmentFile=-/etc/cloud_builder
 Type=simple
 Restart=on-failure
-ExecStart=/bin/bash -c 'sudo cb-fetch --project ${CB_PROJECT} --update-interval ${CB_UPDATE}'
+ExecStart=/bin/bash -c 'sudo cb-fetch --project ${CB_PROJECT} --branch ${CB_BRANCH} --update-interval ${CB_UPDATE}'
 
 [Install]
 WantedBy=multi-user.target

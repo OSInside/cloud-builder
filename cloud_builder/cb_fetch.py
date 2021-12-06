@@ -18,6 +18,7 @@
 """
 usage: cb-fetch -h | --help
        cb-fetch --project=<github_project>
+           [--branch=<name>]
            [--update-interval=<time_sec>]
            [--single-shot]
 
@@ -25,6 +26,9 @@ options:
     --project=<github_project>
         git clone source URI to fetch project with
         packages managed to build in cloud builder
+
+    --branch=<name>
+        git branch name
 
     --update-interval=<time_sec>
         Optional update interval for the project
@@ -95,7 +99,7 @@ def main() -> None:
     git = CBGit(
         args['--project'], Defaults.get_runner_project_dir()
     )
-    git.clone()
+    git.clone(args['--branch'] or '')
 
     if not args['--single-shot']:
         update_project(git, log)

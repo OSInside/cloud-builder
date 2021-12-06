@@ -8,6 +8,7 @@ SYNOPSIS
 
    cb-fetch -h | --help
    cb-fetch --project=<github_project>
+       [--branch=<name>]
        [--update-interval=<time_sec>]
        [--single-shot]
 
@@ -49,6 +50,10 @@ OPTIONS
 
   git clone source URI to fetch project with
   packages managed to build in cloud builder
+
+--branch=<name>
+
+  git branch name
 
 --update-interval=<time_sec>
 

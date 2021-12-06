@@ -7,6 +7,15 @@
 #
 CB_PROJECT="https://github.com/OSInside/cloud-builder-packages.git"
 
+## Type:        string
+## Default:     "none"
+#
+# Branch name to use for CB_PROJECT. By default
+# set to "" (empty string) which clones whatever default
+# branch is configured on the repository
+#
+CB_BRANCH=""
+
 ## Type:        integer
 ## Default:     30
 #
@@ -43,10 +52,10 @@ CB_COLLECT_TIMEOUT=5
 CB_COLLECT_UPDATE_INTERVAL=30
 
 ## Type:        string
-## Default:     "none"
+## Default:     ""
 #
 # IP or name of collector (aka repo server). By default
-# set to 'none' which indicates there is no collector.
+# set to "" (empty string) which indicates there is no collector.
 # If configured the runner instances will upload its
 # build results to the specified machine
 #
