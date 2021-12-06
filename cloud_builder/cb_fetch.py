@@ -35,6 +35,7 @@ options:
 """
 import os
 from docopt import docopt
+from cloud_builder.utils.git import CBGit
 from cloud_builder.version import __version__
 from cloud_builder.cloud_logger import CBCloudLogger
 from cloud_builder.identity import CBIdentity
@@ -44,8 +45,6 @@ from cloud_builder.project_metadata.project_metadata import CBProjectMetaData
 from cloud_builder.build_request.build_request import CBBuildRequest
 from cloud_builder.broker import CBMessageBroker
 from cloud_builder.response.response import CBResponse
-from kiwi.command import Command
-from kiwi.path import Path
 from apscheduler.schedulers.background import BlockingScheduler
 from kiwi.privileges import Privileges
 from typing import (
@@ -93,40 +92,29 @@ def main() -> None:
     log = CBCloudLogger('CBFetch', '(system)')
     log.set_logfile()
 
-    project_dir = Defaults.get_runner_project_dir()
-    Path.wipe(project_dir)
-    Command.run(
-        ['git', 'clone', args['--project'], project_dir]
+    git = CBGit(
+        args['--project'], Defaults.get_runner_project_dir()
     )
+    git.clone()
+
     if not args['--single-shot']:
-        update_project(log)
+        update_project(git, log)
 
         project_scheduler = BlockingScheduler()
         project_scheduler.add_job(
-            lambda: update_project(log),
+            lambda: update_project(git, log),
             'interval', seconds=int(args['--update-interval'] or 30)
         )
         project_scheduler.start()
 
 
-def update_project(log: CBCloudLogger) -> None:
+def update_project(git: CBGit, log: CBCloudLogger) -> None:
     """
     Callback method registered with the BlockingScheduler
     """
-    Command.run(
-        ['git', '-C', Defaults.get_runner_project_dir(), 'fetch', '--all']
-    )
-    git_changes = Command.run(
-        [
-            'git', '-C', Defaults.get_runner_project_dir(),
-            'diff', '--name-only', 'origin/master'
-        ]
-    )
-    changed_files = []
+    git.fetch()
     changed_projects: Dict[str, List[str]] = {}
-    if git_changes.output:
-        changed_files = git_changes.output.strip().split(os.linesep)
-    for changed_file in changed_files:
+    for changed_file in git.get_changed_files():
         if changed_file.startswith('projects'):
             package_dir = os.path.dirname(changed_file)
             if package_dir in changed_projects:
@@ -137,9 +125,7 @@ def update_project(log: CBCloudLogger) -> None:
                 changed_projects[package_dir] = [
                     os.path.basename(changed_file)
                 ]
-    Command.run(
-        ['git', '-C', Defaults.get_runner_project_dir(), 'pull']
-    )
+    git.pull()
     broker = CBMessageBroker.new(
         'kafka', config_file=Defaults.get_broker_config()
     )

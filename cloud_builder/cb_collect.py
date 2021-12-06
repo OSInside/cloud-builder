@@ -38,6 +38,7 @@ from threading import (
     Thread, Lock
 )
 from docopt import docopt
+from cloud_builder.utils.git import CBGit
 from cloud_builder.version import __version__
 from cloud_builder.cloud_logger import CBCloudLogger
 from cloud_builder.identity import CBIdentity
@@ -100,27 +101,24 @@ def main() -> None:
     kiwi_log: Logger = logging.getLogger('kiwi')
     kiwi_log.set_logfile(Defaults.get_cb_logfile())
 
-    project_dir = Defaults.get_runner_project_dir()
-    Path.wipe(project_dir)
-    Command.run(
-        ['git', 'clone', args['--project'], project_dir]
+    git = CBGit(
+        args['--project'], Defaults.get_runner_project_dir()
     )
+    git.clone()
 
     build_repos(
-        int(args['--update-interval'] or 30), log
+        int(args['--update-interval'] or 30), git, log
     )
 
 
-def update_project() -> None:
+def update_project(git: CBGit) -> None:
     """
     Update git repository, fetching latest changes
     """
-    Command.run(
-        ['git', '-C', Defaults.get_runner_project_dir(), 'pull']
-    )
+    git.pull()
 
 
-def build_repos(update_interval: int, log: CBCloudLogger) -> None:
+def build_repos(update_interval: int, git: CBGit, log: CBCloudLogger) -> None:
     """
     Application loop - building project repositories
 
@@ -130,7 +128,7 @@ def build_repos(update_interval: int, log: CBCloudLogger) -> None:
     thread_lock = Lock()
 
     while(True):
-        update_project()
+        update_project(git)
 
         project_target_paths = []
         for root, dirs, files in os.walk(Defaults.get_repo_root()):

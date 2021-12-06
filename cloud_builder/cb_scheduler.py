@@ -52,6 +52,7 @@ import psutil
 import signal
 from docopt import docopt
 from textwrap import dedent
+from cloud_builder.utils.git import CBGit
 from cloud_builder.version import __version__
 from cloud_builder.cloud_logger import CBCloudLogger
 from cloud_builder.response.response import CBResponse
@@ -316,9 +317,7 @@ def update_source_repo(request: Dict, log: CBCloudLogger) -> None:
        request['action'] == status_flags.image_rebuild or \
        request['action'] == status_flags.image_source_rebuild:
         log.info('Update project git source repo prior build')
-        Command.run(
-            ['git', '-C', Defaults.get_runner_project_dir(), 'pull']
-        )
+        CBGit(checkout_path=Defaults.get_runner_project_dir()).pull()
 
 
 def build_image(
