@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>cb-fetch &mdash; Cloud Builder 0.2.62 documentation</title>
+  <title>cb-fetch &mdash; Cloud Builder 0.2.63 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
@@ -167,6 +167,7 @@
 <h2>SYNOPSIS<a class="headerlink" href="#synopsis" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>cb-fetch -h <span class="p">|</span> --help
 cb-fetch --project<span class="o">=</span>&lt;github_project&gt;
+    <span class="o">[</span>--branch<span class="o">=</span>&lt;name&gt;<span class="o">]</span>
     <span class="o">[</span>--update-interval<span class="o">=</span>&lt;time_sec&gt;<span class="o">]</span>
     <span class="o">[</span>--single-shot<span class="o">]</span>
 </pre></div>
@@ -206,6 +207,9 @@ a predefined layout like in the following example:</p>
 <dt><kbd><span class="option">--project=<var>&lt;github_project&gt;</var></span></kbd></dt>
 <dd><p>git clone source URI to fetch project with
 packages managed to build in cloud builder</p>
+</dd>
+<dt><kbd><span class="option">--branch=<var>&lt;name&gt;</var></span></kbd></dt>
+<dd><p>git branch name</p>
 </dd>
 <dt><kbd><span class="option">--update-interval=<var>&lt;time_sec&gt;</var></span></kbd></dt>
 <dd><p>Optional update interval for the project

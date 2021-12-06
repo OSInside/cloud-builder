@@ -8,6 +8,7 @@ SYNOPSIS
 
    cb-collect -h | --help
    cb-collect --project=<github_project>
+       [--branch=<name>]
        [--update-interval=<time_sec>]
 
 DESCRIPTION
@@ -43,6 +44,10 @@ OPTIONS
 
   git clone source URI to fetch project with
   packages managed to build in cloud builder
+
+--branch=<name>
+
+  git branch name
 
 --update-interval=<time_sec>
 
