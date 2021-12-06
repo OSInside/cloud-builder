@@ -1,6 +1,556 @@
 #!/bin/bash
 
-function getCBCommand {
+function get_git_base {
+    local path=$1
+    if [ -d "${path}/.git" ];then
+        echo "${path}"
+        return
+    fi
+    while [ ! "${path}" = '/' ]; do
+        if [ -d "${path}/.git" ];then
+            echo "${path}"
+            return 0
+        fi
+        path=$(dirname "${path}")
+    done
+}
+
+function get_meta_files {
+    local base_path
+    base_path=$(get_git_base "$(pwd)")
+    if [ -n "${base_path}" ];then
+        find "${base_path}" -type f -name "*cloud_builder.yml"
+    fi
+}
+
+function get_packages_and_images {
+    for meta in $(get_meta_files);do
+        basename "$(dirname "$(dirname "${meta}")")"
+    done
+}
+
+function get_packages {
+    for meta in $(get_meta_files);do
+        if grep -q "distributions:" "${meta}";then
+            basename "$(dirname "$(dirname "${meta}")")"
+        fi
+    done
+}
+
+function get_images {
+    for meta in $(get_meta_files);do
+        if grep -q "images:" "${meta}";then
+            basename "$(dirname "$(dirname "${meta}")")"
+        fi
+    done
+}
+
+function get_from_meta {
+    local search=$1
+    local key=$2
+    local base_path
+    base_path=$(get_git_base "$(pwd)")
+    for meta in $(get_meta_files);do
+        name=$(basename "$(dirname "$(dirname "${meta}")")")
+        if [ "${search}" = "${name}" ];then
+            grep "${key}" "${meta}" | cut -f2 -d: | tr -d " "
+            return
+        fi
+    done
+}
+
+function get_dists {
+    get_from_meta "$1" dist:
+}
+
+function get_archs {
+    get_from_meta "$1" arch:
+}
+
+function get_runner_groups {
+    get_from_meta "$1" runner_group:
+}
+
+function get_selections {
+    local search=$1
+    local base_path
+    base_path=$(get_git_base "$(pwd)")
+    for meta in $(get_meta_files);do
+        name=$(basename "$(dirname "$(dirname "${meta}")")")
+        if [ "${search}" = "${name}" ];then
+            grep -A1 selection: "${meta}" |\
+                grep name: | cut -f2 -d: | tr -d " "
+            return
+        fi
+    done
+}
+
+function get_project_path {
+    local search=$1
+    local base_path
+    base_path=$(get_git_base "$(pwd)")
+    for meta in $(get_meta_files);do
+        name=$(basename "$(dirname "$(dirname "${meta}")")")
+        if [ "${search}" = "${name}" ];then
+            dirname "$(dirname "$(dirname "${meta}")")" |\
+                sed -e "s@${base_path}/projects/@@"
+        fi
+    done
+}
+
+function __cb_ctl_complete_command {
+    local command="$1"
+    local completion_func="__cb_ctl_${command//-/_}"
+    $completion_func
+    return 0
+}
+
+function __comp_reply_command {
+    "$@" | sort | uniq | tr "\n" " "
+}
+
+function __cb_ctl_build_package {
+    case "$cur" in
+    --*)
+        __comp_reply_unused "
+            --project-path
+            --arch
+            --dist
+            --runner-group
+            --debug
+        "
+        ;;
+    *)
+        case "$prev" in
+        --build-package)
+            __comp_reply "$(__comp_reply_command get_packages)"
+            ;;
+        --project-path)
+            __comp_reply "$(
+                __comp_reply_command \
+                    get_project_path "$(__selected_package_or_image)"
+            )"
+            ;;
+        --dist)
+            __comp_reply "$(
+                __comp_reply_command \
+                    get_dists "$(__selected_package_or_image)"
+            )"
+            ;;
+        --arch)
+            __comp_reply "$(
+                __comp_reply_command \
+                    get_archs "$(__selected_package_or_image)"
+            )"
+            ;;
+        --runner-group)
+            __comp_reply "$(
+                __comp_reply_command \
+                    get_runner_groups "$(__selected_package_or_image)"
+            )"
+            ;;
+        --debug)
+            __comp_reply ""
+            ;;
+        esac
+        ;;
+    esac
+}
+
+function __cb_ctl_build_package_local {
+    case "$cur" in
+    --*)
+        __comp_reply_unused "
+            --dist
+            --clean
+            --debug
+        "
+        ;;
+    *)
+        case "$prev" in
+        --dist)
+            __comp_reply ""
+            ;;
+        --clean)
+            __comp_reply ""
+            ;;
+        --debug)
+            __comp_reply ""
+            ;;
+        esac
+        ;;
+    esac
+}
+
+function __cb_ctl_build_image_local {
+    case "$cur" in
+    --*)
+        __comp_reply_unused "
+            --selection
+            --debug
+        "
+        ;;
+    *)
+        case "$prev" in
+        --selection)
+            __comp_reply ""
+            ;;
+        --debug)
+            __comp_reply ""
+            ;;
+        esac
+        ;;
+    esac
+}
+
+function __cb_ctl_build_image {
+    case "$cur" in
+    --*)
+        __comp_reply_unused "
+            --project-path
+            --arch
+            --runner-group
+            --selection
+            --debug
+        "
+        ;;
+    *)
+        case "$prev" in
+        --build-image)
+            __comp_reply "$(__comp_reply_command get_images)"
+            ;;
+        --project-path)
+            __comp_reply "$(
+                __comp_reply_command \
+                    get_project_path "$(__selected_package_or_image)"
+            )"
+            ;;
+        --selection)
+            __comp_reply "$(
+                __comp_reply_command \
+                    get_selections "$(__selected_package_or_image)"
+            )"
+            ;;
+        --arch)
+            __comp_reply "$(
+                __comp_reply_command \
+                    get_archs "$(__selected_package_or_image)"
+            )"
+            ;;
+        --runner-group)
+            __comp_reply "$(
+                __comp_reply_command \
+                    get_runner_groups "$(__selected_package_or_image)"
+            )"
+            ;;
+        esac
+        ;;
+    esac
+}
+
+function __cb_ctl_build_dependencies {
+    case "$cur" in
+    --*)
+        __comp_reply_unused "
+            --project-path
+            --arch
+            --dist
+            --selection
+            --timeout
+            --debug
+        "
+        ;;
+    *)
+        case "$prev" in
+        --build-dependencies)
+            __comp_reply "$(__comp_reply_command get_packages_and_images)"
+            ;;
+        --project-path)
+            __comp_reply "$(
+                __comp_reply_command \
+                    get_project_path "$(__selected_package_or_image)"
+            )"
+            ;;
+        --selection)
+            __comp_reply "$(
+                __comp_reply_command \
+                    get_selections "$(__selected_package_or_image)"
+            )"
+            ;;
+        --arch)
+            __comp_reply "$(
+                __comp_reply_command \
+                    get_archs "$(__selected_package_or_image)"
+            )"
+            ;;
+        --dist)
+            __comp_reply "$(
+                __comp_reply_command \
+                    get_dists "$(__selected_package_or_image)"
+            )"
+            ;;
+        --timeout)
+            __comp_reply ""
+            ;;
+        --debug)
+            __comp_reply ""
+            ;;
+        esac
+        ;;
+    esac
+}
+
+function __cb_ctl_build_dependencies_local {
+    case "$cur" in
+    --*)
+        __comp_reply_unused "
+            --arch
+            --dist
+            --selection
+            --debug
+        "
+        ;;
+    *)
+        case "$prev" in
+        --selection)
+            __comp_reply ""
+            ;;
+        --arch)
+            __comp_reply ""
+            ;;
+        --dist)
+            __comp_reply ""
+            ;;
+        --debug)
+            __comp_reply ""
+            ;;
+        esac
+        ;;
+    esac
+}
+
+function __cb_ctl_build_log {
+    case "$cur" in
+    --*)
+        __comp_reply_unused "
+            --project-path
+            --arch
+            --dist
+            --selection
+            --timeout
+            --keep-open
+            --debug
+        "
+        ;;
+    *)
+        case "$prev" in
+        --build-log)
+            __comp_reply "$(__comp_reply_command get_packages_and_images)"
+            ;;
+        --project-path)
+            __comp_reply "$(
+                __comp_reply_command \
+                    get_project_path "$(__selected_package_or_image)"
+            )"
+            ;;
+        --selection)
+            __comp_reply "$(
+                __comp_reply_command \
+                    get_selections "$(__selected_package_or_image)"
+            )"
+            ;;
+        --arch)
+            __comp_reply "$(
+                __comp_reply_command \
+                    get_archs "$(__selected_package_or_image)"
+            )"
+            ;;
+        --dist)
+            __comp_reply "$(
+                __comp_reply_command \
+                    get_dists "$(__selected_package_or_image)"
+            )"
+            ;;
+        --timeout)
+            __comp_reply ""
+            ;;
+        --keep-open)
+            __comp_reply ""
+            ;;
+        --debug)
+            __comp_reply ""
+            ;;
+        esac
+        ;;
+    esac
+}
+
+function __cb_ctl_build_info {
+    case "$cur" in
+    --*)
+        __comp_reply_unused "
+            --project-path
+            --arch
+            --dist
+            --selection
+            --timeout
+            --debug
+        "
+        ;;
+    *)
+        case "$prev" in
+        --build-info)
+            __comp_reply "$(__comp_reply_command get_packages_and_images)"
+            ;;
+        --project-path)
+            __comp_reply "$(
+                __comp_reply_command \
+                    get_project_path "$(__selected_package_or_image)"
+            )"
+            ;;
+        --selection)
+            __comp_reply "$(
+                __comp_reply_command \
+                    get_selections "$(__selected_package_or_image)"
+            )"
+            ;;
+        --arch)
+            __comp_reply "$(
+                __comp_reply_command \
+                    get_archs "$(__selected_package_or_image)"
+            )"
+            ;;
+        --dist)
+            __comp_reply "$(
+                __comp_reply_command \
+                    get_dists "$(__selected_package_or_image)"
+            )"
+            ;;
+        --timeout)
+            __comp_reply ""
+            ;;
+        --debug)
+            __comp_reply ""
+            ;;
+        esac
+        ;;
+    esac
+}
+
+function __cb_ctl_get_binaries {
+    case "$cur" in
+    --*)
+        __comp_reply_unused "
+            --project-path
+            --arch
+            --dist
+            --selection
+            --target-dir
+            --timeout
+            --debug
+        "
+        ;;
+    *)
+        case "$prev" in
+        --get-binaries)
+            __comp_reply "$(__comp_reply_command get_packages_and_images)"
+            ;;
+        --project-path)
+            __comp_reply "$(
+                __comp_reply_command \
+                    get_project_path "$(__selected_package_or_image)"
+            )"
+            ;;
+        --selection)
+            __comp_reply "$(
+                __comp_reply_command \
+                    get_selections "$(__selected_package_or_image)"
+            )"
+            ;;
+        --arch)
+            __comp_reply "$(
+                __comp_reply_command \
+                    get_archs "$(__selected_package_or_image)"
+            )"
+            ;;
+        --dist)
+            __comp_reply "$(
+                __comp_reply_command \
+                    get_dists "$(__selected_package_or_image)"
+            )"
+            ;;
+        --timeout)
+            __comp_reply ""
+            ;;
+        --debug)
+            __comp_reply ""
+            ;;
+        esac
+        ;;
+    esac
+}
+
+function __cb_ctl_watch {
+    case "$cur" in
+    --*)
+        __comp_reply_unused "
+            --filter-request-id
+            --filter-service-name
+            --timeout
+            --debug
+        "
+        ;;
+    *)
+        case "$prev" in
+        --filter-service-name)
+            __comp_reply "
+                cb-fetch cb-info cb-run cb-prepare cb-scheduler cb-image
+            "
+            ;;
+        esac
+        ;;
+    esac
+}
+
+function __selected_package_or_image {
+    local item
+    local option_matches=0
+    for item in ${COMP_LINE}; do
+        if [ ${option_matches} = "1" ];then
+            echo "${item}"
+            return
+        fi
+        case "${item}" in
+            --build-package|\
+            --build-image|\
+            --build-info|\
+            --build-dependencies|\
+            --build-log|\
+            --get-binaries)
+                option_matches=1
+            ;;
+        esac
+    done
+}
+
+function __comp_reply_unused {
+    local available
+    local used
+    for option in $1;do
+        used=0
+        for item in ${COMP_LINE}; do
+            if [ "${item}" = "${option}" ];then
+                used=1; break
+            fi
+        done
+        if [ "${used}" = 0 ];then
+            available="${available} ${option}"
+        fi
+    done
+    __comp_reply "${available}"
+}
+
+function __comp_option {
     for item in ${COMP_LINE}; do
         if [[ $item =~ ^-.* ]];then
             echo "${item}"
@@ -9,65 +559,63 @@ function getCBCommand {
     done
 }
 
-function _cbctl {
-    local cur prev cword cmd
-    _init_completion || return
-    _get_comp_words_by_ref cur prev
-
-    if [ "${cword}" -gt 1 ];then
-        cmd=$(getCBCommand)
-        for comp in $prev $cmd;do
-            case "$comp" in
-                "--build-package")
-                    __comp_reply "--project-path --arch --dist --runner-group --debug"
-                    return 0
-                    ;;
-                "--build-package-local")
-                    __comp_reply "--dist --clean --debug"
-                    return 0
-                    ;;
-                "--build-image-local")
-                    __comp_reply "--selection --debug"
-                    return 0
-                    ;;
-                "--build-image")
-                    __comp_reply "--project-path --arch --runner-group --selection --debug"
-                    return 0
-                    ;;
-                "--build-dependencies")
-                    __comp_reply "--project-path --arch --dist --selection --timeout --debug"
-                    return 0
-                    ;;
-                "--build-dependencies-local")
-                    __comp_reply "--arch --dist --selection --debug"
-                    return 0
-                    ;;
-                "--build-log")
-                    __comp_reply "--project-path --arch --dist --selection --timeout --keep-open --debug"
-                    return 0
-                    ;;
-                "--build-info")
-                    __comp_reply "--project-path --arch --dist --selection --timeout --debug"
-                    return 0
-                    ;;
-                "--get-binaries")
-                    __comp_reply "--project-path --arch --dist --selection --target-dir --timeout --debug"
-                    return 0
-                    ;;
-                "--watch")
-                    __comp_reply "--filter-request-id --filter-service-name --timeout --debug"
-                    return 0
-                    ;;
-            esac
-        done
-    fi
-    __comp_reply "--help --version --build-package --build-package-local --build-image-local --build-image --build-dependencies --build-dependencies-local --build-log --build-info --get-binaries --watch"
-    return 0
-}
-
 function __comp_reply {
     word_list=$*
     readarray -t COMPREPLY < <(compgen -W "$word_list" -- "${cur}")
 }
 
-complete -o bashdefault -o default -o filenames -F _cbctl cb-ctl
+function __cb_ctl_main {
+    local cur prev cword cmd command
+    _init_completion || return
+    _get_comp_words_by_ref cur prev
+
+    if [ "${cword}" -gt 1 ];then
+        cmd=$(__comp_option)
+        for comp in $prev $cmd;do
+            case "$comp" in
+            --build-package)
+                command="build_package"; break ;;
+            --build-package-local)
+                command="build_package_local"; break ;;
+            --build-image-local)
+                command="build_image_local"; break ;;
+            --build-image)
+                command="build_image"; break ;;
+            --build-dependencies)
+                command="build_dependencies"; break ;;
+            --build-dependencies-local)
+                command="build_dependencies_local"; break ;;
+            --build-log)
+                command="build_log"; break ;;
+            --build-info)
+                command="build_info"; break ;;
+            --get-binaries)
+                command="get_binaries"; break ;;
+            --watch)
+                command="watch"; break ;;
+            esac
+        done
+    fi
+
+    if [ -z "$command" ]; then
+        __comp_reply "
+            --help
+            --version
+            --build-package
+            --build-package-local
+            --build-image-local
+            --build-image
+            --build-dependencies
+            --build-dependencies-local
+            --build-log
+            --build-info
+            --get-binaries
+            --watch
+        "
+        return 0
+    fi
+
+    __cb_ctl_complete_command "$command" && return 0
+}
+
+complete -o bashdefault -o nospace -F __cb_ctl_main cb-ctl
