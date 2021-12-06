@@ -155,13 +155,10 @@ class TestCBRun:
             )
         ]
         assert mock_Path.wipe.call_args_list == [
-            call(
-                '/var/tmp/CB/package@dist.arch.binaries/'
-                'projects/MS/TW'
-            ),
-            call('/var/tmp/CB/package@dist.arch')
+            call('/var/tmp/CB/package@dist.arch.binaries/projects/MS/TW'),
+            call('/var/tmp/CB/package@dist.arch'),
+            call('/var/tmp/CB/package@dist.arch/package@dist.arch.binaries')
         ]
-
         assert mock_os_rename.call_args_list == [
             call(
                 'binaries',
@@ -223,9 +220,15 @@ class TestCBRun:
         mock_Path.create.assert_called_once_with(
             '/var/tmp/CB/projects/package@dist.arch.binaries'
         )
-        mock_Path.wipe.assert_called_once_with(
-            '/var/tmp/CB/projects/package@dist.arch.binaries'
-        )
+        assert mock_Path.wipe.call_args_list == [
+            call(
+                '/var/tmp/CB/projects/package@dist.arch.binaries'
+            ),
+            call(
+                '/var/tmp/CB/projects/package@dist.arch/'
+                'package@dist.arch.binaries'
+            )
+        ]
         assert mock_os_rename.call_args_list == [
             call(
                 'binaries',

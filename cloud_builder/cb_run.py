@@ -196,6 +196,7 @@ def main() -> None:
         target_binary_dir = os.sep.join(
             [args['--root'], os.path.basename(package_build_binary_dir)]
         )
+        Path.wipe(target_binary_dir)
         os.rename(
             package_build_binary_dir, target_binary_dir
         )
