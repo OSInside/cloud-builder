@@ -58,7 +58,6 @@
         <package name="git"/>
         <package name="python3-cloud_builder"/>
         <package name="cloud-init"/>
-        <package name="awscli"/>
         <package name="dmidecode"/>
         <package name="xfsprogs"/>
         <package name="firewalld"/>

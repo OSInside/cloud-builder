@@ -55,7 +55,6 @@
         <package name="git"/>
         <package name="python3-cloud_builder"/>
         <package name="cloud-init"/>
-        <package name="awscli"/>
         <package name="java-1.8.0-openjdk"/>
         <package name="crypto-policies-scripts"/>
         <package name="dmidecode"/>
