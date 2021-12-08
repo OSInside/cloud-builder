@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Cloud Builder Documentation &mdash; Cloud Builder 1.0.1 documentation</title>
+  <title>Cloud Builder Documentation &mdash; Cloud Builder 1.0.2 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/custom.css" type="text/css" />
@@ -163,7 +163,7 @@
 <h1>Cloud Builder Documentation<a class="headerlink" href="#cloud-builder-documentation" title="Permalink to this headline">¶</a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>This documentation covers Cloud Builder 1.0.1- A package and
+<p>This documentation covers Cloud Builder 1.0.2- A package and
 appliance build backend primarily used as IaaS system.</p>
 </div>
 <div class="toctree-wrapper compound">
@@ -220,11 +220,11 @@ in Git allows to track any information about changes in the life
 time of a package or image. For details how to setup the source
 repo see: <a class="reference internal" href="quickstart.html#sources"><span class="std std-ref">Cloud Builder Source Setup</span></a></p>
 </dd>
-<dt>The Messaging API:</dt><dd><p>Cloud Builder services uses the Apacke Kafka message broker to communicate
+<dt>The Messaging API:</dt><dd><p>Cloud Builder services uses the Apache Kafka message broker to communicate
 for request and response information. From a Cloud Builder implementation
 perspective other brokers could be added via a new interface
 class. However, it depends on the broker features if it makes
-sense to use this message broker together with Cloud Builder. Apacke Kafka
+sense to use this message broker together with Cloud Builder. Apache Kafka
 was choosen because it allows for the <em>Publish/Subscribe</em> mode
 and for the <em>Shared Queue</em> mode in a nice way. Especially The
 <em>Shared Queue</em> mode in combination with the topic partition setup
