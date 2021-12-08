@@ -64,11 +64,11 @@ The Sources:
   repo see: :ref:`sources`
 
 The Messaging API:
-  {CB} services uses the Apacke Kafka message broker to communicate
+  {CB} services uses the Apache Kafka message broker to communicate
   for request and response information. From a {CB} implementation
   perspective other brokers could be added via a new interface
   class. However, it depends on the broker features if it makes
-  sense to use this message broker together with {CB}. Apacke Kafka
+  sense to use this message broker together with {CB}. Apache Kafka
   was choosen because it allows for the *Publish/Subscribe* mode
   and for the *Shared Queue* mode in a nice way. Especially The
   *Shared Queue* mode in combination with the topic partition setup
