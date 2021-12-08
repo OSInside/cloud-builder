@@ -56,6 +56,8 @@ from cloud_builder.exceptions import (
     CBSchedulerIntervalError
 )
 
+INFO_INSTANCES: int = 0
+
 
 @exception_handler
 def main() -> None:
@@ -140,9 +142,15 @@ def handle_info_requests(
         timeout in msec after which the blocking read() to the
         message broker returns
     """
+    global INFO_INSTANCES
+    if INFO_INSTANCES != 0:
+        log.info('Info server already running')
+        return
+
     broker = CBMessageBroker.new(
         'kafka', config_file=Defaults.get_broker_config()
     )
+    INFO_INSTANCES += 1
     try:
         while(True):
             for message in broker.read(
@@ -170,6 +178,7 @@ def handle_info_requests(
                         )
     finally:
         log.info('Closing message broker connection')
+        INFO_INSTANCES -= 1
         broker.close()
 
 

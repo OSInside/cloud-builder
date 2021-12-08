@@ -88,6 +88,8 @@ repo_server_type = NamedTuple(
     ]
 )
 
+SCHEDULER_INSTANCES: int = 0
+
 
 @exception_handler
 def main() -> None:
@@ -262,6 +264,11 @@ def handle_build_requests(
         will be closed and opened again if the limit is no
         longer reached
     """
+    global SCHEDULER_INSTANCES
+    if SCHEDULER_INSTANCES != 0:
+        log.info('Scheduler already running')
+        return
+
     if get_running_builds() >= running_limit:
         # runner is busy...
         log.info('Max running builds limit reached')
@@ -270,6 +277,7 @@ def handle_build_requests(
     broker = CBMessageBroker.new(
         'kafka', config_file=Defaults.get_broker_config()
     )
+    SCHEDULER_INSTANCES += 1
     try:
         while(True):
             if get_running_builds() >= running_limit:
@@ -307,6 +315,7 @@ def handle_build_requests(
                         )
     finally:
         log.info('Closing message broker connection')
+        SCHEDULER_INSTANCES -= 1
         broker.close()
 
 

@@ -58,6 +58,19 @@ class TestCBInfo:
         main()
         mock_sys_exit.assert_called_once_with(1)
 
+    @patch('cloud_builder.cb_info.INFO_INSTANCES', 1)
+    @patch('cloud_builder.cb_info.CBCloudLogger')
+    def test_handle_info_requests_only_one_info_server_at_a_time(
+        self, mock_CBCloudLogger
+    ):
+        log = Mock()
+        respond_always = False
+        mock_CBCloudLogger.return_value = log
+        handle_info_requests(5000, respond_always, log)
+        log.info.assert_called_once_with(
+            'Info server already running'
+        )
+
     @patch('cloud_builder.cb_info.lookup_image')
     @patch('cloud_builder.cb_info.CBCloudLogger')
     @patch('cloud_builder.cb_info.CBMessageBroker')

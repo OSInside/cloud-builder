@@ -93,6 +93,20 @@ class TestCBScheduler:
             'Max running builds limit reached'
         )
 
+    @patch('cloud_builder.cb_scheduler.SCHEDULER_INSTANCES', 1)
+    @patch('cloud_builder.cb_scheduler.get_running_builds')
+    @patch('cloud_builder.cb_scheduler.CBCloudLogger')
+    def test_handle_build_requests_only_one_scheduler_at_a_time(
+        self, mock_CBCloudLogger, mock_get_running_builds
+    ):
+        log = Mock()
+        mock_CBCloudLogger.return_value = log
+        mock_get_running_builds.return_value = 20
+        handle_build_requests(5000, 10, 'repo-server', log)
+        log.info.assert_called_once_with(
+            'Scheduler already running'
+        )
+
     @patch('cloud_builder.cb_scheduler.CBResponse')
     @patch('cloud_builder.cb_scheduler.get_running_builds')
     @patch('cloud_builder.cb_scheduler.build_image')
