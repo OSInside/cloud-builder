@@ -4,10 +4,8 @@
 ===========================
 
 .. note::
-   {CB} in version |version| is a new project in its early days.
-   Some parts are still in development and some parts are still
-   missing. For details on the current state or the roadmap to
-   v1.x.x just reach out.
+   This documentation covers {CB} |version|- A package and
+   appliance build backend primarily used as IaaS system.
 
 .. toctree::
    :maxdepth: 1
