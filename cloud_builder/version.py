@@ -18,5 +18,5 @@
 """
 Global version information used in Cloud Builder and the package
 """
-__version__ = '0.2.65'
+__version__ = '1.0.0'
 __githash__ = '$Format:%H$'
