@@ -6,6 +6,8 @@
 .. note::
    This documentation covers {CB} |version|- A package and
    appliance build backend primarily used as IaaS system.
+   The main use case is to extend/adapt a base Linux distribution
+   to personal needs, e.g for embedded devices.
 
 .. toctree::
    :maxdepth: 1
