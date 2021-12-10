@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Overview Cloud Builder Services &mdash; Cloud Builder 1.0.3 documentation</title>
+  <title>Overview Cloud Builder Services &mdash; Cloud Builder 1.0.4 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/custom.css" type="text/css" />
@@ -165,7 +165,7 @@
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>This document provides a list of the existing Cloud Builder services
-for version 1.0.3.</p>
+for version 1.0.4.</p>
 </div>
 <div class="toctree-wrapper compound">
 <ul>
@@ -214,10 +214,11 @@ about packages built on that instance can be retrieved.</p>
 repository using the satsolver library. In case a dependency
 has changed the package gets rebuild.</p>
 </dd>
-<dt>cb-collect:</dt><dd><p>Collects information for each package in the git, downloads
-the package binaries and creates project specific repositories.
-The cb-info service is a requirement if the collector will
-be used.</p>
+<dt>cb-collect:</dt><dd><p>Creates repositories from packages. Each runner syncs its
+build results to the collector, aka repo-server. cb-collect
+creates/updates on a regular schedule the repo metadata for
+the available packages. cb-collect also manages the repo
+content in case the git sources changes.</p>
 </dd>
 <dt>cb-ctl:</dt><dd><p>Cloud Builder control utility to communicate with services, send
 requests, get information and more</p>
