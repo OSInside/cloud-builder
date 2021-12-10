@@ -62,10 +62,11 @@ cb-depsolver:
   has changed the package gets rebuild.
 
 cb-collect:
-  Collects information for each package in the git, downloads
-  the package binaries and creates project specific repositories.
-  The cb-info service is a requirement if the collector will
-  be used.
+  Creates repositories from packages. Each runner syncs its
+  build results to the collector, aka repo-server. cb-collect
+  creates/updates on a regular schedule the repo metadata for
+  the available packages. cb-collect also manages the repo
+  content in case the git sources changes.
 
 cb-ctl:
   {CB} control utility to communicate with services, send
