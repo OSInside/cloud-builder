@@ -51,6 +51,8 @@ class CBRepository:
         """
         repo_path = 'unknown'
         repo_type = self.get_repo_type() or 'unknown'
+        if self.binary_file.endswith('.nosrc.rpm'):
+            repo_path = f'{base_repo_path}/nosrc'
         if self.binary_file.endswith('.src.rpm'):
             repo_path = f'{base_repo_path}/src'
         elif self.binary_file.endswith('.noarch.rpm'):

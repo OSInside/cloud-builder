@@ -42,6 +42,15 @@ class TestCBRepository:
         )
 
     @patch('cloud_builder.utils.repository.Path')
+    def test_get_repo_meta_nosrc_rpm_binary(self, mock_Path):
+        meta = CBRepository('binary.nosrc.rpm').get_repo_meta('base_repo_path')
+        assert meta == repo_metadata(
+            repo_type='rpm',
+            repo_path='base_repo_path/nosrc',
+            repo_file='base_repo_path/nosrc/binary.nosrc.rpm'
+        )
+
+    @patch('cloud_builder.utils.repository.Path')
     def test_get_repo_meta_unknown_binary(self, mock_Path):
         meta = CBRepository('binary').get_repo_meta('base_repo_path')
         assert meta == repo_metadata(
