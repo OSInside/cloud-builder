@@ -10,9 +10,9 @@
 key_name=ms
 
 # AMI's
-control_plane=ami-01820bb8efc0a3250
-collector=ami-0f8ebe372e9e0936a
-runner=ami-0f62f638377a18af1
+control_plane=ami-0b5e5a30a434b503a
+collector=ami-07eb5b76901b6351e
+runner=ami-0d1575739952cfd6b
 
 # Start Control Plane
 aws ec2 run-instances \
