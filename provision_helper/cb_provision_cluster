@@ -1,5 +1,5 @@
 #!/bin/bash
-
+#
 set -e
 
 # Use internal scope if access should only be possible from

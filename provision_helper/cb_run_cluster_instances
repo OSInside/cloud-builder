@@ -4,6 +4,7 @@
 # Very small instances (t2.micro) and max 10G of
 # EBS storage. Low cost profile
 #
+set -e
 
 # USER SETTINGS
 # Name of ssh key pair which you have registered in EC2
