@@ -11,9 +11,9 @@ set -e
 key_name=ms
 
 # AMI's
-control_plane=ami-0b5e5a30a434b503a
-collector=ami-07eb5b76901b6351e
-runner=ami-0d1575739952cfd6b
+control_plane=ami-0da4193409e15953e
+collector=ami-0b2748858e98ebabc
+runner=ami-0a1c18525f9cf77b8
 
 # Start Control Plane
 aws ec2 run-instances \
