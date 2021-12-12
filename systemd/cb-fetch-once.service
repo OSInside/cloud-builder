@@ -6,7 +6,7 @@ Requires=network-online.target
 [Service]
 EnvironmentFile=-/etc/cloud_builder
 Type=oneshot
-ExecStart=/bin/bash -c 'sudo cb-fetch --project ${CB_PROJECT} --branch ${CB_BRANCH} --single-shot'
+ExecStart=/bin/bash -c 'sudo cb-fetch --project "${CB_PROJECT}" --branch "${CB_BRANCH}" --single-shot'
 
 [Install]
 WantedBy=multi-user.target
