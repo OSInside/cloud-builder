@@ -53,6 +53,7 @@
         <package name="vim"/>
         <package name="tzdata"/>
         <package name="git"/>
+        <package name="git-lfs"/>
         <package name="python3-cloud_builder"/>
         <package name="cloud-init"/>
         <package name="java-1.8.0-openjdk"/>
