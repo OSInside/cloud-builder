@@ -9,11 +9,13 @@ pushd binaries
 
 wget https://download.opensuse.org/repositories/Virtualization:/Appliances:/CloudBuilder:/EC2:/fedora/images/CB-Collector.x86_64.raw.xz
 wget https://download.opensuse.org/repositories/Virtualization:/Appliances:/CloudBuilder:/EC2:/fedora/images/CB-ControlPlane.x86_64.raw.xz
-wget https://download.opensuse.org/repositories/Virtualization:/Appliances:/CloudBuilder:/EC2:/fedora/images/CB-RunnerFedora.x86_64.raw.xz
 
 popd
 
-for image in binaries/*.raw.xz; do
+for image in \
+    binaries/CB-Collector.x86_64.raw.xz \
+    binaries/CB-ControlPlane.x86_64.raw.xz
+do
     desc=$(basename $image | cut -f1 -d.)
     name=${desc}-v$(date +%Y%m%d)
 
