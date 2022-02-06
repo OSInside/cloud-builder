@@ -24,7 +24,7 @@ class TestCBMessageBrokerBase:
         self._caplog = caplog
 
     @patch.multiple(CBMessageBrokerBase, __abstractmethods__=set())
-    def setup(self):
+    def setup(self, mock_abstracts):
         self.broker = CBMessageBrokerBase(
             config_file='../data/etc/cloud_builder_broker.yml',
             custom_args={}

@@ -7,6 +7,7 @@ from mock import (
 import logging
 from cloud_builder.cloud_logger import CBCloudLogger
 from cloud_builder.response.response import CBResponse
+from cloud_builder.broker.base import CBMessageBrokerBase
 from cloud_builder.info_response.info_response import CBInfoResponse
 
 
@@ -15,8 +16,9 @@ class TestCBCloudLogger:
     def inject_fixtures(self, caplog):
         self._caplog = caplog
 
+    @patch.multiple(CBMessageBrokerBase, __abstractmethods__=set())
     @patch('cloud_builder.cloud_logger.CBIdentity')
-    def setup(self, mock_CBIdentity):
+    def setup(self, mock_CBIdentity, mock_abstracts):
         self.cloud_logger = CBCloudLogger('service', 'name')
 
     @patch('kiwi.logger.Logger.set_logfile')
