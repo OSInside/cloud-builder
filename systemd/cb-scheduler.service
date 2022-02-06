@@ -7,7 +7,7 @@ Requires=network-online.target cb-fetch-once
 EnvironmentFile=-/etc/cloud_builder
 Type=simple
 Restart=on-failure
-ExecStart=/bin/bash -c 'sudo cb-scheduler --build-limit "${CB_BUILD_LIMIT}" --update-interval "${CB_UPDATE}" --repo-server "${CB_COLLECT_REPO_SERVER}" --ssh-user "${CB_SSH_USER}" --ssh-pkey "${CB_SSH_PKEY}"'
+ExecStart=/usr/bin/cb-scheduler --build-limit "${CB_BUILD_LIMIT}" --update-interval "${CB_UPDATE}" --repo-server "${CB_COLLECT_REPO_SERVER}" --ssh-user "${CB_SSH_USER}" --ssh-pkey "${CB_SSH_PKEY}"
 
 [Install]
 WantedBy=multi-user.target
