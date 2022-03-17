@@ -37,7 +37,7 @@ build: clean tox
 	mv setup.pye setup.py
 	# provide rpm source tarball
 	mv dist/cloud_builder-${version}.tar.gz \
-		dist/python-cloud_builder.tar.gz
+		dist/python-cloud-builder.tar.gz
 	# update rpm changelog using reference file
 	helper/update_changelog.py \
 		--since package/python-cloud_builder.changes \
