@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Runner Setup &mdash; Cloud Builder 1.0.6 documentation</title>
+  <title>Runner Setup &mdash; Cloud Builder 1.0.7 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
@@ -305,23 +305,23 @@ the file <code class="file docutils literal notranslate"><span class="pre">/etc/
 </pre></div>
 </div>
 <p>Place the following content:</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">broker</span><span class="p">:</span>
-  <span class="nt">host</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">BootstrapServersString</span>
-<span class="nt">this_host</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">external_IP_or_Hostname_of_this_instance</span>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">broker</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">BootstrapServersString</span><span class="w"></span>
+<span class="nt">this_host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">external_IP_or_Hostname_of_this_instance</span><span class="w"></span>
 </pre></div>
 </div>
 <p>See the ‘<strong>Configure</strong> <code class="xref py py-obj docutils literal notranslate"><span class="pre">cb-ctl</span></code>’ list item in the <a class="reference internal" href="control_plane_setup.html#control-plane-setup"><span class="std std-ref">Create and Install the Control Plane</span></a>
 for details how to obtain the broker credentials.</p>
 <ul>
 <li><p>Add the following content on the Leap runners only</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">runner</span><span class="p">:</span>
-  <span class="nt">group</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">suse</span>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">runner</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="nt">group</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">suse</span><span class="w"></span>
 </pre></div>
 </div>
 </li>
 <li><p>Place the following content on the Fedora runners only</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">runner</span><span class="p">:</span>
-  <span class="nt">group</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">fedora</span>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">runner</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="nt">group</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fedora</span><span class="w"></span>
 </pre></div>
 </div>
 </li>

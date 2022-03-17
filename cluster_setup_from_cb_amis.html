@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Setup Cloud Builder From AMIs &mdash; Cloud Builder 1.0.6 documentation</title>
+  <title>Setup Cloud Builder From AMIs &mdash; Cloud Builder 1.0.7 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/custom.css" type="text/css" />
@@ -210,22 +210,22 @@ setup.</p>
 <ol class="arabic">
 <li><p><strong>Launch Amazon MSK:</strong></p>
 <p>Create the file <code class="file docutils literal notranslate"><span class="pre">cb-msk-setup.json</span></code> with the following content:</p>
-<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="nt">&quot;InstanceType&quot;</span><span class="p">:</span> <span class="s2">&quot;kafka.t3.small&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;BrokerAZDistribution&quot;</span><span class="p">:</span> <span class="s2">&quot;DEFAULT&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;SecurityGroups&quot;</span><span class="p">:</span> <span class="p">[</span>
-        <span class="s2">&quot;sg-MySecuritGroupId&quot;</span>
-    <span class="p">],</span>
-    <span class="nt">&quot;StorageInfo&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="nt">&quot;EbsStorageInfo&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="nt">&quot;VolumeSize&quot;</span><span class="p">:</span> <span class="mi">1</span>
-        <span class="p">}</span>
-    <span class="p">},</span>
-    <span class="nt">&quot;ClientSubnets&quot;</span><span class="p">:</span> <span class="p">[</span>
-        <span class="s2">&quot;subnet-MySubnetIdRegionX&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;subnet-MySubnetIdRegionY&quot;</span>
-    <span class="p">]</span>
-<span class="p">}</span>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;InstanceType&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;kafka.t3.small&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;BrokerAZDistribution&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;DEFAULT&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;SecurityGroups&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"></span>
+<span class="w">        </span><span class="s2">&quot;sg-MySecuritGroupId&quot;</span><span class="w"></span>
+<span class="w">    </span><span class="p">],</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;StorageInfo&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;EbsStorageInfo&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="nt">&quot;VolumeSize&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
+<span class="w">        </span><span class="p">}</span><span class="w"></span>
+<span class="w">    </span><span class="p">},</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;ClientSubnets&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"></span>
+<span class="w">        </span><span class="s2">&quot;subnet-MySubnetIdRegionX&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="s2">&quot;subnet-MySubnetIdRegionY&quot;</span><span class="w"></span>
+<span class="w">    </span><span class="p">]</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
 </pre></div>
 </div>
 <p>Start the messaging API as follows:</p>

@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Git Package Source Setup &mdash; Cloud Builder 1.0.6 documentation</title>
+  <title>Git Package Source Setup &mdash; Cloud Builder 1.0.7 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
@@ -231,19 +231,19 @@ structure to store projects and package sources is allowed</p>
 <p>In general <code class="file docutils literal notranslate"><span class="pre">.cb/cloud_builder.yml</span></code> contains information about
 the target distribution for which the package should be build.
 A typical file looks like the following:</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">schema_version</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0.1</span>
-<span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">python-kiwi_boxed_plugin</span>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">schema_version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.1</span><span class="w"></span>
+<span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">python-kiwi_boxed_plugin</span><span class="w"></span>
 
-<span class="nt">distributions</span><span class="p">:</span>
-  <span class="p p-Indicator">-</span>
-    <span class="nt">dist</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">TW</span>
-    <span class="nt">arch</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">x86_64</span>
-    <span class="nt">runner_group</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">suse</span>
+<span class="nt">distributions</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"></span>
+<span class="w">    </span><span class="nt">dist</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">TW</span><span class="w"></span>
+<span class="w">    </span><span class="nt">arch</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">x86_64</span><span class="w"></span>
+<span class="w">    </span><span class="nt">runner_group</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">suse</span><span class="w"></span>
 
-  <span class="p p-Indicator">-</span>
-    <span class="nt">dist</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Fedora34</span>
-    <span class="nt">arch</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">x86_64</span>
-    <span class="nt">runner_group</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">fedora</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"></span>
+<span class="w">    </span><span class="nt">dist</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Fedora34</span><span class="w"></span>
+<span class="w">    </span><span class="nt">arch</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">x86_64</span><span class="w"></span>
+<span class="w">    </span><span class="nt">runner_group</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fedora</span><span class="w"></span>
 </pre></div>
 </div>
 <dl>
