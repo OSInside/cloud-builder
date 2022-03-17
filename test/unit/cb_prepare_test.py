@@ -14,6 +14,9 @@ class TestCBPrepare:
             sys.argv[0]
         ]
 
+    def setup_method(self, cls):
+        self.setup()
+
     @patch('cloud_builder.cb_prepare.Defaults.get_kiwi')
     @patch('cloud_builder.cb_prepare.Privileges.check_for_root_permissions')
     @patch('cloud_builder.cb_prepare.Command.run')

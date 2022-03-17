@@ -18,8 +18,13 @@ class TestCBCloudLogger:
 
     @patch.multiple(CBMessageBrokerBase, __abstractmethods__=set())
     @patch('cloud_builder.cloud_logger.CBIdentity')
-    def setup(self, mock_CBIdentity, mock_abstracts):
+    def setup(self, mock_CBIdentity):
         self.cloud_logger = CBCloudLogger('service', 'name')
+
+    @patch.multiple(CBMessageBrokerBase, __abstractmethods__=set())
+    @patch('cloud_builder.cloud_logger.CBIdentity')
+    def setup_method(self, cls, mock_CBIdentity):
+        self.setup()
 
     @patch('kiwi.logger.Logger.set_logfile')
     def test_set_logfile(self, mock_set_logfile):

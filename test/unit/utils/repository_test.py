@@ -10,6 +10,9 @@ class TestCBRepository:
         self.repo_rpm = CBRepository('binary.rpm')
         self.repo_unknown = CBRepository('binary')
 
+    def setup_method(self, cls):
+        self.setup()
+
     def test_get_repo_type(self):
         assert self.repo_rpm.get_repo_type() == 'rpm'
         assert self.repo_unknown.get_repo_type() is None

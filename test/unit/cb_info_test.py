@@ -24,6 +24,9 @@ class TestCBInfo:
             sys.argv[0]
         ]
 
+    def setup_method(self, cls):
+        self.setup()
+
     @patch('cloud_builder.cb_info.handle_info_requests')
     @patch('cloud_builder.cb_info.Privileges.check_for_root_permissions')
     @patch('cloud_builder.cb_info.BlockingScheduler')

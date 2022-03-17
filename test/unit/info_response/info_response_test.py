@@ -5,6 +5,9 @@ class TestCBInfoResponse:
     def setup(self):
         self.info_response = CBInfoResponse('uuid', 'identity')
 
+    def setup_method(self, cls):
+        self.setup()
+
     def test_set_package_info_response(self):
         self.info_response.set_package_info_response(
             'package', 'source_ip', True, 'x86_64', 'TW'

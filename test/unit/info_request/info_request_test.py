@@ -7,6 +7,9 @@ class TestCBInfoRequest:
     def setup(self):
         self.info_request = CBInfoRequest()
 
+    def setup_method(self, cls):
+        self.setup()
+
     @patch('cloud_builder.info_request.info_request.CBIdentity')
     def test_set_package_info_request(self, mock_CBIdentity):
         self.info_request.set_package_info_request('vim', 'x86_64', 'TW')

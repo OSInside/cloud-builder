@@ -13,6 +13,9 @@ class TestCBRun:
             sys.argv[0]
         ]
 
+    def setup_method(self, cls):
+        self.setup()
+
     @patch('cloud_builder.cb_run.CBRepository')
     @patch('cloud_builder.cb_run.Path')
     @patch('cloud_builder.cb_run.Privileges.check_for_root_permissions')

@@ -5,6 +5,9 @@ class TestCBResponse:
     def setup(self):
         self.response = CBResponse('uuid', 'identity')
 
+    def setup_method(self, cls):
+        self.setup()
+
     def test_set_package_build_response(self):
         self.response.set_package_build_response(
             'message', 'response_code', 'package', 'prepare_log_file',

@@ -24,11 +24,15 @@ class TestCBMessageBrokerBase:
         self._caplog = caplog
 
     @patch.multiple(CBMessageBrokerBase, __abstractmethods__=set())
-    def setup(self, mock_abstracts):
+    def setup(self):
         self.broker = CBMessageBrokerBase(
             config_file='../data/etc/cloud_builder_broker.yml',
             custom_args={}
         )
+
+    @patch.multiple(CBMessageBrokerBase, __abstractmethods__=set())
+    def setup_method(self, cls):
+        self.setup()
 
     @patch.multiple(CBMessageBrokerBase, __abstractmethods__=set())
     def test_setup_raises_no_broker_config(self):

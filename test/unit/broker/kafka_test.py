@@ -32,6 +32,9 @@ class TestCBMessageBrokerKafka:
             self.kafka.post_init()
         assert self.kafka.kafka_host == 'URI:9092'
 
+    def setup_method(self, cls):
+        self.setup()
+
     def test_setup_raises_invalid_config(self):
         config_file = '../data/etc/cloud_builder_broker-invalid.yml'
         with open(config_file) as config:

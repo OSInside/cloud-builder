@@ -9,6 +9,9 @@ class TestCBGit:
     def setup(self):
         self.git = CBGit('clone_uri', 'checkout_path')
 
+    def setup_method(self, cls):
+        self.setup()
+
     @patch('cloud_builder.utils.git.Command.run')
     def test_clone(self, mock_Command_run):
         self.git.clone(branch='main')

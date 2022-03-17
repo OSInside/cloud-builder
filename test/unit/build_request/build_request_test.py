@@ -7,6 +7,9 @@ class TestCBBuildRequest:
     def setup(self):
         self.request = CBBuildRequest()
 
+    def setup_method(self, cls):
+        self.setup()
+
     @patch('cloud_builder.build_request.build_request.CBIdentity')
     def test_set_package_build_request(self, mock_CBIdentity):
         self.request.set_package_build_request(
